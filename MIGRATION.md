@@ -18,17 +18,17 @@ the detail sections below explain the why.
 | 2 | Shared version catalog + convention plugins | **Foundation done; app adoption deferred** | `build-logic` (4 `rhaydus.*` plugins) compiles; `nl.rhaydus:catalog` publishes. Room/Apollo left app-specific |
 | 3 | TOAD runtime library (`nl.rhaydus.toad`) | **Foundation done; app adoption deferred** | `:toad` KMP lib compiles (`Collector`); 345-file app import rewrites deferred |
 | 4 | `designsystem-core` skeleton (no tokens) | Not started | Optional / can defer |
-| 5 | Claude Code plugin (skills, agents, hooks, docs) | Not started | Can run parallel to 2-4 |
+| 5 | Claude Code plugin (skills, agents, hooks, docs) | **Done (installable)** | `rhaydus-kotlin` plugin + `rhaydus` marketplace. Install is opt-in per project. Docs await Phase 6 |
 | 6 | Docs consolidation | Not started | Feeds phase 5 |
 
 **Recommended order:** 0 -> 1 -> 2 -> 3 -> (5 ∥ 6) -> 4.
 
 ### Resume here (next session)
-Phases 0, 1, 2, 3 (all foundation side) done + committed. **All app adoption is paused by decision**
-— do not modify the Softcover/Nestbox builds yet. When resuming, options:
-- **Phase 5** (foundation-only, safe): package the Claude Code assets (agents, skills, hooks, docs) as
-  a plugin. Or **Phase 6** (docs consolidation). Phase 4 (designsystem-core) is the harder, deferrable
-  one (needs judgement on what's brand-agnostic).
+Phases 0, 1, 2, 3 (foundation side) + 5 (plugin) done + committed. **All app adoption is paused by
+decision** — do not modify the Softcover/Nestbox builds yet. When resuming, options:
+- **Phase 6** (docs consolidation, foundation-only): merge the duplicated conventions docs into
+  `docs/`, then add them to the `rhaydus-kotlin` plugin. **Phase 4** (designsystem-core) is the harder,
+  deferrable one (needs judgement on what's brand-agnostic).
 - **Resume deferred app adoption** when ready: ktlint-rules (Phase 1), convention plugins/catalog
   (Phase 2), TOAD import rewrites (Phase 3). Softcover first (feature branch); Nestbox after
   `release/1.0.0` ships. Steps in each phase's detail.
@@ -207,6 +207,23 @@ skills (`style-check`, `update-readme`), generalised docs-first hook, and the ca
 6). Parameterise project-shaped skills (`release`, version bumps differ: Softcover Android+iOS,
 Nestbox Android-only). Fold durable agent-memory into agent defs/docs. Install into both repos.
 
+**Done:**
+- [x] Marketplace `rhaydus` at repo root `.claude-plugin/marketplace.json` -> plugin
+      `./claude/plugins/rhaydus-kotlin`. Plugin manifest at the plugin's `.claude-plugin/plugin.json`;
+      components at the plugin root (confirmed schema via claude-code-guide).
+- [x] Bundled: `code-reviewer` + `unit-test-writer` agents (genericised the `CODE_STYLE_GUIDE.md`
+      hardcode; unit-test-writer was already stack-generic). `style-check` skill **generalised** to run
+      whatever gates a project defines (Softcover's `buildHealth`/`styleCheck`/`detekt`/iOS were
+      hardcoded). docs-first `PreToolUse` hook (matcher `Agent`) generalised off Nestbox's, using
+      `${CLAUDE_PLUGIN_ROOT}`.
+- [x] Validated: all JSON parses, hook script executable + `bash -n` clean, agent frontmatter intact.
+- **Install (opt-in, per project — not a repo change):**
+  `/plugin marketplace add CinqueIzumi/rhaydus-foundation` then `/plugin install rhaydus-kotlin@rhaydus`.
+
+**Deliberately excluded (kept app-local, hardcode per-app layout/platform):** `update-readme`,
+`release`, `set-version-name`, `increment-version-code`. Agent-memory is per-project, not bundled.
+**Pending:** add the canonical conventions docs to the plugin once Phase 6 consolidates them.
+
 ### Phase 6 — Docs consolidation
 Merge each duplicated pair into one canonical doc under `docs/` (`architecture`, `code-style`,
 `toad-architecture`, `design-system-foundations` + Softcover's module-structure guidelines). Each
@@ -239,3 +256,7 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   primitives in commonMain, vanniktech publishing. Verified `:toad:compileKotlinJvm`. Learnings:
   ScreenModel is in voyager-screenmodel (not -navigator); root needs convention plugins `apply false`;
   ktlint-rules now applies kotlin.jvm without a version. Added lint.xml + gitignored local.properties.
+- **Session 5:** Phase 5 — `rhaydus-kotlin` Claude Code plugin + `rhaydus` marketplace. Bundled the 2
+  agents + generalised `style-check` skill + generalised docs-first hook; excluded project-shaped
+  skills. Confirmed plugin/marketplace schema via claude-code-guide; validated JSON + hook. Foundation
+  only (install is opt-in per project).

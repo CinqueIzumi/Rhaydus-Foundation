@@ -1,0 +1,13 @@
+{
+  "name": "rhaydus-kotlin",
+  "displayName": "rhaydus Kotlin toolkit",
+  "description": "Shared Claude Code assets for the nl.rhaydus Kotlin/Compose/TOAD apps: code-reviewer and unit-test-writer subagents, a style-check skill, and a docs-first exploration hook.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Cinque"
+  },
+  "homepage": "https://github.com/CinqueIzumi/rhaydus-foundation",
+  "repository": "https://github.com/CinqueIzumi/rhaydus-foundation",
+  "license": "MIT",
+  "keywords": ["kotlin", "compose", "toad", "android", "kmp", "code-review"]
+}
