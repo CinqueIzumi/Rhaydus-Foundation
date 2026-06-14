@@ -1,9 +1,16 @@
 // Root build for rhaydus-foundation.
 //
-// There are no subprojects yet (they arrive per phase — see MIGRATION.md). Group + version are set
-// for all projects here. Publishing itself is wired per-module with the com.vanniktech.maven.publish
-// plugin (Maven Central via the Central Portal, with PGP signing) starting in phase 1; in phase 2 the
-// common POM/host config moves into a shared `rhaydus.publish` convention plugin in build-logic.
+// The convention plugins in build-logic apply AGP/Kotlin/Compose plugins by id; their versions are
+// pinned here `apply false` (from the catalog) so every module resolves them consistently. Group +
+// version for all modules are set below. Publishing is wired per-module with the
+// com.vanniktech.maven.publish plugin (Maven Central via the Central Portal, with PGP signing).
+
+plugins {
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.android.kotlin.multiplatform.library) apply false
+    alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.compose.multiplatform) apply false
+}
 
 val foundationVersion: String = providers.gradleProperty("foundation.version").getOrElse("0.0.0-SNAPSHOT")
 

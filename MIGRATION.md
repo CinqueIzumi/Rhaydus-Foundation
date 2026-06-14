@@ -16,7 +16,7 @@ the detail sections below explain the why.
 | 0 | Bootstrap repo + publish plumbing + CI | **Done** | Verified `./gradlew help` |
 | 1 | `ktlint-rules` published, adopted by both apps | **Foundation done; app adoption deferred** | Module moved + builds + self-lints green. App adoption paused by decision (see Resume) |
 | 2 | Shared version catalog + convention plugins | **Foundation done; app adoption deferred** | `build-logic` (4 `rhaydus.*` plugins) compiles; `nl.rhaydus:catalog` publishes. Room/Apollo left app-specific |
-| 3 | TOAD runtime library (`nl.rhaydus.toad`) | Not started | 345 files touched across both apps |
+| 3 | TOAD runtime library (`nl.rhaydus.toad`) | **Foundation done; app adoption deferred** | `:toad` KMP lib compiles (`Collector`); 345-file app import rewrites deferred |
 | 4 | `designsystem-core` skeleton (no tokens) | Not started | Optional / can defer |
 | 5 | Claude Code plugin (skills, agents, hooks, docs) | Not started | Can run parallel to 2-4 |
 | 6 | Docs consolidation | Not started | Feeds phase 5 |
@@ -24,14 +24,14 @@ the detail sections below explain the why.
 **Recommended order:** 0 -> 1 -> 2 -> 3 -> (5 ∥ 6) -> 4.
 
 ### Resume here (next session)
-Phases 0, 1 (foundation), 2 (foundation) done + committed. **All app adoption is paused by decision**
+Phases 0, 1, 2, 3 (all foundation side) done + committed. **All app adoption is paused by decision**
 — do not modify the Softcover/Nestbox builds yet. When resuming, options:
-- **Phase 3** (foundation-only, safe): extract the TOAD runtime into `:toad` (KMP, `nl.rhaydus.toad`,
-  settle on `Collector`). The foundation-side library can be built/verified without touching apps; the
-  308-file Softcover + 37-file Nestbox import rewrites are app adoption (defer).
-- **Resume deferred app adoption** when ready: ktlint-rules (Phase 1) and convention plugins/catalog
-  (Phase 2). Softcover first (feature branch); Nestbox after `release/1.0.0` ships. Steps in each
-  phase's detail below.
+- **Phase 5** (foundation-only, safe): package the Claude Code assets (agents, skills, hooks, docs) as
+  a plugin. Or **Phase 6** (docs consolidation). Phase 4 (designsystem-core) is the harder, deferrable
+  one (needs judgement on what's brand-agnostic).
+- **Resume deferred app adoption** when ready: ktlint-rules (Phase 1), convention plugins/catalog
+  (Phase 2), TOAD import rewrites (Phase 3). Softcover first (feature branch); Nestbox after
+  `release/1.0.0` ships. Steps in each phase's detail.
 
 ## Why this exists (the findings that justify it)
 
@@ -172,6 +172,23 @@ Softcover adopts the foundation plugins it keeps its local Room/Apollo conventio
       material3 expressive override once). Convention plugins only matter once it splits into modules.
 
 ### Phase 3 — TOAD runtime (the big one)
+
+**Done (foundation side):**
+- [x] `:toad` KMP library under `nl.rhaydus.toad` via `rhaydus.kmp.library` + vanniktech publishing
+      (`nl.rhaydus:toad`). 8 primitives moved to `commonMain`, settled on `Collector`.
+- [x] Dep: `api(libs.voyager.screenModel)` — `ScreenModel`/`screenModelScope` live in
+      **voyager-screenmodel**, NOT voyager-navigator (the obvious guess fails to resolve). coroutines
+      come from the convention.
+- [x] Verified `:toad:compileKotlinJvm` green. All TOAD code is in `commonMain` with no expect/actual,
+      so the JVM compile validates the code every target shares.
+- [x] Repo plumbing this required (kept for later phases): root `build.gradle.kts` now declares the
+      convention-applied plugins (`kotlin.multiplatform`, `android.kotlin.multiplatform.library`,
+      `kotlin.compose`, `compose.multiplatform`) `apply false` so modules resolve them; `lint.xml`
+      copied in (conventions reference it); gitignored `local.properties` with `sdk.dir`. Side effect:
+      `:ktlint-rules` now applies `org.jetbrains.kotlin.jvm` WITHOUT a version (inherits from the root
+      classpath; declaring a version triggers a classpath-conflict error).
+
+**Next (app adoption — deferred):**
 New `:toad` KMP library (`commonMain`, deps: Voyager + coroutines), under `nl.rhaydus.toad`, settle on
 `Collector`. Scripted import rewrite: **Softcover 308 files**, **Nestbox 37 files** (+ rename
 `Initializer`->`Collector` at Softcover's interface + its 11 screen-model uses; Nestbox keeps its name). Do the whole migration with
@@ -218,3 +235,7 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   classes) + `:catalog` module publishing `nl.rhaydus:catalog`. Expanded the catalog to back all 4
   conventions. Verified build-logic compiles + `publishToMavenLocal` for catalog + ktlint-rules.
   Decided Room/Apollo stay Softcover-only. App adoption still deferred.
+- **Session 4:** Phase 3 foundation side — `:toad` KMP library (`nl.rhaydus.toad`, `Collector`), 8
+  primitives in commonMain, vanniktech publishing. Verified `:toad:compileKotlinJvm`. Learnings:
+  ScreenModel is in voyager-screenmodel (not -navigator); root needs convention plugins `apply false`;
+  ktlint-rules now applies kotlin.jvm without a version. Added lint.xml + gitignored local.properties.

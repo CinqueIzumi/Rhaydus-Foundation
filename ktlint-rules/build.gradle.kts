@@ -3,7 +3,9 @@ import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    // No version: the Kotlin plugin is on the classpath via the root build's apply-false block, so the
+    // version is inherited (declaring one here triggers a classpath-conflict error).
+    id("org.jetbrains.kotlin.jvm")
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 

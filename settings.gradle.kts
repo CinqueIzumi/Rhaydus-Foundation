@@ -25,7 +25,7 @@ rootProject.name = "rhaydus-foundation"
 
 include(":ktlint-rules")
 include(":catalog")
+include(":toad")
 
 // Further modules land here as the phases progress (see MIGRATION.md):
-//   phase 3: include(":toad")
 //   phase 4: include(":designsystem-core")
