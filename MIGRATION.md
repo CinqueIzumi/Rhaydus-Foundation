@@ -19,19 +19,20 @@ the detail sections below explain the why.
 | 3 | TOAD runtime library (`nl.rhaydus.toad`) | **Foundation done; app adoption deferred** | `:toad` KMP lib compiles (`Collector`); 345-file app import rewrites deferred |
 | 4 | `designsystem-core` skeleton (no tokens) | Not started | Optional / can defer |
 | 5 | Claude Code plugin (skills, agents, hooks, docs) | **Done (installable)** | `rhaydus-kotlin` plugin + `rhaydus` marketplace. Install is opt-in per project. Docs await Phase 6 |
-| 6 | Docs consolidation | Not started | Feeds phase 5 |
+| 6 | Docs consolidation | **Foundation done** | 4 canonical docs in `docs/`. App `CLAUDE.md` link-updates deferred (app adoption) |
 
 **Recommended order:** 0 -> 1 -> 2 -> 3 -> (5 ∥ 6) -> 4.
 
 ### Resume here (next session)
-Phases 0, 1, 2, 3 (foundation side) + 5 (plugin) done + committed. **All app adoption is paused by
-decision** — do not modify the Softcover/Nestbox builds yet. When resuming, options:
-- **Phase 6** (docs consolidation, foundation-only): merge the duplicated conventions docs into
-  `docs/`, then add them to the `rhaydus-kotlin` plugin. **Phase 4** (designsystem-core) is the harder,
-  deferrable one (needs judgement on what's brand-agnostic).
+Phases 0, 1, 2, 3 (foundation side) + 5 (plugin) + 6 (docs) done + committed. The only remaining
+foundation-only phase is **Phase 4** (designsystem-core). **All app adoption is paused by decision** -
+do not modify the Softcover/Nestbox builds yet. When resuming, options:
+- **Phase 4** (designsystem-core, foundation-only but needs judgement): extract the brand-agnostic
+  design skeleton into a `:designsystem-core` KMP module, per `docs/design-system-foundations.md`. The
+  harder/deferrable one - be conservative about what's truly brand-agnostic.
 - **Resume deferred app adoption** when ready: ktlint-rules (Phase 1), convention plugins/catalog
-  (Phase 2), TOAD import rewrites (Phase 3). Softcover first (feature branch); Nestbox after
-  `release/1.0.0` ships. Steps in each phase's detail.
+  (Phase 2), TOAD import rewrites (Phase 3), CLAUDE.md doc links (Phase 6), plugin install (Phase 5).
+  Softcover first (feature branch); Nestbox after `release/1.0.0` ships. Steps in each phase's detail.
 
 ## Why this exists (the findings that justify it)
 
@@ -224,11 +225,25 @@ Nestbox Android-only). Fold durable agent-memory into agent defs/docs. Install i
 `release`, `set-version-name`, `increment-version-code`. Agent-memory is per-project, not bundled.
 **Pending:** add the canonical conventions docs to the plugin once Phase 6 consolidates them.
 
-### Phase 6 — Docs consolidation
+### Phase 6 - Docs consolidation
 Merge each duplicated pair into one canonical doc under `docs/` (`architecture`, `code-style`,
 `toad-architecture`, `design-system-foundations` + Softcover's module-structure guidelines). Each
 app `CLAUDE.md` links out and keeps only app-specific deltas. Honor no-emdashes + commit-style
 conventions in the merged docs.
+
+**Done (foundation side):** 4 canonical docs in `docs/` (+ `docs/README.md` index), merged from both
+apps, app-agnostic, emdash-free (verified `grep -c "emdash"` = 0):
+- [x] `architecture.md` - layering + module/package structure (handles multi-module Softcover vs
+      single-module Nestbox via the "module or its mirror package" framing); references `rhaydus.*` plugins.
+- [x] `toad-architecture.md` - canonical TOAD doc pointing at the `nl.rhaydus:toad` runtime, `Collector`.
+- [x] `code-style.md` - merged style guide; mechanizable rules enforced by `nl.rhaydus:ktlint-rules`.
+- [x] `design-system-foundations.md` - the brand-agnostic skeleton ONLY; brand tokens stay per app.
+- Plugin README points at `docs/` (not duplicated into the plugin; canonical home is here).
+- Synthesis of the 3 big docs was delegated to parallel agents reading both apps' versions; toad doc
+  written directly. Note: the Nestbox docs-first hook (active this session) blocked one agent once -
+  re-running cleared it.
+- **Deferred (app adoption):** each app's `CLAUDE.md` links to these + deletes its old per-app doc
+  copies. That edits the app repos, so it waits.
 
 ## Verification (run after Phase 0 file changes)
 
@@ -260,3 +275,7 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   agents + generalised `style-check` skill + generalised docs-first hook; excluded project-shaped
   skills. Confirmed plugin/marketplace schema via claude-code-guide; validated JSON + hook. Foundation
   only (install is opt-in per project).
+- **Session 6:** Phase 6 - 4 canonical docs in `docs/` (architecture, toad-architecture, code-style,
+  design-system-foundations) + index. Synthesized the 3 big ones via parallel agents reading both
+  apps' versions; wrote toad doc directly. Verified app-agnostic + emdash-free. Plugin README points
+  at docs. App CLAUDE.md link-updates deferred.

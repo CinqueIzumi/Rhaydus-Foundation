@@ -22,6 +22,13 @@ Skills are namespaced as `/rhaydus-kotlin:style-check`. The two subagents become
 Agent tool. Each project accumulates its own `code-reviewer` / `unit-test-writer` agent-memory under
 `.claude/agent-memory/` — that memory is per-project and is NOT shipped by this plugin.
 
+## Conventions docs
+
+The agents and the docs-first hook refer to "the project's conventions docs." The canonical, shared
+copies live in this repo at [`../../../docs/`](../../../docs) (architecture, TOAD, code-style,
+design-system foundations). They are not duplicated into the plugin - each consuming project links to
+them from its own `CLAUDE.md` and keeps only app-specific deltas.
+
 ## Deliberately NOT included
 
 Project-shaped automation stays in each app, because it hardcodes per-app layout or platform set:
