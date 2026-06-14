@@ -20,6 +20,8 @@ junitPlatform = "1.11.4"
 kotestVersion = "5.9.1"
 mockkVersion = "1.13.17"
 turbineVersion = "1.2.0"
+# Publishing
+vanniktechMavenPublish = "0.30.0"
 
 [libraries]
 # ktlint rule-engine — consumed by :ktlint-rules (phase 1)
@@ -59,3 +61,4 @@ android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }

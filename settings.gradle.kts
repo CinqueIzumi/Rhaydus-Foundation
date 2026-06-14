@@ -22,8 +22,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "rhaydus-foundation"
 
-// Modules land here as the phases progress (see MIGRATION.md):
-//   phase 1: include(":ktlint-rules")
+include(":ktlint-rules")
+
+// Further modules land here as the phases progress (see MIGRATION.md):
 //   phase 2: includeBuild("build-logic")  + publish the version catalog
 //   phase 3: include(":toad")
 //   phase 4: include(":designsystem-core")

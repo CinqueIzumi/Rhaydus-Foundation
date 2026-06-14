@@ -14,7 +14,7 @@ the detail sections below explain the why.
 | Phase | Scope | Status | Notes |
 |---|---|---|---|
 | 0 | Bootstrap repo + publish plumbing + CI | **Done** | Verified `./gradlew help` |
-| 1 | `ktlint-rules` published, adopted by both apps | Not started | First real module; quick win |
+| 1 | `ktlint-rules` published, adopted by both apps | **In progress** | Foundation module moved + builds + self-lints green; app adoption pending |
 | 2 | Shared version catalog + convention plugins | Not started | Renames plugin ids `softcover.*` -> `rhaydus.*` |
 | 3 | TOAD runtime library (`nl.rhaydus.toad`) | Not started | 345 files touched across both apps |
 | 4 | `designsystem-core` skeleton (no tokens) | Not started | Optional / can defer |
@@ -112,6 +112,30 @@ Repo skeleton + publish plumbing every later phase reuses.
 Move Softcover `:ktlint-rules` verbatim (package already neutral) -> publish -> Softcover repoints at
 published ruleset -> Nestbox adopts ktlint for the first time (+ `.editorconfig`, expect one-time
 format churn). Acceptance: both apps `ktlintCheck` green.
+
+**Mechanism note (discovered during the move):** this is NOT a standard ktlint RuleSetProvider jar.
+By deliberate design (full control of the ktlint version, no Spotless/ktlint-gradle coupling) it is a
+plain `kotlin("jvm")` library whose `Main.kt` drives ktlint's rule-engine directly, exposed as
+`ktlintCheck`/`ktlintFormat` JavaExec tasks. So consumption is: each app declares a `ktlintRules`
+configuration depending on `nl.rhaydus:ktlint-rules:<v>`, and registers its own JavaExec tasks
+(classpath = that configuration, mainClass `nl.rhaydus.ktlint.MainKt`, scanning the app's rootDir),
+wiring `check` to depend on `ktlintCheck`. With `foundation.local=true` includeBuild, that dependency
+substitutes to the local project automatically. This ~15-line snippet is duplicated per app for now
+and graduates into a `rhaydus.ktlint` convention plugin in phase 2.
+
+**Done so far (foundation side):**
+- [x] Moved the 10 sources verbatim to `ktlint-rules/` (package `nl.rhaydus.ktlint` unchanged)
+- [x] `build.gradle.kts`: kotlin-jvm + vanniktech publishing (coordinates `nl.rhaydus:ktlint-rules`,
+      Central Portal, signing, POM) + the self-lint JavaExec tasks
+- [x] `include(":ktlint-rules")`; `:ktlint-rules:build` green; `:ktlint-rules:ktlintCheck` green
+      (foundation lints its own sources)
+
+**Next (app adoption — modifies the app repos, so on feature branches):**
+- [ ] Softcover: add the `foundation.local` switch + includeBuild; replace the local `:ktlint-rules`
+      module with the `ktlintRules` configuration + JavaExec snippet against `nl.rhaydus:ktlint-rules`;
+      delete `Softcover/ktlint-rules/`. Verify `ktlintCheck` green.
+- [ ] Nestbox (on a release branch — branch first): add the switch + snippet + `.editorconfig`; run
+      `ktlintFormat` once (expect format churn commit); verify `ktlintCheck` green.
 
 ### Phase 2 — Catalog + convention plugins
 Publish the catalog as a `version-catalog` artifact (`from(...)` in each app). Move `build-logic`,
