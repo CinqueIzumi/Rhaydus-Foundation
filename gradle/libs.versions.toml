@@ -10,6 +10,10 @@ ktlint = "1.7.1"
 coroutines = "1.10.2"
 composeMultiplatform = "1.11.0"
 composeMaterial3Expressive = "1.11.0-alpha07"
+# Android-target Compose (consumed by the rhaydus.android.compose convention)
+composeBom = "2026.01.01"
+activityCompose = "1.12.0"
+material3ComposeVersion = "1.5.0-alpha13"
 voyager = "1.1.0-beta02"
 koinVersion = "3.5.3"
 koinComposeMultiplatform = "1.1.2"
@@ -36,14 +40,27 @@ compose-compiler-gradlePlugin = { group = "org.jetbrains.kotlin", name = "compos
 compose-multiplatform-gradlePlugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "composeMultiplatform" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
 
-# TOAD runtime deps (phase 3)
+# Module-shape convention deps (rhaydus.android.library / rhaydus.kmp.library)
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koinVersion" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koinVersion" }
+
+# TOAD runtime deps (phase 3)
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
 voyager-koin = { group = "cafe.adriel.voyager", name = "voyager-koin", version.ref = "voyager" }
-koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koinVersion" }
 
-# designsystem-core deps (phase 4)
+# Compose convention deps (rhaydus.kmp.compose / rhaydus.android.compose) + designsystem-core (phase 4)
 compose-material3-expressive = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMaterial3Expressive" }
+compose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "composeMultiplatform" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3ComposeVersion" }
 
 # Test stack
 junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jUnitVersion" }

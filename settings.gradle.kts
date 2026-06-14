@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -23,8 +24,8 @@ dependencyResolutionManagement {
 rootProject.name = "rhaydus-foundation"
 
 include(":ktlint-rules")
+include(":catalog")
 
 // Further modules land here as the phases progress (see MIGRATION.md):
-//   phase 2: includeBuild("build-logic")  + publish the version catalog
 //   phase 3: include(":toad")
 //   phase 4: include(":designsystem-core")

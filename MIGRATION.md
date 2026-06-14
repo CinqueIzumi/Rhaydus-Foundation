@@ -15,7 +15,7 @@ the detail sections below explain the why.
 |---|---|---|---|
 | 0 | Bootstrap repo + publish plumbing + CI | **Done** | Verified `./gradlew help` |
 | 1 | `ktlint-rules` published, adopted by both apps | **Foundation done; app adoption deferred** | Module moved + builds + self-lints green. App adoption paused by decision (see Resume) |
-| 2 | Shared version catalog + convention plugins | Not started | Renames plugin ids `softcover.*` -> `rhaydus.*` |
+| 2 | Shared version catalog + convention plugins | **Foundation done; app adoption deferred** | `build-logic` (4 `rhaydus.*` plugins) compiles; `nl.rhaydus:catalog` publishes. Room/Apollo left app-specific |
 | 3 | TOAD runtime library (`nl.rhaydus.toad`) | Not started | 345 files touched across both apps |
 | 4 | `designsystem-core` skeleton (no tokens) | Not started | Optional / can defer |
 | 5 | Claude Code plugin (skills, agents, hooks, docs) | Not started | Can run parallel to 2-4 |
@@ -24,13 +24,14 @@ the detail sections below explain the why.
 **Recommended order:** 0 -> 1 -> 2 -> 3 -> (5 ∥ 6) -> 4.
 
 ### Resume here (next session)
-Phase 0 done; Phase 1 foundation done (committed). **App adoption of ktlint-rules is paused by
-decision** — do not modify the Softcover/Nestbox builds yet. When resuming, options:
-- **Phase 2** (foundation-only, safe): create `build-logic` convention plugins (`rhaydus.*`) + publish
-  the version catalog. Does not touch the apps. Good next step.
-- **Resume Phase 1 app adoption** when ready: Softcover first (clean swap, feature branch); Nestbox
-  only after `release/1.0.0` ships (format churn — branch first). Snippet + steps in the Phase 1
-  detail below.
+Phases 0, 1 (foundation), 2 (foundation) done + committed. **All app adoption is paused by decision**
+— do not modify the Softcover/Nestbox builds yet. When resuming, options:
+- **Phase 3** (foundation-only, safe): extract the TOAD runtime into `:toad` (KMP, `nl.rhaydus.toad`,
+  settle on `Collector`). The foundation-side library can be built/verified without touching apps; the
+  308-file Softcover + 37-file Nestbox import rewrites are app adoption (defer).
+- **Resume deferred app adoption** when ready: ktlint-rules (Phase 1) and convention plugins/catalog
+  (Phase 2). Softcover first (feature branch); Nestbox after `release/1.0.0` ships. Steps in each
+  phase's detail below.
 
 ## Why this exists (the findings that justify it)
 
@@ -151,6 +152,25 @@ Publish the catalog as a `version-catalog` artifact (`from(...)` in each app). M
 rename ids `softcover.*` -> `rhaydus.*`. Softcover updates ids; Nestbox adopts the shared catalog to
 stop version drift (define the `material3` expressive override once).
 
+**Done (foundation side):**
+- [x] `build-logic` included build (`includeBuild("build-logic")` in pluginManagement) with 4
+      conventions, renamed ids: `rhaydus.android.library`, `rhaydus.kmp.library`,
+      `rhaydus.android.compose`, `rhaydus.kmp.compose` (+ `Catalog.kt`). Compiles green.
+- [x] `:catalog` module publishes the shared catalog as `nl.rhaydus:catalog` (vanniktech
+      `VersionCatalog`). Catalog expanded so it fully backs all 4 conventions (android-compose +
+      coroutines-android/koin-android + backhandler aliases added).
+- [x] `publishToMavenLocal` verified for `:catalog` + `:ktlint-rules` (signing auto-skipped locally).
+
+**Decision:** Room/Apollo conventions were NOT moved — they are Softcover-only tech (GraphQL/DB). They
+stay in Softcover's own `build-logic`; revisit only if a second app adopts the same tech. So when
+Softcover adopts the foundation plugins it keeps its local Room/Apollo conventions alongside.
+
+**Next (app adoption — deferred, modifies app repos):**
+- [ ] Softcover: `includeBuild` the foundation; switch module build files from `softcover.*` ids to
+      `rhaydus.*`; consume `nl.rhaydus:catalog`. Keep local Room/Apollo conventions.
+- [ ] Nestbox: adopt the shared catalog (align Kotlin/Compose/Voyager/Koin versions, define the
+      material3 expressive override once). Convention plugins only matter once it splits into modules.
+
 ### Phase 3 — TOAD runtime (the big one)
 New `:toad` KMP library (`commonMain`, deps: Voyager + coroutines), under `nl.rhaydus.toad`, settle on
 `Collector`. Scripted import rewrite: **Softcover 308 files**, **Nestbox 37 files** (+ rename
@@ -194,3 +214,7 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   publishing, verified `:ktlint-rules:build` + `:ktlint-rules:ktlintCheck` green. Discovered it's a
   self-driving JavaExec tool (not a RuleSetProvider jar) and recorded the per-app consumption snippet.
   App adoption paused by decision. Committed: bootstrap + ktlint-rules module.
+- **Session 3:** Phase 2 foundation side — created `build-logic` (4 `rhaydus.*` conventions, verbatim
+  classes) + `:catalog` module publishing `nl.rhaydus:catalog`. Expanded the catalog to back all 4
+  conventions. Verified build-logic compiles + `publishToMavenLocal` for catalog + ktlint-rules.
+  Decided Room/Apollo stay Softcover-only. App adoption still deferred.
