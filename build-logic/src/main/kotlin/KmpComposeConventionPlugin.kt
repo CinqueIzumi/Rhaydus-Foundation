@@ -41,6 +41,10 @@ class KmpComposeConventionPlugin : Plugin<Project> {
             }
             sourceSets.getByName("androidMain").dependencies {
                 implementation(libs.library("androidx-activity-compose"))
+                // These androidx tooling artifacts are pinned (versioned in the catalog) rather than
+                // BOM-managed: a published module (e.g. designsystem-core) must declare versions in its
+                // POM, and for an AGP android publication neither a BOM platform nor Gradle
+                // versionMapping flows a version into the POM - only an explicit version does.
                 implementation(libs.library("androidx-compose-ui-tooling-preview"))
                 implementation(libs.library("androidx-compose-ui-tooling"))
             }
