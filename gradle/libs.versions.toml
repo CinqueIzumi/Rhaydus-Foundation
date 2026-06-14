@@ -1,0 +1,61 @@
+# Foundation version catalog. Seeded from Softcover (the more advanced of the two apps) and trimmed to
+# what foundation modules actually need. App-only libraries (Apollo, Room, Coil, CameraX, MLKit,
+# markdown, DataStore, etc.) stay in each app's own catalog. In phase 2 this is published as a
+# `version-catalog` artifact and consumed by both apps via `from("nl.rhaydus:catalog:<v>")`.
+
+[versions]
+agp = "9.0.0"
+kotlin = "2.3.21"
+ktlint = "1.7.1"
+coroutines = "1.10.2"
+composeMultiplatform = "1.11.0"
+composeMaterial3Expressive = "1.11.0-alpha07"
+voyager = "1.1.0-beta02"
+koinVersion = "3.5.3"
+koinComposeMultiplatform = "1.1.2"
+ksp = "2.3.9"
+# Test stack
+jUnitVersion = "5.11.4"
+junitPlatform = "1.11.4"
+kotestVersion = "5.9.1"
+mockkVersion = "1.13.17"
+turbineVersion = "1.2.0"
+
+[libraries]
+# ktlint rule-engine — consumed by :ktlint-rules (phase 1)
+ktlint-ruleEngine = { group = "com.pinterest.ktlint", name = "ktlint-rule-engine", version.ref = "ktlint" }
+ktlint-ruleEngineCore = { group = "com.pinterest.ktlint", name = "ktlint-rule-engine-core", version.ref = "ktlint" }
+ktlint-cliRulesetCore = { group = "com.pinterest.ktlint", name = "ktlint-cli-ruleset-core", version.ref = "ktlint" }
+
+# Gradle plugin artifacts — consumed by build-logic convention plugins (compileOnly, phase 2)
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+compose-compiler-gradlePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
+compose-multiplatform-gradlePlugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "composeMultiplatform" }
+ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
+
+# TOAD runtime deps (phase 3)
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
+voyager-koin = { group = "cafe.adriel.voyager", name = "voyager-koin", version.ref = "voyager" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koinVersion" }
+
+# designsystem-core deps (phase 4)
+compose-material3-expressive = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMaterial3Expressive" }
+
+# Test stack
+junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jUnitVersion" }
+junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "jUnitVersion" }
+junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "jUnitVersion" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatform" }
+kotest = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotestVersion" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockkVersion" }
+coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbineVersion" }
+
+[plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
