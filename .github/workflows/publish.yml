@@ -4,10 +4,13 @@ name: Publish
 # Portal) when a version tag (v*) is pushed. The version published is whatever foundation.version is
 # set to in gradle.properties — tag and property should agree for a release.
 #
-# Required repo secrets (Settings -> Secrets and variables -> Actions):
+# Runs on macOS because the KMP modules have iOS (Kotlin/Native) targets that cannot build on Linux.
+# Standard runners (incl. macOS) are free for public repositories.
+#
+# Required repo secrets (Settings -> Secrets and variables -> Actions) BEFORE the publish job can work:
 #   MAVEN_CENTRAL_USERNAME / MAVEN_CENTRAL_PASSWORD  — Central Portal user token
-#   SIGNING_KEY                                      — ASCII-armored PGP private key
-#   SIGNING_KEY_ID / SIGNING_KEY_PASSWORD            — key id + passphrase
+#   SIGNING_KEY                                      — ASCII-armored PGP private key (real newlines)
+#   SIGNING_KEY_ID / SIGNING_KEY_PASSWORD            — key id (e.g. 9A60CD44) + passphrase
 
 on:
   push:
@@ -18,7 +21,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest   # KMP iOS targets (Kotlin/Native) require macOS; Linux cannot compile them
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -32,7 +35,7 @@ jobs:
   publish:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
+    runs-on: macos-latest   # KMP iOS targets (Kotlin/Native) require macOS; Linux cannot compile them
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
