@@ -8,6 +8,7 @@ agp = "9.0.0"
 kotlin = "2.3.21"
 ktlint = "1.7.1"
 coroutines = "1.10.2"
+kotlinxDatetime = "0.7.1"
 composeMultiplatform = "1.11.0"
 composeMaterial3Expressive = "1.11.0-alpha07"
 # Android-target Compose (consumed by the rhaydus.android.compose convention)
@@ -42,6 +43,7 @@ ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "symbol-processin
 
 # Module-shape convention deps (rhaydus.android.library / rhaydus.kmp.library)
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koinVersion" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koinVersion" }
