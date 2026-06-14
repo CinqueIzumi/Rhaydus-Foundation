@@ -15,6 +15,12 @@ kotlin {
     // Compose deps (runtime/foundation/animation/ui/material3-expressive/preview) come from the
     // rhaydus.kmp.compose convention. No brand tokens or app domain modules - that boundary is what
     // keeps this reusable.
+    sourceSets {
+        commonMain.dependencies {
+            // ObserveAsEvents needs LocalLifecycleOwner + repeatOnLifecycle.
+            implementation(libs.androidx.lifecycle.runtime.compose)
+        }
+    }
 }
 
 mavenPublishing {

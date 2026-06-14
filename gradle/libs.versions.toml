@@ -14,6 +14,7 @@ composeMaterial3Expressive = "1.11.0-alpha07"
 # Android-target Compose (consumed by the rhaydus.android.compose convention)
 composeBom = "2026.01.01"
 activityCompose = "1.12.0"
+lifecycleRuntimeKtx = "2.10.0"
 material3ComposeVersion = "1.5.0-alpha13"
 voyager = "1.1.0-beta02"
 koinVersion = "3.5.3"
@@ -56,6 +57,7 @@ voyager-koin = { group = "cafe.adriel.voyager", name = "voyager-koin", version.r
 # Compose convention deps (rhaydus.kmp.compose / rhaydus.android.compose) + designsystem-core (phase 4)
 compose-material3-expressive = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMaterial3Expressive" }
 compose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "composeMultiplatform" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }

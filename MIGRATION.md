@@ -17,24 +17,23 @@ the detail sections below explain the why.
 | 1 | `ktlint-rules` published, adopted by both apps | **Foundation done; app adoption deferred** | Module moved + builds + self-lints green. App adoption paused by decision (see Resume) |
 | 2 | Shared version catalog + convention plugins | **Foundation done; app adoption deferred** | `build-logic` (4 `rhaydus.*` plugins) compiles; `nl.rhaydus:catalog` publishes. Room/Apollo left app-specific |
 | 3 | TOAD runtime library (`nl.rhaydus.toad`) | **Foundation done; app adoption deferred** | `:toad` KMP lib compiles (`Collector`); 345-file app import rewrites deferred |
-| 4 | `designsystem-core` skeleton (no tokens) | **4a foundation: core skeleton done** | `:core-ui` + `:designsystem-core` compile. Remaining 4a seams + 4b components + app adoption deferred |
+| 4 | `designsystem-core` skeleton (no tokens) | **4a foundation done** | `:core-ui` + `:designsystem-core` (full skeleton) compile. 4b components + app adoption deferred |
 | 5 | Claude Code plugin (skills, agents, hooks, docs) | **Done (installable)** | `rhaydus-kotlin` plugin + `rhaydus` marketplace. Install is opt-in per project. Docs await Phase 6 |
 | 6 | Docs consolidation | **Foundation done** | 4 canonical docs in `docs/`. App `CLAUDE.md` link-updates deferred (app adoption) |
 
 **Recommended order:** 0 -> 1 -> 2 -> 3 -> (5 ∥ 6) -> 4.
 
 ### Resume here (next session)
-Phases 0, 1, 2, 3 (foundation side) + 5 (plugin) + 6 (docs) + 4a-core (designsystem skeleton) done +
-committed. **All app adoption is paused by decision** - do not modify the Softcover/Nestbox builds yet.
-When resuming, options:
-- **Finish 4a** (foundation-only): add the deferred 4a seams to `:core-ui`/`:designsystem-core` -
-  `Haptics`+`ShakeOnError`, `ClipboardReader`, `SnackBarManager`, `SkeletonCrossfade`,
-  `ObserveAsEvents` (+ lifecycle dep), `HtmlToAnnotatedString`, the `RhaydusIconResource` mechanism,
-  remaining style enums. See the Phase 4 detail for the exact list + source paths in Softcover.
-- **Phase 4b** (optional): neutral component primitives + snapshot tests.
-- **Resume deferred app adoption** when ready: ktlint-rules (Phase 1), convention plugins/catalog
-  (Phase 2), TOAD import rewrites (Phase 3), CLAUDE.md doc links (Phase 6), plugin install (Phase 5),
-  design-system adoption (Phase 4). Softcover first (feature branch); Nestbox after `release/1.0.0`.
+Phases 0, 1, 2, 3 (foundation side) + 5 (plugin) + 6 (docs) + **4a (full designsystem skeleton)** done +
+committed. **Every foundation-only phase is now complete.** All app adoption is paused by decision - do
+not modify the Softcover/Nestbox builds yet. When resuming, options:
+- **Phase 4b** (optional, foundation-only): neutral component primitives (button family, chip, top bar,
+  image, dialog, list animators) + snapshot tests; pulls in Coil/Voyager. Decide if worth the version
+  coupling.
+- **Resume deferred app adoption** (the main remaining work): ktlint-rules (Phase 1), convention
+  plugins/catalog (Phase 2), TOAD import rewrites (Phase 3), design-system adoption (Phase 4 - wrap
+  `RhaydusTheme`, delete duplicated infra), CLAUDE.md doc links (Phase 6), plugin install (Phase 5).
+  Softcover first (feature branch); Nestbox after `release/1.0.0`. Steps in each phase's detail.
 
 ## Why this exists (the findings that justify it)
 
@@ -214,14 +213,17 @@ the keystone parameterization seam design are in the approved plan; the canonica
         typography, motionScheme = expressive(), content)`. App supplies its own tokens + dynamic-color
         choice + its own custom-typography CompositionLocal inside `content`.
       - `theme/StandardPreview`, `layout/LocalBottomBarPadding` + `Spacers`,
-        `modifier/ModifierExtensions` (pressScale/shimmer/grayscale/noRipple/conditional),
-        `motion/ReducedMotion` (expect + 3 actuals), `model/` enums (Button/IconToggle styles + sizes).
+        `modifier/ModifierExtensions` (pressScale/shimmer/grayscale/noRipple/conditional) + `ShakeOnError`,
+        `motion/ReducedMotion` (expect + 3 actuals), `haptics/Haptics` (interface + `LocalHaptics` +
+        `rememberHaptics` expect + 3 actuals), `util/` (`ClipboardReader` expect + 3 actuals,
+        `ObserveAsEvents`, `SnackBarManager`, `SkeletonCrossfade`, `HtmlToAnnotatedString`),
+        `icon/RhaydusIconResource` (mechanism generalized off the brand enum to wrap `DrawableResource`),
+        `model/` enums (Button/IconToggle/Toggle/Split styles + sizes).
+      - Added `androidx-lifecycle-runtime-compose` to the catalog (for `ObserveAsEvents`).
       - `compileKotlinJvm` green. No app domain dep; does NOT depend on `nl.rhaydus:toad`.
 
-**Deferred within 4a (straightforward follow-up):** `Haptics` seam + `ShakeOnError`, `ClipboardReader`,
-`SnackBarManager`, `SkeletonCrossfade`, `ObserveAsEvents` (needs a lifecycle-runtime-compose dep),
-`HtmlToAnnotatedString`, the `RhaydusIconResource` icon-registry mechanism, and the remaining style
-enums (Toggle/Split). These were scoped out of the first commit to keep it focused + compiling.
+**4a is complete** (foundation side). The icon ASSETS, brand tokens, and domain components stay per app
+(Layers 3-4 in the plan). Verified on jvm only (as with `:toad`); android/iOS targets compile at adoption.
 
 **Deferred (4b, optional):** neutral component primitives + snapshot tests (Coil/Voyager deps).
 **Deferred (app adoption):** each app wraps `RhaydusTheme`, deletes duplicated infra, points at the
@@ -308,5 +310,7 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
 - **Session 7:** Phase 4 planned (plan mode: full extract/not findings + the parameterization-seam
   recommendation, approved) then 4a-core implemented - `:core-ui` (dispatchers + date/time/number
   seams) and `:designsystem-core` (RhaydusTheme scaffold, layout primitives, modifiers + ReducedMotion
-  seam, model enums, StandardPreview). Both `compileKotlinJvm` green. Remaining 4a seams + 4b + app
-  adoption deferred.
+  seam, model enums, StandardPreview). Both `compileKotlinJvm` green. Then finished 4a: added the
+  Haptics + ClipboardReader seams (expect + 3 actuals each), ShakeOnError, ObserveAsEvents (+ lifecycle
+  dep), SnackBarManager, SkeletonCrossfade, HtmlToAnnotatedString, the generalized RhaydusIconResource
+  mechanism, and the Toggle/Split enums. 4a complete. 4b + app adoption deferred.
