@@ -17,22 +17,24 @@ the detail sections below explain the why.
 | 1 | `ktlint-rules` published, adopted by both apps | **Foundation done; app adoption deferred** | Module moved + builds + self-lints green. App adoption paused by decision (see Resume) |
 | 2 | Shared version catalog + convention plugins | **Foundation done; app adoption deferred** | `build-logic` (4 `rhaydus.*` plugins) compiles; `nl.rhaydus:catalog` publishes. Room/Apollo left app-specific |
 | 3 | TOAD runtime library (`nl.rhaydus.toad`) | **Foundation done; app adoption deferred** | `:toad` KMP lib compiles (`Collector`); 345-file app import rewrites deferred |
-| 4 | `designsystem-core` skeleton (no tokens) | Not started | Optional / can defer |
+| 4 | `designsystem-core` skeleton (no tokens) | **4a foundation: core skeleton done** | `:core-ui` + `:designsystem-core` compile. Remaining 4a seams + 4b components + app adoption deferred |
 | 5 | Claude Code plugin (skills, agents, hooks, docs) | **Done (installable)** | `rhaydus-kotlin` plugin + `rhaydus` marketplace. Install is opt-in per project. Docs await Phase 6 |
 | 6 | Docs consolidation | **Foundation done** | 4 canonical docs in `docs/`. App `CLAUDE.md` link-updates deferred (app adoption) |
 
 **Recommended order:** 0 -> 1 -> 2 -> 3 -> (5 ∥ 6) -> 4.
 
 ### Resume here (next session)
-Phases 0, 1, 2, 3 (foundation side) + 5 (plugin) + 6 (docs) done + committed. The only remaining
-foundation-only phase is **Phase 4** (designsystem-core). **All app adoption is paused by decision** -
-do not modify the Softcover/Nestbox builds yet. When resuming, options:
-- **Phase 4** (designsystem-core, foundation-only but needs judgement): extract the brand-agnostic
-  design skeleton into a `:designsystem-core` KMP module, per `docs/design-system-foundations.md`. The
-  harder/deferrable one - be conservative about what's truly brand-agnostic.
+Phases 0, 1, 2, 3 (foundation side) + 5 (plugin) + 6 (docs) + 4a-core (designsystem skeleton) done +
+committed. **All app adoption is paused by decision** - do not modify the Softcover/Nestbox builds yet.
+When resuming, options:
+- **Finish 4a** (foundation-only): add the deferred 4a seams to `:core-ui`/`:designsystem-core` -
+  `Haptics`+`ShakeOnError`, `ClipboardReader`, `SnackBarManager`, `SkeletonCrossfade`,
+  `ObserveAsEvents` (+ lifecycle dep), `HtmlToAnnotatedString`, the `RhaydusIconResource` mechanism,
+  remaining style enums. See the Phase 4 detail for the exact list + source paths in Softcover.
+- **Phase 4b** (optional): neutral component primitives + snapshot tests.
 - **Resume deferred app adoption** when ready: ktlint-rules (Phase 1), convention plugins/catalog
-  (Phase 2), TOAD import rewrites (Phase 3), CLAUDE.md doc links (Phase 6), plugin install (Phase 5).
-  Softcover first (feature branch); Nestbox after `release/1.0.0` ships. Steps in each phase's detail.
+  (Phase 2), TOAD import rewrites (Phase 3), CLAUDE.md doc links (Phase 6), plugin install (Phase 5),
+  design-system adoption (Phase 4). Softcover first (feature branch); Nestbox after `release/1.0.0`.
 
 ## Why this exists (the findings that justify it)
 
@@ -197,10 +199,34 @@ New `:toad` KMP library (`commonMain`, deps: Voyager + coroutines), under `nl.rh
 `code-reviewer` memory `feedback_import_rewrite_ordering`). Consumers: Softcover 11 screen models,
 Nestbox 4. Acceptance: both compile + screen-model tests pass; old packages gone.
 
-### Phase 4 — designsystem-core skeleton (optional / last)
-Extract brand-agnostic primitives only: the `MaterialTheme.readerTypography` extension pattern,
-typography-scale plumbing, layout primitives (Spacers, bottom-bar padding locals), expressive-M3
-setup, TOAD<->Compose glue. Tokens stay per-app.
+### Phase 4 - designsystem-core skeleton (4a in progress)
+Confirmed scope (see the approved plan): **4a skeleton only, two modules** (`:core-ui` non-visual +
+`:designsystem-core` Compose). Component primitives (4b) and app adoption are deferred. Full findings +
+the keystone parameterization seam design are in the approved plan; the canonical design skeleton is
+`docs/design-system-foundations.md`.
+
+**Done (4a, foundation side):**
+- [x] `:core-ui` (`nl.rhaydus:core-ui`, package `nl.rhaydus.ui.common`): `AppDispatchers`, `TimeFormat`,
+      `CurrentDate`, `HoursMinutesSeconds`, `NumberFormat` (expect + android/ios/jvm actuals). Visibility
+      widened to public for reuse. `compileKotlinJvm` green.
+- [x] `:designsystem-core` (`nl.rhaydus:designsystem-core`, package `nl.rhaydus.designsystem`):
+      - `theme/RhaydusTheme` - the KEYSTONE parameterized scaffold: `RhaydusTheme(colorScheme,
+        typography, motionScheme = expressive(), content)`. App supplies its own tokens + dynamic-color
+        choice + its own custom-typography CompositionLocal inside `content`.
+      - `theme/StandardPreview`, `layout/LocalBottomBarPadding` + `Spacers`,
+        `modifier/ModifierExtensions` (pressScale/shimmer/grayscale/noRipple/conditional),
+        `motion/ReducedMotion` (expect + 3 actuals), `model/` enums (Button/IconToggle styles + sizes).
+      - `compileKotlinJvm` green. No app domain dep; does NOT depend on `nl.rhaydus:toad`.
+
+**Deferred within 4a (straightforward follow-up):** `Haptics` seam + `ShakeOnError`, `ClipboardReader`,
+`SnackBarManager`, `SkeletonCrossfade`, `ObserveAsEvents` (needs a lifecycle-runtime-compose dep),
+`HtmlToAnnotatedString`, the `RhaydusIconResource` icon-registry mechanism, and the remaining style
+enums (Toggle/Split). These were scoped out of the first commit to keep it focused + compiling.
+
+**Deferred (4b, optional):** neutral component primitives + snapshot tests (Coil/Voyager deps).
+**Deferred (app adoption):** each app wraps `RhaydusTheme`, deletes duplicated infra, points at the
+shared modules. Brand tokens + domain components stay. Verified only on jvm (as with `:toad`); android/
+iOS targets compile at adoption time.
 
 ### Phase 5 — Claude Code plugin
 `claude/` plugin + `marketplace.json` bundling: `code-reviewer` + `unit-test-writer` agents, generic
@@ -279,3 +305,8 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   design-system-foundations) + index. Synthesized the 3 big ones via parallel agents reading both
   apps' versions; wrote toad doc directly. Verified app-agnostic + emdash-free. Plugin README points
   at docs. App CLAUDE.md link-updates deferred.
+- **Session 7:** Phase 4 planned (plan mode: full extract/not findings + the parameterization-seam
+  recommendation, approved) then 4a-core implemented - `:core-ui` (dispatchers + date/time/number
+  seams) and `:designsystem-core` (RhaydusTheme scaffold, layout primitives, modifiers + ReducedMotion
+  seam, model enums, StandardPreview). Both `compileKotlinJvm` green. Remaining 4a seams + 4b + app
+  adoption deferred.
