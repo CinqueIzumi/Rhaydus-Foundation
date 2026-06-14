@@ -14,7 +14,7 @@ the detail sections below explain the why.
 | Phase | Scope | Status | Notes |
 |---|---|---|---|
 | 0 | Bootstrap repo + publish plumbing + CI | **Done** | Verified `./gradlew help` |
-| 1 | `ktlint-rules` published, adopted by both apps | **In progress** | Foundation module moved + builds + self-lints green; app adoption pending |
+| 1 | `ktlint-rules` published, adopted by both apps | **Foundation done; app adoption deferred** | Module moved + builds + self-lints green. App adoption paused by decision (see Resume) |
 | 2 | Shared version catalog + convention plugins | Not started | Renames plugin ids `softcover.*` -> `rhaydus.*` |
 | 3 | TOAD runtime library (`nl.rhaydus.toad`) | Not started | 345 files touched across both apps |
 | 4 | `designsystem-core` skeleton (no tokens) | Not started | Optional / can defer |
@@ -22,6 +22,15 @@ the detail sections below explain the why.
 | 6 | Docs consolidation | Not started | Feeds phase 5 |
 
 **Recommended order:** 0 -> 1 -> 2 -> 3 -> (5 ∥ 6) -> 4.
+
+### Resume here (next session)
+Phase 0 done; Phase 1 foundation done (committed). **App adoption of ktlint-rules is paused by
+decision** — do not modify the Softcover/Nestbox builds yet. When resuming, options:
+- **Phase 2** (foundation-only, safe): create `build-logic` convention plugins (`rhaydus.*`) + publish
+  the version catalog. Does not touch the apps. Good next step.
+- **Resume Phase 1 app adoption** when ready: Softcover first (clean swap, feature branch); Nestbox
+  only after `release/1.0.0` ships (format churn — branch first). Snippet + steps in the Phase 1
+  detail below.
 
 ## Why this exists (the findings that justify it)
 
@@ -181,3 +190,7 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   TOAD name resolved to **`Collector`** (Softcover renames Initializer -> Collector); repo will be
   **public**, published to **Maven Central / Central Portal** (not GitHub Packages), group
   **`nl.rhaydus`** via DNS TXT. Phase 0 re-wired off GitHub Packages onto Maven Central accordingly.
+- **Session 2:** Phase 1 foundation side — moved `ktlint-rules` in (verbatim), wired vanniktech
+  publishing, verified `:ktlint-rules:build` + `:ktlint-rules:ktlintCheck` green. Discovered it's a
+  self-driving JavaExec tool (not a RuleSetProvider jar) and recorded the per-app consumption snippet.
+  App adoption paused by decision. Committed: bootstrap + ktlint-rules module.
