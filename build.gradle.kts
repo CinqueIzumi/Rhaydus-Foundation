@@ -10,6 +10,11 @@ plugins {
     alias(libs.plugins.android.kotlin.multiplatform.library) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.compose.multiplatform) apply false
+    // Applied (apply false) at the root so the vanniktech plugin - and its shared Sonatype release
+    // build service - load in ONE classloader scope. Without this, the per-module applications load
+    // the build service under different classloaders and `publishAndReleaseToMavenCentral` fails the
+    // task graph with a SonatypeRepositoryBuildService type mismatch across sibling modules.
+    alias(libs.plugins.vanniktech.mavenPublish) apply false
 }
 
 val foundationVersion: String = providers.gradleProperty("foundation.version").getOrElse("0.0.0-SNAPSHOT")
