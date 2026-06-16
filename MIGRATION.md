@@ -17,7 +17,7 @@ the detail sections below explain the why.
 | 1 | `ktlint-rules` published, adopted by both apps | **Foundation done; app adoption deferred** | Module moved + builds + self-lints green. App adoption paused by decision (see Resume) |
 | 2 | Shared version catalog + convention plugins | **Foundation done; app adoption deferred** | `build-logic` (4 `rhaydus.*` plugins) compiles; `nl.rhaydus:catalog` publishes. Room/Apollo left app-specific |
 | 3 | TOAD runtime library (`nl.rhaydus.toad`) | **Foundation done; app adoption deferred** | `:toad` KMP lib compiles (`Collector`); 345-file app import rewrites deferred |
-| 4 | `designsystem-core` skeleton (no tokens) | **4a done; 4b adaptive layer done** | `:core-ui` + `:designsystem-core` compile (jvm + android + ios). Adaptive/desktop primitives synced from Softcover (see Session 8). Remaining 4b component primitives + app adoption deferred |
+| 4 | `designsystem-core` skeleton (no tokens) | **4a done; 4b in progress** | `:core-ui` + `:designsystem-core` compile (jvm + android + ios). Adaptive/desktop primitives + Tier 1 utilities synced from Softcover (Sessions 8-9). Editorial layer split into a new opt-in `:designsystem-editorial` module with the typography seam (Session 10). Remaining 4b components + app adoption deferred |
 | 5 | Claude Code plugin (skills, agents, hooks, docs) | **Done (installable)** | `rhaydus-kotlin` plugin + `rhaydus` marketplace. Install is opt-in per project. Docs await Phase 6 |
 | 6 | Docs consolidation | **Foundation done** | 4 canonical docs in `docs/`. App `CLAUDE.md` link-updates deferred (app adoption) |
 
@@ -58,7 +58,8 @@ rhaydus-foundation/
   build-logic/                   convention plugins            (includeBuild + optionally published)
   ktlint-rules/                  custom lint ruleset           (published jar)
   toad/                          KMP runtime, nl.rhaydus.toad  (published)
-  designsystem-core/             theme/typography skeleton     (published)
+  designsystem-core/             design-agnostic skeleton      (published)
+  designsystem-editorial/        opt-in editorial language     (published; depends on designsystem-core)
   docs/                          canonical conventions
   claude/                        Claude Code plugin + marketplace.json
 ```
@@ -241,12 +242,22 @@ typography seam: `layout/ContentMaxWidth` (+ `editorialContentWidth`), `componen
 closes a design-system-foundations gap (5.8 content width, 11 right-click menu, 7 staggered entry + list
 mutation) that the doc described without shipping code.
 
-**Deferred (4b, remaining):** the editorial/button component tier (buttons, chip, top bar, section header,
-star rating, async image). Two gates: (1) a **typography seam** in `designsystem-core` (a small fixed set
-of editorial roles the app fills via a CompositionLocal, like the color/theme scaffold) is the prerequisite
-for the editorial components, since the foundation deliberately keeps typography role *values* per app; (2)
-the version-coupling decision for Coil (async image). The button suite is unblocked (its style enums + the
-`RhaydusIconResource` wrapper already exist) and does not need the typography seam.
+**Editorial layer started as its own module (Session 10).** Gate (1) is cleared, but the editorial
+typography was placed in a NEW opt-in **`designsystem-editorial`** module, not in core. Decision (raised by
+review): editorial is a *design language*, not part of the neutral skeleton, so wiring it into the
+design-agnostic `RhaydusTheme` would force the editorial vocabulary on every consuming app. Instead:
+`designsystem-editorial` (`nl.rhaydus.designsystem.editorial`, depends `api` on `:designsystem-core`) holds
+`EditorialTypography` (role vocabulary) + `buildEditorialTypography(typography)` neutral factory +
+`EditorialTheme` provider + `MaterialTheme.editorialTypography`. `designsystem-core` / `RhaydusTheme` stay
+design-agnostic and know nothing about editorial. An app opts in by nesting `EditorialTheme` inside
+`RhaydusTheme`; an app that wants a different design depends on `:designsystem-core` alone. Documented in
+design-system-foundations section 2.
+
+**Deferred (4b, remaining):** the editorial/button component tier. The **editorial** components (section
+header, hero stat, eyebrow, etc.) go into `:designsystem-editorial` (now unblocked by the typography seam).
+The **button** suite is design-neutral enough to stay in `:designsystem-core` (its style enums + the
+`RhaydusIconResource` wrapper already live there and it uses Material typography, not the editorial roles).
+Remaining gate: the version-coupling decision for Coil (async image only).
 **Deferred (app adoption):** each app wraps `RhaydusTheme`, deletes duplicated infra, points at the
 shared modules. Brand tokens + domain components stay. Verified only on jvm (as with `:toad`); android/
 iOS targets compile at adoption time.
@@ -356,3 +367,12 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   sharpened comment rule. Documented each in design-system-foundations (5.8, 7, 11). Verified jvm + android
   + ios compile and ktlintCheck green. Editorial/button tier deferred behind the typography-seam decision
   (see Phase 4 detail).
+- **Session 10:** Typography seam - the gate for the editorial component tier. First built in core
+  (`RhaydusTheme` gained an `editorialTypography` param), then **reworked after review into a new opt-in
+  `designsystem-editorial` module** so the design-agnostic core is not forced to carry an editorial design
+  choice. The module (`nl.rhaydus.designsystem.editorial`, `api`-depends on `:designsystem-core`) holds
+  `EditorialTypography` (focused 9-role vocabulary, not Softcover's full 15-role brand scale), the neutral
+  `buildEditorialTypography(typography)` factory, the `EditorialTheme` provider, and the
+  `MaterialTheme.editorialTypography` extension. `RhaydusTheme` reverted to design-agnostic. Added
+  `include(":designsystem-editorial")`. Documented in design-system-foundations section 2. jvm + android +
+  ios compile + ktlintCheck green.

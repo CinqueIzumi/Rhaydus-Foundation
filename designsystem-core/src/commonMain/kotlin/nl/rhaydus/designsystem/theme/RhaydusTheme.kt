@@ -14,7 +14,8 @@ import androidx.compose.runtime.Composable
  *
  * App-specific custom typography (a reader/editorial scale) is provided by the app inside [content]
  * via its own CompositionLocal + `MaterialTheme.<x>Typography` extension - see
- * `docs/design-system-foundations.md` for that pattern.
+ * `docs/design-system-foundations.md` for that pattern. The shared editorial role vocabulary that
+ * foundation editorial components consume lives in the opt-in `designsystem-editorial` module, not here.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable

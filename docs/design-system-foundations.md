@@ -59,9 +59,17 @@ Two parallel type scales coexist, and both are reachable from `MaterialTheme`.
 - **No ad-hoc `TextStyle` at a call site.** Pick the closest app-scale or Material role and `.copy(...)`
   only when a documented exception requires it. Case transforms (e.g. `.uppercase()` on an all-caps label)
   are applied at the call site, not baked into the style.
+- **Shared editorial role contract (opt-in layer).** Editorial components need a shared type vocabulary,
+  which a design-agnostic core cannot define. It therefore lives in the **opt-in `designsystem-editorial`
+  module**, not in core: a small fixed `EditorialTypography` role set (eyebrow, pageTitle, headline, title,
+  body, stat, ...), provided by an app via `EditorialTheme(editorialTypography = ...)` (nested inside
+  `RhaydusTheme`) and read by editorial components through `MaterialTheme.editorialTypography`. That module
+  owns the role *names*; the role *values* stay a brand decision (`buildEditorialTypography(typography)` is a
+  neutral starting point to `.copy(...)`, or build from scratch). An app that does not use editorial
+  components never depends on the module, and the neutral core neither defines nor requires it.
 
-The *set of role names*, their sizes/weights, and which family each role uses are brand decisions and
-belong in the app's own typography table. This doc only fixes the plumbing.
+The *set of role names*, their sizes/weights, and which family each role uses are brand decisions and belong
+in the app's own typography table. This doc only fixes the plumbing.
 
 ## 3. Color roles
 
