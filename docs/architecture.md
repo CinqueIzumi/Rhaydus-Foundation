@@ -332,6 +332,24 @@ owned by either feature. For non-Compose deep links (for example a notification 
 analogous `AppEntryPoint` contract builds intents targeting the launcher Activity so a feature need
 not reference it directly.
 
+### Pitfall: per-item nested navigators need a unique `key`
+
+When a list-detail screen hosts the detail pane in its **own nested `Navigator`** (one per selected
+item, e.g. the expanded pane of a two-pane layout - see design-system-foundations.md section 5.8), every
+pane will render the **first** item selected and ignore later selections. Voyager caches a `Navigator` by
+the position in the composition, and a bare `Screen` defaults its identity to its class name, so two
+detail screens for different ids look identical to the cache and the stale one is reused. Give the detail
+`Screen` an id-derived key:
+
+```kotlin
+class BookDetailScreen(val id: String) : Screen {
+    override val key = "book-detail-$id"   // without this, every pane shows the first id
+}
+```
+
+The symptom is unmistakable: selecting any row shows the detail of whichever row was selected first. Reach
+for the explicit `key` on any `Screen` whose identity depends on a runtime argument rather than its type.
+
 ---
 
 ## 6. Dispatchers

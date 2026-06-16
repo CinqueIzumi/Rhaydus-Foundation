@@ -163,6 +163,51 @@ opens with this header. A stock Material `titleLarge`/`bodyMedium` sheet header 
 a regression. If a sheet's content is so transient that this header feels theatrical, it should be a
 `Dialog`, not a sheet.
 
+### 5.7 Window size and breakpoints
+
+The app adapts to the **measured size of the surface it renders into**, never to a hardcoded device
+type. The breakpoints live in exactly one place so no screen invents its own threshold:
+
+- `rememberWindowSizeClass()` reads the window size and buckets its width into a `WindowWidthClass`:
+  **`COMPACT` (`< 600dp`)**, **`MEDIUM` (`600-840dp`)**, **`EXPANDED` (`>= 840dp`)**. The two bounds
+  (`COMPACT_MAX_WIDTH`, `MEDIUM_MAX_WIDTH`) are constants on `WindowSizeClass`; `widthClassFor(...)` is
+  the single function that applies them, so layout code and tests bucket identically.
+- **Branch on `widthClass`, not on raw dp.** Reach for the measured `widthDp` / `heightDp` only for the
+  rare continuous decision (a hero whose height tracks the viewport).
+- The class recomputes whenever the container size changes, so it tracks desktop window resizes and
+  foldable posture changes for free. The breakpoint values are tunable per app, but the three-bucket
+  structure and the single-source rule are shared.
+
+### 5.8 Adaptive content width and the two-pane split
+
+A list surface that is a single full-width column on a phone should not stretch a single column across a
+desktop window. Two shared moves cover this:
+
+- **`TwoPaneScaffold`** is a pure-layout fixed-leading / flexible-trailing split: a fixed-width `list`
+  pane beside a flexible `detail` pane with a divider. It knows nothing about navigation or screen
+  models. Passing a `null` `detail` **collapses to a single pane** with no divider, and `list` stays the
+  first child either way, so toggling `detail` between a value and `null` preserves the list subtree's
+  state (and any `movableContentOf` it hosts) instead of tearing it down.
+- The canonical wiring: on **`EXPANDED`** a list-detail screen shows both panes side by side; on
+  **`COMPACT` / `MEDIUM`** the detail is pushed as a full screen by ordinary navigation. The list pane
+  picks its own column width budget; an app caps overall content width rather than letting text lines run
+  the full monitor.
+
+### 5.9 Adaptive modal sheet (sheet to panel)
+
+A bottom sheet welded to the bottom edge under a tall scrim reads as a phone layout on a desktop window.
+**`AdaptiveModalSheet`** resolves a modal to the window width: a `ModalBottomSheet` on `COMPACT` /
+`MEDIUM`, and a centered, bordered, large-radius panel (a `Dialog`) on `EXPANDED`.
+
+- Its `content` slot is **identical to `ModalBottomSheet`'s** (a `ColumnScope` body owning its own
+  padding and scroll), so a call site swaps one for the other without touching the body.
+- Both forms open on `surfaceContainerLowest` and lead with the canonical section header (5.6); neither
+  carries a close button.
+- A body that needs an in-content dismiss (e.g. an "are you sure?" choice) calls `LocalModalSheetDismiss`
+  rather than driving sheet state itself, so it closes correctly in both forms (the sheet animates down;
+  the panel closes immediately). A body that needs to adjust its density to the surface it landed in
+  reads `LocalModalSheetForm` (`SHEET` vs `PANEL`) instead of re-deriving the width class.
+
 ## 6. Iconography
 
 - Material **outline** icons, consistent stroke weight across the app. Never mix filled and outlined icon
@@ -261,3 +306,47 @@ Walk this before reaching for novelty. Brand-specific rules extend this list in 
   only for an unavoidable blocking moment.
 - **Need an off-app handoff?** Dispatch a `UiEvent` collected at the screen top, never call the platform
   handler from a leaf.
+- **Need to adapt to window width?** `rememberWindowSizeClass()` and branch on `widthClass` (5.7); never
+  read a raw dp threshold at the call site.
+- **Need a modal that should not read as a phone sheet on a wide window?** `AdaptiveModalSheet` (5.9), not
+  a bare `ModalBottomSheet`.
+- **Building a desktop (jvm) layout?** Reach for the section 11 affordances before hand-rolling pointer or
+  keyboard behaviour.
+
+## 11. Desktop affordances (pointer and keyboard)
+
+Compose Multiplatform runs the same shared composables on a desktop (jvm) window, where a pointer and a
+physical keyboard exist. These affordances make a shared surface feel native there while staying inert on
+touch, so a shared composable can carry them unconditionally. The desktop-only ones live in `jvmMain`; the
+two modifiers below are in `commonMain` and no-op on touch.
+
+- **Hand cursor.** `Modifier.pointerHandCursor()` shows the platform "clickable" hand cursor while the
+  pointer hovers a clickable surface that lacks an obvious built-in cursor affordance. A no-op on touch
+  (no pointer device), so it is safe to apply in shared layouts.
+- **Hover highlight.** `Modifier.hoverHighlight(interactionSource)` paints a subtle translucent wash while
+  the pointer hovers, cross-fading in and out. It is the hover sibling of `pressScale` (7); pair it with a
+  `clickable` / `hoverable` that **shares the same `InteractionSource`**. Inert on touch, and suppressed
+  under reduced motion like every other animation.
+- **Tooltip.** `DesktopTooltip(text) { control }` wraps a pointer-only control in a hover tooltip on
+  desktop and is a pure pass-through on touch (no extra layout node). Reach for it on **every icon-only
+  desktop control**: under a pointer, an icon that carries only a `contentDescription` is a dead end, and
+  the hover state otherwise promises information no label delivers. The `contentDescription` stays as the
+  accessibility label; `text` is the human-readable hover label.
+- **Back strip.** `DesktopBackStrip(...)` is the static leading-gutter back button a pushed desktop screen
+  carries instead of a scroll-collapsing top bar. The app supplies its own arrow glyph (wrapped in
+  `RhaydusIconResource`); no icon asset is baked into the shared module.
+- **Esc dismisses in-app overlays.** `Modifier.dismissOnEscape(enabled) { onDismiss() }` closes an in-app
+  surface that sits over the page (a full-screen viewer, a transient selection mode) on the Esc key. It is
+  only for surfaces that are **not** a `Dialog` / `Popup`: a `Dialog` (including `AdaptiveModalSheet`'s
+  expanded panel) already maps `dismissOnBackPress` to Esc. It runs in the key **preview** phase so Esc is
+  caught even when a descendant text field holds focus, and it never grabs focus while disabled, so it can
+  gate on a transient mode without disturbing normal focus.
+- **Selection on desktop.** Where touch enters a multi-select mode by long-press, desktop also honors the
+  pointer idioms (right-click to open the selection, modifier-click to extend it). The concrete gestures
+  are an app decision; the rule is that a desktop layout does not leave long-press as the only entry.
+
+**Tap-to-dismiss scrims use `detectTapGestures`, not `clickable`.** A full-screen scrim that dismisses an
+overlay on tap must take its tap through `Modifier.pointerInput { detectTapGestures { ... } }`. `clickable`
+also binds keyboard activation (Space / Enter) and makes the node focusable and semantically a button, so a
+scrim built with `clickable` becomes a focus stop that swallows Space / Enter on desktop. `detectTapGestures`
+is pointer-only and carries none of that, which is exactly what a scrim wants.

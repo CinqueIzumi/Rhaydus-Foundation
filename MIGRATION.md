@@ -17,7 +17,7 @@ the detail sections below explain the why.
 | 1 | `ktlint-rules` published, adopted by both apps | **Foundation done; app adoption deferred** | Module moved + builds + self-lints green. App adoption paused by decision (see Resume) |
 | 2 | Shared version catalog + convention plugins | **Foundation done; app adoption deferred** | `build-logic` (4 `rhaydus.*` plugins) compiles; `nl.rhaydus:catalog` publishes. Room/Apollo left app-specific |
 | 3 | TOAD runtime library (`nl.rhaydus.toad`) | **Foundation done; app adoption deferred** | `:toad` KMP lib compiles (`Collector`); 345-file app import rewrites deferred |
-| 4 | `designsystem-core` skeleton (no tokens) | **4a foundation done** | `:core-ui` + `:designsystem-core` (full skeleton) compile. 4b components + app adoption deferred |
+| 4 | `designsystem-core` skeleton (no tokens) | **4a done; 4b adaptive layer done** | `:core-ui` + `:designsystem-core` compile (jvm + android + ios). Adaptive/desktop primitives synced from Softcover (see Session 8). Remaining 4b component primitives + app adoption deferred |
 | 5 | Claude Code plugin (skills, agents, hooks, docs) | **Done (installable)** | `rhaydus-kotlin` plugin + `rhaydus` marketplace. Install is opt-in per project. Docs await Phase 6 |
 | 6 | Docs consolidation | **Foundation done** | 4 canonical docs in `docs/`. App `CLAUDE.md` link-updates deferred (app adoption) |
 
@@ -225,7 +225,17 @@ the keystone parameterization seam design are in the approved plan; the canonica
 **4a is complete** (foundation side). The icon ASSETS, brand tokens, and domain components stay per app
 (Layers 3-4 in the plan). Verified on jvm only (as with `:toad`); android/iOS targets compile at adoption.
 
-**Deferred (4b, optional):** neutral component primitives + snapshot tests (Coil/Voyager deps).
+**4b adaptive/desktop layer done (Session 8).** The window-size + desktop affordance layer Softcover grew
+after the last sync (commit `8185e8a`) was ported in and generalized: `layout/WindowSizeClass` +
+`WindowWidthClass` + `TwoPaneScaffold`, `component/AdaptiveModalSheet` (+ `model/ModalSheetForm`),
+`component/DesktopTooltip` (expect + mobile/jvm actuals), `component/DesktopBackStrip` (generalized off the
+brand icon enum to take a `RhaydusIconResource`), `modifier/DesktopKeyboard.dismissOnEscape` (jvmMain), and
+`pointerHandCursor` + `hoverHighlight` merged into `modifier/ModifierExtensions`. This was the first code in
+`designsystem-core` to need a **mobile (Android + iOS) shared source set**, so the `mobileMain`/`mobileTest`
+seam was added to `rhaydus.kmp.library` (Phase 2 convention plugin). Verified `compileKotlinJvm` +
+`compileAndroidMain` + `compileKotlinIosArm64` + the mobile/ios metadata all green.
+
+**Deferred (4b, remaining):** the broader neutral component primitives + snapshot tests (Coil/Voyager deps).
 **Deferred (app adoption):** each app wraps `RhaydusTheme`, deletes duplicated infra, points at the
 shared modules. Brand tokens + domain components stay. Verified only on jvm (as with `:toad`); android/
 iOS targets compile at adoption time.
@@ -314,3 +324,17 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   Haptics + ClipboardReader seams (expect + 3 actuals each), ShakeOnError, ObserveAsEvents (+ lifecycle
   dep), SnackBarManager, SkeletonCrossfade, HtmlToAnnotatedString, the generalized RhaydusIconResource
   mechanism, and the Toggle/Split enums. 4a complete. 4b + app adoption deferred.
+- **Session 8:** Sync of Softcover's post-`8185e8a` reusable additions (the last sync was that commit, so
+  everything after it was checked). The payload was the adaptive/desktop layer; ported into
+  `:designsystem-core` and generalized to `nl.rhaydus.designsystem.*` (no brand tokens): WindowSizeClass +
+  WindowWidthClass + TwoPaneScaffold (`layout/`), AdaptiveModalSheet + ModalSheetForm, DesktopTooltip
+  (expect/mobile/jvm), DesktopBackStrip (parameterized on `RhaydusIconResource` instead of the brand icon
+  enum), dismissOnEscape (jvmMain), and `pointerHandCursor` + `hoverHighlight` merged into
+  ModifierExtensions. Added the `mobileMain`/`mobileTest` seam to `rhaydus.kmp.library` (first module here
+  needing an Android+iOS-only set, for DesktopTooltip's pass-through actual). Docs: added breakpoints (5.7),
+  two-pane (5.8), adaptive modal (5.9), and a desktop-affordances section (11) to
+  `design-system-foundations.md`, plus the Voyager per-item nested-navigator `key` pitfall to
+  `architecture.md` section 5. Verified designsystem-core compiles on jvm + android + ios + mobile metadata.
+  WindowSizeClass round-trip test ported to `androidHostTest`. Checked Nestbox too: nothing net-new (its
+  docs-first hook is already in the plugin; its error-handling model is already in `architecture.md`).
+  Foundation-only; app adoption still deferred.
