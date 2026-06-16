@@ -17,7 +17,7 @@ the detail sections below explain the why.
 | 1 | `ktlint-rules` published, adopted by both apps | **Foundation done; app adoption deferred** | Module moved + builds + self-lints green. App adoption paused by decision (see Resume) |
 | 2 | Shared version catalog + convention plugins | **Foundation done; app adoption deferred** | `build-logic` (4 `rhaydus.*` plugins) compiles; `nl.rhaydus:catalog` publishes. Room/Apollo left app-specific |
 | 3 | TOAD runtime library (`nl.rhaydus.toad`) | **Foundation done; app adoption deferred** | `:toad` KMP lib compiles (`Collector`); 345-file app import rewrites deferred |
-| 4 | `designsystem-core` skeleton (no tokens) | **4a done; 4b in progress** | `:core-ui` + `:designsystem-core` compile (jvm + android + ios). Adaptive/desktop primitives + Tier 1 utilities synced from Softcover (Sessions 8-9). Editorial layer split into a new opt-in `:designsystem-editorial` module with the typography seam (Session 10). Remaining 4b components + app adoption deferred |
+| 4 | `designsystem-core` skeleton (no tokens) | **4a + 4b done (foundation)** | `:core-ui` + `:designsystem-core` + `:designsystem-editorial` + `:designsystem-image` compile (jvm + android + ios). Adaptive/desktop primitives + Tier 1 utilities + button suite in core (Sessions 8-9, 11); editorial language in its own opt-in module + typography seam (Sessions 10, 12); async images in opt-in `:designsystem-image` (Session 13). App adoption deferred |
 | 5 | Claude Code plugin (skills, agents, hooks, docs) | **Done (installable)** | `rhaydus-kotlin` plugin + `rhaydus` marketplace. Install is opt-in per project. Docs await Phase 6 |
 | 6 | Docs consolidation | **Foundation done** | 4 canonical docs in `docs/`. App `CLAUDE.md` link-updates deferred (app adoption) |
 
@@ -60,6 +60,7 @@ rhaydus-foundation/
   toad/                          KMP runtime, nl.rhaydus.toad  (published)
   designsystem-core/             design-agnostic skeleton      (published)
   designsystem-editorial/        opt-in editorial language     (published; depends on designsystem-core)
+  designsystem-image/            opt-in async images (Coil)    (published; depends on designsystem-core)
   docs/                          canonical conventions
   claude/                        Claude Code plugin + marketplace.json
 ```
@@ -100,7 +101,9 @@ rhaydus-foundation/
   key (`ORG_GRADLE_PROJECT_signingInMemoryKey*`), via env/`~/.gradle/gradle.properties`, never
   committed. CI reads them from repo secrets (see `.github/workflows/publish.yml`).
 - **Catalog scope.** Foundation catalog carries only what foundation modules need. App-only libs
-  (Apollo, Room, Coil, CameraX, MLKit, markdown, etc.) stay in each app's own catalog.
+  (Apollo, Room, CameraX, MLKit, markdown, etc.) stay in each app's own catalog. **Coil** moved into the
+  catalog (Session 13) because `:designsystem-image` needs `coil-compose`; the network fetcher
+  (okhttp/ktor) stays an app choice.
 - **Design system:** share only the brand-agnostic skeleton; Nestbox "reading room" and Softcover
   book tokens stay local. Be conservative — when in doubt, leave it in the app.
 
@@ -266,8 +269,14 @@ generalized: `displayFontFamily()` -> a `dropCapFontFamily` param on `DropCapTex
 `RhaydusIconResource` params on `EditorialSearchField`; `editorialTypography.headlineMedium` -> the contract's
 `headline` role. Haptics/cursor reused from core.
 
-**Deferred (4b, remaining):** only the async-image component is left, gated on the Coil version-coupling
-decision. The rest of the design-system component tier is extracted.
+**Async images done (Session 13).** Extracted into a new opt-in `:designsystem-image` module (brings Coil,
+isolated so core stays Coil-free): `RhaydusImage` (plain), `RhaydusPlaceholderImage` (caller placeholder
+slot), `RhaydusShimmerImage` (shimmer placeholder; the old `SoftcoverImage` behavior). Coil `3.2.0`
+(`coil-compose` only) added to the foundation catalog; the network fetcher stays an app choice.
+
+**4b complete (foundation side).** The whole design-system component tier is extracted. Remaining foundation
+work is whatever new shared needs surface; the big outstanding effort is **app adoption** (Phases 1-6), still
+deferred.
 **Deferred (app adoption):** each app wraps `RhaydusTheme`, deletes duplicated infra, points at the
 shared modules. Brand tokens + domain components stay. Verified only on jvm (as with `:toad`); android/
 iOS targets compile at adoption time.
@@ -400,3 +409,10 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   `dropCapFontFamily` param; `SoftcoverIcon` -> `RhaydusIconResource` params; `headlineMedium` -> `headline`.
   Previews dropped. Documented in design-system-foundations sections 5.3 + 8. jvm + android + ios compile +
   ktlintCheck green. Only the Coil-gated async image remains in 4b.
+- **Session 13:** Async images into a new opt-in `:designsystem-image` module (isolates Coil from core):
+  `RhaydusImage` (plain Coil `AsyncImage`), `RhaydusPlaceholderImage` (caller placeholder slot, built on
+  `SkeletonCrossfade` + `SubcomposeAsyncImage`), `RhaydusShimmerImage` (delegates to the placeholder variant
+  with a `shimmer()` Box - the old `SoftcoverImage` behavior). Added Coil `3.2.0` (`coil-compose`) to the
+  foundation catalog; `implementation(:designsystem-core)` for `shimmer`/`SkeletonCrossfade`, `api(coil)` so
+  consumers can build Coil models. `include(":designsystem-image")`. Documented in design-system-foundations
+  section 8. jvm + android + ios compile + ktlintCheck green. 4b (foundation) complete.

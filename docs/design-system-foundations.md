@@ -268,7 +268,10 @@ A short, shared shape for how components are written; the concrete catalog (what
 lives in the app's own doc. The design-agnostic primitives that every app shares (layout, modifiers, the
 button family) live in `designsystem-core`; the opt-in editorial language lives in `designsystem-editorial`
 (`EditorialSectionHeader`, `HeroStatNumberField` + `EditorialSuffix`, `DropCapText`, `EditorialSearchField`,
-`PullToRefreshEyebrow` - all reading the shared editorial type roles, section 2).
+`PullToRefreshEyebrow` - all reading the shared editorial type roles, section 2). Async images live in the
+opt-in `designsystem-image` module (it brings Coil): `RhaydusImage` (plain), `RhaydusPlaceholderImage` (a
+caller-supplied placeholder slot while loading), and `RhaydusShimmerImage` (the placeholder is a shimmer).
+The network fetcher stays an app choice, configured on the app's Coil `ImageLoader`.
 
 - **The button family is shared.** `RhaydusButton`, `RhaydusToggleButton`, `RhaydusIconToggleButton`, and
   `RhaydusSplitButton` (in `designsystem-core`) are the canonical buttons, parameterized by the `ButtonSize`
