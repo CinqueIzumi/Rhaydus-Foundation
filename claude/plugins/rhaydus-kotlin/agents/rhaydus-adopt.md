@@ -19,6 +19,14 @@ Read **`CAPABILITIES.md`** (the module/component index) and **`MIGRATION.md`** (
 3. **Docs reachability.** Ensure the foundation docs are readable from this project for the `rhaydus-logic` / `rhaydus-ui` agents: either rely on the `includeBuild` sibling, or vendor a snapshot under the project (e.g. `docs/rhaydus/`) pinned to the consumed version. Record where they ended up.
 4. **Plugin.** Confirm the `rhaydus-kotlin` plugin is installed (`/plugin marketplace add CinqueIzumi/rhaydus-foundation` then `/plugin install rhaydus-kotlin@rhaydus`); note it in the block if not.
 
+## Flag prerequisite migrations (do not perform them silently)
+
+Some projects can't adopt a module by wiring alone — adopting it requires a code migration first. **Detect these and report them as prerequisites with an effort estimate; do not attempt the migration as part of adoption** (it is large, reviewable work that belongs in its own change):
+
+- **Local TOAD runtime → `nl.rhaydus:toad`.** If the project has its own TOAD runtime (a `ToadScreenModel` / primitives in some `…presentation.toad` package), adopting `nl.rhaydus:toad` means rewriting every TOAD import to `nl.rhaydus.toad` **and renaming the long-lived initializer type if it is called `Initializer` (the foundation uses `Collector`)** — across every screen model and feature. Grep for the local toad package and `Initializer` to size it (often hundreds of files). Flag it; a full compile against `nl.rhaydus:toad` cannot pass until it is done.
+- **Embedded design system → `designsystem-core`/`-editorial`/`-image`.** If theme/tokens/components live inline in the app's own design-system module, adoption is a **gradual replacement** (wrap `RhaydusTheme`, consume the modules, delete duplicated components one at a time), not a wholesale swap. Flag it as incremental.
+- **Local `:ktlint-rules` module.** Replaceable by published `nl.rhaydus:ktlint-rules` only if the package matches (`nl.rhaydus.ktlint`); if it does, it is a clean swap, otherwise flag the package rename.
+
 ## The managed CLAUDE.md block
 
 Write (or refresh) a single fenced section in the project's `CLAUDE.md`, generated from the project's **actual** dependencies so it never lies:
