@@ -259,9 +259,15 @@ design-system-foundations section 2.
 Previews dropped (need a brand theme + brand icons). One declaration per file; the split button keeps the
 M3 percentage-corner workaround.
 
-**Deferred (4b, remaining):** the **editorial** components (section header, hero stat, eyebrow, drop cap,
-search field) go into `:designsystem-editorial` (unblocked by the typography seam). Remaining gate: the
-version-coupling decision for Coil (async image only).
+**Editorial components done (Session 12).** `EditorialSectionHeader`, `HeroStatNumberField` +
+`EditorialSuffix`, `PullToRefreshEyebrow`, `DropCapText`, `EditorialSearchField` ported into
+`:designsystem-editorial` (`...editorial.component`), reading the shared editorial type roles. Brand bits
+generalized: `displayFontFamily()` -> a `dropCapFontFamily` param on `DropCapText`; `SoftcoverIcon` ->
+`RhaydusIconResource` params on `EditorialSearchField`; `editorialTypography.headlineMedium` -> the contract's
+`headline` role. Haptics/cursor reused from core.
+
+**Deferred (4b, remaining):** only the async-image component is left, gated on the Coil version-coupling
+decision. The rest of the design-system component tier is extracted.
 **Deferred (app adoption):** each app wraps `RhaydusTheme`, deletes duplicated infra, points at the
 shared modules. Brand tokens + domain components stay. Verified only on jvm (as with `:toad`); android/
 iOS targets compile at adoption time.
@@ -387,3 +393,10 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   neutral (Material typography), so it stays in core, not the editorial module. Previews dropped. Split
   button keeps the M3 percentage-corner workaround comment. Documented in design-system-foundations section
   8. jvm + android + ios compile + ktlintCheck green. Editorial components still deferred.
+- **Session 12:** Editorial components into `:designsystem-editorial` (`...editorial.component`):
+  `EditorialSectionHeader`, `HeroStatNumberField` + `EditorialSuffix`, `PullToRefreshEyebrow`, `DropCapText`,
+  `EditorialSearchField`. Read the shared editorial roles via `MaterialTheme.editorialTypography`; reuse
+  core's `rememberHaptics` + `pointerHandCursor`. Generalized off brand: `displayFontFamily()` -> a
+  `dropCapFontFamily` param; `SoftcoverIcon` -> `RhaydusIconResource` params; `headlineMedium` -> `headline`.
+  Previews dropped. Documented in design-system-foundations sections 5.3 + 8. jvm + android + ios compile +
+  ktlintCheck green. Only the Coil-gated async image remains in 4b.

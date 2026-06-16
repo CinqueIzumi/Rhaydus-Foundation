@@ -62,7 +62,7 @@ Two parallel type scales coexist, and both are reachable from `MaterialTheme`.
 - **Shared editorial role contract (opt-in layer).** Editorial components need a shared type vocabulary,
   which a design-agnostic core cannot define. It therefore lives in the **opt-in `designsystem-editorial`
   module**, not in core: a small fixed `EditorialTypography` role set (eyebrow, pageTitle, headline, title,
-  body, stat, ...), provided by an app via `EditorialTheme(editorialTypography = ...)` (nested inside
+  body, statLarge / statHero, ...), provided by an app via `EditorialTheme(editorialTypography = ...)` (nested inside
   `RhaydusTheme`) and read by editorial components through `MaterialTheme.editorialTypography`. That module
   owns the role *names*; the role *values* stay a brand decision (`buildEditorialTypography(typography)` is a
   neutral starting point to `.copy(...)`, or build from scratch). An app that does not use editorial
@@ -147,7 +147,8 @@ navigation or trailing actions are needed.
 
 The canonical way to introduce any region: an optional accent bar, a short label (the orienting
 eyebrow/kicker), a human-readable headline, then the body (a list, a carousel/grid, or a single block), then
-a generous gap before the next section.
+a generous gap before the next section. `EditorialSectionHeader` (in `designsystem-editorial`) is the shared
+implementation of the accent-bar + eyebrow + headline + optional-description opener.
 
 ### 5.4 Hero region
 
@@ -265,7 +266,9 @@ and so on) is brand-specific and belongs in each app's own doc.
 
 A short, shared shape for how components are written; the concrete catalog (what each app actually ships)
 lives in the app's own doc. The design-agnostic primitives that every app shares (layout, modifiers, the
-button family) live in `designsystem-core`; the opt-in editorial language lives in `designsystem-editorial`.
+button family) live in `designsystem-core`; the opt-in editorial language lives in `designsystem-editorial`
+(`EditorialSectionHeader`, `HeroStatNumberField` + `EditorialSuffix`, `DropCapText`, `EditorialSearchField`,
+`PullToRefreshEyebrow` - all reading the shared editorial type roles, section 2).
 
 - **The button family is shared.** `RhaydusButton`, `RhaydusToggleButton`, `RhaydusIconToggleButton`, and
   `RhaydusSplitButton` (in `designsystem-core`) are the canonical buttons, parameterized by the `ButtonSize`
