@@ -253,11 +253,15 @@ design-agnostic and know nothing about editorial. An app opts in by nesting `Edi
 `RhaydusTheme`; an app that wants a different design depends on `:designsystem-core` alone. Documented in
 design-system-foundations section 2.
 
-**Deferred (4b, remaining):** the editorial/button component tier. The **editorial** components (section
-header, hero stat, eyebrow, etc.) go into `:designsystem-editorial` (now unblocked by the typography seam).
-The **button** suite is design-neutral enough to stay in `:designsystem-core` (its style enums + the
-`RhaydusIconResource` wrapper already live there and it uses Material typography, not the editorial roles).
-Remaining gate: the version-coupling decision for Coil (async image only).
+**Button suite done in core (Session 11).** `RhaydusButton`, `RhaydusToggleButton`,
+`RhaydusIconToggleButton`, `RhaydusSplitButton` (+ `model/RhaydusMenuItem`) ported into
+`:designsystem-core` (design-neutral: Material typography, the existing style enums, `RhaydusIconResource`).
+Previews dropped (need a brand theme + brand icons). One declaration per file; the split button keeps the
+M3 percentage-corner workaround.
+
+**Deferred (4b, remaining):** the **editorial** components (section header, hero stat, eyebrow, drop cap,
+search field) go into `:designsystem-editorial` (unblocked by the typography seam). Remaining gate: the
+version-coupling decision for Coil (async image only).
 **Deferred (app adoption):** each app wraps `RhaydusTheme`, deletes duplicated infra, points at the
 shared modules. Brand tokens + domain components stay. Verified only on jvm (as with `:toad`); android/
 iOS targets compile at adoption time.
@@ -376,3 +380,10 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   `MaterialTheme.editorialTypography` extension. `RhaydusTheme` reverted to design-agnostic. Added
   `include(":designsystem-editorial")`. Documented in design-system-foundations section 2. jvm + android +
   ios compile + ktlintCheck green.
+- **Session 11:** Tier 2 button suite into `:designsystem-core` - `RhaydusButton` (+ press-scale on the
+  filled style), `RhaydusToggleButton`, `RhaydusIconToggleButton`, `RhaydusSplitButton`, and
+  `model/RhaydusMenuItem`. Ported from Softcover, generalized `Softcover*`->`Rhaydus*` and
+  `SoftcoverIconResource`->`RhaydusIconResource`; the style/size enums were already in `model/`. Design-
+  neutral (Material typography), so it stays in core, not the editorial module. Previews dropped. Split
+  button keeps the M3 percentage-corner workaround comment. Documented in design-system-foundations section
+  8. jvm + android + ios compile + ktlintCheck green. Editorial components still deferred.

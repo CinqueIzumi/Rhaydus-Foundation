@@ -264,8 +264,15 @@ and so on) is brand-specific and belongs in each app's own doc.
 ## 8. Component API conventions
 
 A short, shared shape for how components are written; the concrete catalog (what each app actually ships)
-lives in the app's own doc.
+lives in the app's own doc. The design-agnostic primitives that every app shares (layout, modifiers, the
+button family) live in `designsystem-core`; the opt-in editorial language lives in `designsystem-editorial`.
 
+- **The button family is shared.** `RhaydusButton`, `RhaydusToggleButton`, `RhaydusIconToggleButton`, and
+  `RhaydusSplitButton` (in `designsystem-core`) are the canonical buttons, parameterized by the `ButtonSize`
+  / `ButtonStyle` / `ToggleButtonStyle` / `IconToggleButtonStyle` / `SplitButtonStyle` enums and taking icons
+  as `RhaydusIconResource`. Reach for these rather than calling Material `Button` directly; the filled style
+  carries the press-scale feedback (section 7). They use Material typography, so they carry no editorial
+  dependency.
 - **Reusable building blocks live in `core/presentation/widget/` (or the app's design-system module);
   theming lives in `core/presentation/theme/`.** Shell-tier components that enumerate concrete app tabs
   (bottom navigation, the tab host) live at the shell/orchestration tier, not in generic `core`, because they
