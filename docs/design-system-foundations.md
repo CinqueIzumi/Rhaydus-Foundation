@@ -200,7 +200,7 @@ desktop window. Two shared moves cover this:
   **`COMPACT` / `MEDIUM`** the detail is pushed as a full screen by ordinary navigation. The list pane
   picks its own column width budget; an app caps overall content width rather than letting text lines run
   the full monitor.
-- `Modifier.editorialContentWidth(max)` centers a scrolling content column and caps its width; the two
+- `Modifier.cappedContentWidth(max)` centers a scrolling content column and caps its width; the two
   sanctioned caps live on `ContentMaxWidth` (`Reading` for single-column copy/forms, `Pane` for a
   list/grid spread). Pick the role rather than inventing a per-screen number, and leave full-bleed media
   (covers, hero backdrops) outside the capped column.

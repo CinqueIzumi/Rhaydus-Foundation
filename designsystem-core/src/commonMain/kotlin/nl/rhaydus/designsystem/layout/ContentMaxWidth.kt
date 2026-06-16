@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Caps for the width of a screen's *content* on a large window, so editorial copy and forms keep a
+ * Caps for the width of a screen's *content* on a large window, so long-form copy and forms keep a
  * comfortable measure instead of running edge-to-edge on a desktop monitor. These are the only
  * sanctioned content widths - pick the role, do not invent a per-screen number. The values are
  * tunable per app; the two-role structure is shared.
@@ -27,7 +27,7 @@ object ContentMaxWidth {
  * Apply to the scrolling content column of a screen so reading surfaces stay legible on large
  * windows; leave full-bleed media (covers, hero backdrops) outside it.
  */
-fun Modifier.editorialContentWidth(max: Dp = ContentMaxWidth.Reading): Modifier =
+fun Modifier.cappedContentWidth(max: Dp = ContentMaxWidth.Reading): Modifier =
     this
         .fillMaxWidth()
         .wrapContentWidth(Alignment.CenterHorizontally)

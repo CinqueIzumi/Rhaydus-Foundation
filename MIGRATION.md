@@ -237,7 +237,7 @@ seam was added to `rhaydus.kmp.library` (Phase 2 convention plugin). Verified `c
 `compileAndroidMain` + `compileKotlinIosArm64` + the mobile/ios metadata all green.
 
 **4b utility/animation/desktop primitives done (Session 9).** Brand-agnostic pieces that needed no
-typography seam: `layout/ContentMaxWidth` (+ `editorialContentWidth`), `component/DesktopContextMenu`
+typography seam: `layout/ContentMaxWidth` (+ `cappedContentWidth`), `component/DesktopContextMenu`
 (expect + mobile/jvm actuals), `component/StaggeredEntry`, `component/LazyItemMutationAnimator`. Each
 closes a design-system-foundations gap (5.8 content width, 11 right-click menu, 7 staggered entry + list
 mutation) that the doc described without shipping code.
@@ -361,7 +361,7 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   docs-first hook is already in the plugin; its error-handling model is already in `architecture.md`).
   Foundation-only; app adoption still deferred.
 - **Session 9:** Tier 1 of the broader 4b component extraction - the brand-agnostic utility/animation/
-  desktop primitives that need no typography seam: `ContentMaxWidth` + `editorialContentWidth` (layout),
+  desktop primitives that need no typography seam: `ContentMaxWidth` + `cappedContentWidth` (layout),
   `DesktopContextMenu` (expect + mobile/jvm), `StaggeredEntry`, `LazyItemMutationAnimator`. Generalized to
   `nl.rhaydus.designsystem.*`, brand-doc/roadmap cross-refs dropped, narration comments removed per the
   sharpened comment rule. Documented each in design-system-foundations (5.8, 7, 11). Verified jvm + android
