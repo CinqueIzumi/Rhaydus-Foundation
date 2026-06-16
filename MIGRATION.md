@@ -297,6 +297,10 @@ Nestbox Android-only). Fold durable agent-memory into agent defs/docs. Install i
       hardcoded). docs-first `PreToolUse` hook (matcher `Agent`) generalised off Nestbox's, using
       `${CLAUDE_PLUGIN_ROOT}`.
 - [x] Validated: all JSON parses, hook script executable + `bash -n` clean, agent frontmatter intact.
+- [x] **(Session 14) AI-adoption layer:** `docs/CAPABILITIES.md` index + three specialist agents
+      (`rhaydus-adopt`, `rhaydus-logic`, `rhaydus-ui`) that read it first. `rhaydus-adopt` writes a managed
+      routing block into the consuming app's `CLAUDE.md`; logic/UI split along TOAD's `runAction` seam with
+      the state/action contract as the handoff. Plugin -> 0.2.0.
 - **Install (opt-in, per project — not a repo change):**
   `/plugin marketplace add CinqueIzumi/rhaydus-foundation` then `/plugin install rhaydus-kotlin@rhaydus`.
 
@@ -413,6 +417,15 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   `RhaydusImage` (plain Coil `AsyncImage`), `RhaydusPlaceholderImage` (caller placeholder slot, built on
   `SkeletonCrossfade` + `SubcomposeAsyncImage`), `RhaydusShimmerImage` (delegates to the placeholder variant
   with a `shimmer()` Box - the old `SoftcoverImage` behavior). Added Coil `3.2.0` (`coil-compose`) to the
-  foundation catalog; `implementation(:designsystem-core)` for `shimmer`/`SkeletonCrossfade`, `api(coil)` so
-  consumers can build Coil models. `include(":designsystem-image")`. Documented in design-system-foundations
-  section 8. jvm + android + ios compile + ktlintCheck green. 4b (foundation) complete.
+  foundation catalog; both `:designsystem-core` and `coil-compose` are `implementation` (no Coil/core type
+  appears in the public API - models are passed as `Any?`). `include(":designsystem-image")`. Documented in
+  design-system-foundations section 8. jvm + android + ios compile + ktlintCheck green. 4b (foundation) complete.
+- **Session 14:** AI-adoption layer in the `rhaydus-kotlin` plugin so a consuming project's Claude reliably
+  finds and uses the foundation. Added `docs/CAPABILITIES.md` (the module/component/API index every agent
+  reads first) and three specialist agents: `rhaydus-adopt` (onboards: wires catalog/convention-plugins/
+  includeBuild, makes docs reachable, writes a managed routing block into the app's `CLAUDE.md`),
+  `rhaydus-logic` (builds the TOAD logic + owns the state/action contract), `rhaydus-ui` (builds the stateless
+  Compose render from the foundation design system + the app's own brand design doc; consumes the contract).
+  The logic->UI handoff is orchestrated at the top level over the TOAD contract (no agent nesting). Plugin
+  bumped to 0.2.0; README + docs index updated. Decision: agents stay thin and READ `CAPABILITIES.md` rather
+  than memorize the catalog, so they don't drift across foundation versions.
