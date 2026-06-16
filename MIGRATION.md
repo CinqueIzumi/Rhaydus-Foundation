@@ -420,6 +420,12 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   foundation catalog; both `:designsystem-core` and `coil-compose` are `implementation` (no Coil/core type
   appears in the public API - models are passed as `Any?`). `include(":designsystem-image")`. Documented in
   design-system-foundations section 8. jvm + android + ios compile + ktlintCheck green. 4b (foundation) complete.
+- **Session 15:** Bumped `foundation.version` 0.1.0 -> 0.2.0 (single source -> all 7 artifacts). Found the
+  Claude plugin's `plugin.json` version is a separate track (not Gradle-driven); set it to 0.2.0 and **locked
+  the two together** with a `verifyPluginVersion` gate in the root build, wired into every module's `check`
+  (so CI `./gradlew build` and local `check` fail if plugin.json and foundation.version diverge). Tested
+  pass + forced-mismatch fail. Also fixed the stale `marketplace.json` plugin description (was missing the
+  new agents).
 - **Session 14:** AI-adoption layer in the `rhaydus-kotlin` plugin so a consuming project's Claude reliably
   finds and uses the foundation. Added `docs/CAPABILITIES.md` (the module/component/API index every agent
   reads first) and three specialist agents: `rhaydus-adopt` (onboards: wires catalog/convention-plugins/

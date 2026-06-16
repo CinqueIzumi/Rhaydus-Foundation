@@ -7,7 +7,7 @@
     {
       "name": "rhaydus-kotlin",
       "source": "./claude/plugins/rhaydus-kotlin",
-      "description": "Shared Claude Code assets for the nl.rhaydus Kotlin/Compose/TOAD apps: code-reviewer and unit-test-writer subagents, a style-check skill, and a docs-first exploration hook."
+      "description": "Shared Claude Code assets for the nl.rhaydus Kotlin/Compose/TOAD apps: the rhaydus-adopt / rhaydus-logic / rhaydus-ui specialist agents, code-reviewer and unit-test-writer subagents, a style-check skill, and a docs-first exploration hook."
     }
   ]
 }
