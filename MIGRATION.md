@@ -235,7 +235,18 @@ brand icon enum to take a `RhaydusIconResource`), `modifier/DesktopKeyboard.dism
 seam was added to `rhaydus.kmp.library` (Phase 2 convention plugin). Verified `compileKotlinJvm` +
 `compileAndroidMain` + `compileKotlinIosArm64` + the mobile/ios metadata all green.
 
-**Deferred (4b, remaining):** the broader neutral component primitives + snapshot tests (Coil/Voyager deps).
+**4b utility/animation/desktop primitives done (Session 9).** Brand-agnostic pieces that needed no
+typography seam: `layout/ContentMaxWidth` (+ `editorialContentWidth`), `component/DesktopContextMenu`
+(expect + mobile/jvm actuals), `component/StaggeredEntry`, `component/LazyItemMutationAnimator`. Each
+closes a design-system-foundations gap (5.8 content width, 11 right-click menu, 7 staggered entry + list
+mutation) that the doc described without shipping code.
+
+**Deferred (4b, remaining):** the editorial/button component tier (buttons, chip, top bar, section header,
+star rating, async image). Two gates: (1) a **typography seam** in `designsystem-core` (a small fixed set
+of editorial roles the app fills via a CompositionLocal, like the color/theme scaffold) is the prerequisite
+for the editorial components, since the foundation deliberately keeps typography role *values* per app; (2)
+the version-coupling decision for Coil (async image). The button suite is unblocked (its style enums + the
+`RhaydusIconResource` wrapper already exist) and does not need the typography seam.
 **Deferred (app adoption):** each app wraps `RhaydusTheme`, deletes duplicated infra, points at the
 shared modules. Brand tokens + domain components stay. Verified only on jvm (as with `:toad`); android/
 iOS targets compile at adoption time.
@@ -338,3 +349,10 @@ Expect a clean BUILD SUCCESSFUL with no subprojects yet. First real publish is p
   WindowSizeClass round-trip test ported to `androidHostTest`. Checked Nestbox too: nothing net-new (its
   docs-first hook is already in the plugin; its error-handling model is already in `architecture.md`).
   Foundation-only; app adoption still deferred.
+- **Session 9:** Tier 1 of the broader 4b component extraction - the brand-agnostic utility/animation/
+  desktop primitives that need no typography seam: `ContentMaxWidth` + `editorialContentWidth` (layout),
+  `DesktopContextMenu` (expect + mobile/jvm), `StaggeredEntry`, `LazyItemMutationAnimator`. Generalized to
+  `nl.rhaydus.designsystem.*`, brand-doc/roadmap cross-refs dropped, narration comments removed per the
+  sharpened comment rule. Documented each in design-system-foundations (5.8, 7, 11). Verified jvm + android
+  + ios compile and ktlintCheck green. Editorial/button tier deferred behind the typography-seam decision
+  (see Phase 4 detail).

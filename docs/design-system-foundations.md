@@ -192,6 +192,10 @@ desktop window. Two shared moves cover this:
   **`COMPACT` / `MEDIUM`** the detail is pushed as a full screen by ordinary navigation. The list pane
   picks its own column width budget; an app caps overall content width rather than letting text lines run
   the full monitor.
+- `Modifier.editorialContentWidth(max)` centers a scrolling content column and caps its width; the two
+  sanctioned caps live on `ContentMaxWidth` (`Reading` for single-column copy/forms, `Pane` for a
+  list/grid spread). Pick the role rather than inventing a per-screen number, and leave full-bleed media
+  (covers, hero backdrops) outside the capped column.
 
 ### 5.9 Adaptive modal sheet (sheet to panel)
 
@@ -234,9 +238,15 @@ multiplatform resources) is an app-level decision and belongs in the app's own d
   since the wavy circle fights the pull arc; an app names its own exception.)
 - **User-triggered list mutations animate; ambient changes do not.** Only user-driven add/remove animates
   (removal fades and neighbors close the gap); initial load, background refresh, and pagination tail jump in
-  without animation.
+  without animation. `rememberLazyItemMutationAnimator(keys)` + `Modifier.mutationAnimated(scope, animator,
+  key)` provide this: they snapshot the first non-empty key set as the un-animated baseline and animate only
+  what appears afterward (with a brief accent-bar pulse on the inserted item). The animator distinguishes
+  only *first snapshot* from *appeared later*, not *user-driven* from *ambient* - so apply it to surfaces
+  whose changes are user-driven; a background refetch or pagination of a list it wraps will animate too.
 - **Staggered entry is a one-shot welcome moment**, played only by items composed during the initial
-  screen-entry window, never an animate-on-scroll effect.
+  screen-entry window, never an animate-on-scroll effect. `rememberStaggeredEntryCoordinator(key)` +
+  `Modifier.staggeredEntry(coordinator, index)` provide it; "first entry" is tracked per key for the
+  process lifetime, so a return visit to the same screen renders statically.
 - **All motion is suppressed under reduced motion** (system animations disabled): the reduced path is an
   instant, un-animated swap. This gate is mandatory for every animation.
 
@@ -344,6 +354,9 @@ two modifiers below are in `commonMain` and no-op on touch.
 - **Selection on desktop.** Where touch enters a multi-select mode by long-press, desktop also honors the
   pointer idioms (right-click to open the selection, modifier-click to extend it). The concrete gestures
   are an app decision; the rule is that a desktop layout does not leave long-press as the only entry.
+- **Right-click menu.** `DesktopContextMenu(items) { content }` wraps a surface in a desktop secondary-click
+  menu (the pointer counterpart to a touch long-press) and is a pure pass-through on touch and for an empty
+  `items` list, so a shared composable can wrap unconditionally and populate items only where a menu applies.
 
 **Tap-to-dismiss scrims use `detectTapGestures`, not `clickable`.** A full-screen scrim that dismisses an
 overlay on tap must take its tap through `Modifier.pointerInput { detectTapGestures { ... } }`. `clickable`
