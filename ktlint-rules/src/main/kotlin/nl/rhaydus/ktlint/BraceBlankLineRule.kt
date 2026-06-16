@@ -23,9 +23,9 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
  */
 class BraceBlankLineRule :
     Rule(
-        ruleId = RuleId("softcover:brace-blank-line"),
+        ruleId = RuleId("rhaydus:brace-blank-line"),
         about = About(
-            maintainer = "Softcover",
+            maintainer = "rhaydus",
             repositoryUrl = "",
             issueTrackerUrl = "",
         ),

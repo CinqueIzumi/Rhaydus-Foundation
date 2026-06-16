@@ -19,7 +19,7 @@ rather than a memorized snapshot.
   version. No credentials.
 - **Inner loop:** set `foundation.local=true` in `local.properties`; `settings.gradle.kts` then
   `includeBuild("../rhaydus-foundation")` and Gradle substitutes the published coordinates for local
-  source. See `MIGRATION.md` for the full model.
+  source - no version bumps, instant cross-repo edits.
 - **Catalog:** the shared version catalog publishes as `nl.rhaydus:catalog`; consume it with
   `from("nl.rhaydus:catalog:<v>")`. App-only libraries stay in the app's own catalog.
 

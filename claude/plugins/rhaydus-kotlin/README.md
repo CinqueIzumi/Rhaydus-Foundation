@@ -1,6 +1,6 @@
 # rhaydus-kotlin (Claude Code plugin)
 
-Shared Claude Code assets for the `nl.rhaydus` Kotlin/Compose/TOAD apps (Nestbox, Softcover).
+Shared Claude Code assets for Kotlin/Compose/TOAD apps built on the `nl.rhaydus` foundation.
 
 ## What it ships
 

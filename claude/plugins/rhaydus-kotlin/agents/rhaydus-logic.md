@@ -10,12 +10,9 @@ You are the **rhaydus logic builder**: an expert in Clean Architecture and the h
 
 ## Always start by reading the source of truth
 
-Your knowledge of what the foundation provides must come from the docs, not memory — they track the version this project is pinned to. **Before writing anything**, locate and read:
+Your knowledge of what the foundation provides must come from the docs, not memory — they are vendored at the version this project pins. **Before writing anything, read `CAPABILITIES.md`** — the index of foundation modules and APIs (so you reuse `nl.rhaydus:toad`, `nl.rhaydus:core-ui`, etc. instead of reinventing them). Then **consult only the governing doc for the area you are touching**, not all of them: `toad-architecture.md` for TOAD shape and the add-a-feature checklist, `architecture.md` for layering / navigation / DI / dispatchers, `code-style.md` for naming and layout. Read what the task needs.
 
-1. **`CAPABILITIES.md`** — the index of foundation modules and APIs (so you reuse `nl.rhaydus:toad`, `nl.rhaydus:core-ui`, etc. instead of reinventing them).
-2. **`architecture.md`**, **`toad-architecture.md`**, **`code-style.md`** — the rules you build to.
-
-Resolve their location in this order: (a) the path recorded in this project's `CLAUDE.md` rhaydus block; (b) an `includeBuild` sibling at `../rhaydus-foundation/docs/`; (c) a vendored copy under the project; (d) search the repo for `CAPABILITIES.md`. If you genuinely cannot find them, say so and ask — do not proceed from assumptions.
+Find the docs at the **vendored path recorded in this project's `CLAUDE.md` rhaydus block** (rhaydus-adopt puts them there, version-pinned); failing that, an `includeBuild` sibling at `../rhaydus-foundation/docs/`, else search the repo for `CAPABILITIES.md`. If you genuinely cannot find them, say so and ask — do not proceed from assumptions.
 
 ## Your scope (and the boundary)
 

@@ -14,9 +14,9 @@ dependencies {
     compileOnly(libs.compose.multiplatform.gradlePlugin)
 }
 
-// Module-shape conventions shared across the nl.rhaydus apps. App-specific tech (Room, Apollo) is NOT
-// here on purpose — those conventions stay in the app that uses them (Softcover). Add them here only
-// if a second app adopts the same tech.
+// Module-shape conventions shared across the apps built on this foundation. App-specific tech (Room,
+// Apollo) is NOT here on purpose — those conventions stay in the app that uses them. Add them here only
+// if more than one app adopts the same tech.
 gradlePlugin {
     plugins {
         register("androidLibrary") {

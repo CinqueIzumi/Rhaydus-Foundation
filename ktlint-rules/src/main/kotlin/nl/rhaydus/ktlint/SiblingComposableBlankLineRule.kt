@@ -25,9 +25,9 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
  */
 class SiblingComposableBlankLineRule :
     Rule(
-        ruleId = RuleId("softcover:sibling-composable-blank-line"),
+        ruleId = RuleId("rhaydus:sibling-composable-blank-line"),
         about = About(
-            maintainer = "Softcover",
+            maintainer = "rhaydus",
             repositoryUrl = "",
             issueTrackerUrl = "",
         ),

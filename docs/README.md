@@ -1,8 +1,8 @@
 # Canonical conventions
 
-The single source of truth for the conventions shared across the `nl.rhaydus` apps. These replace the
-per-app copies that used to drift (Nestbox `docs/*.md`, Softcover root `*.md`). Each app's `CLAUDE.md`
-should link here and keep only app-specific deltas (brand tokens, platform set, app-only tech).
+The single source of truth for the conventions shared across apps built on this foundation. These
+replace the per-app doc copies that would otherwise drift. Each consuming app's `CLAUDE.md` links here
+and keeps only app-specific deltas (brand tokens, platform set, app-only tech).
 
 | Doc | Covers |
 |---|---|

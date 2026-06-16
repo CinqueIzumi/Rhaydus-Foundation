@@ -32,9 +32,9 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
  */
 class VisibilityModifierRule :
     Rule(
-        ruleId = RuleId("softcover:visibility-modifier"),
+        ruleId = RuleId("rhaydus:visibility-modifier"),
         about = About(
-            maintainer = "Softcover",
+            maintainer = "rhaydus",
             repositoryUrl = "",
             issueTrackerUrl = "",
         ),

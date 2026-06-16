@@ -17,9 +17,9 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
  */
 class BooleanNotationRule :
     Rule(
-        ruleId = RuleId("softcover:boolean-notation"),
+        ruleId = RuleId("rhaydus:boolean-notation"),
         about = About(
-            maintainer = "Softcover",
+            maintainer = "rhaydus",
             repositoryUrl = "",
             issueTrackerUrl = "",
         ),

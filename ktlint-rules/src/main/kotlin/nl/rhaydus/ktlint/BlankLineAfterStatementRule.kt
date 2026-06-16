@@ -21,9 +21,9 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
  */
 class BlankLineAfterStatementRule :
     Rule(
-        ruleId = RuleId("softcover:blank-line-after-statement"),
+        ruleId = RuleId("rhaydus:blank-line-after-statement"),
         about = About(
-            maintainer = "Softcover",
+            maintainer = "rhaydus",
             repositoryUrl = "",
             issueTrackerUrl = "",
         ),

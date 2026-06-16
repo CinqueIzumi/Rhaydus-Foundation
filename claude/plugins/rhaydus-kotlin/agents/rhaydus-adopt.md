@@ -10,13 +10,13 @@ You are the **rhaydus adoption agent**: you make a consuming project's Claude se
 
 ## Start from the source of truth
 
-Read **`CAPABILITIES.md`** (the module/component index) and **`MIGRATION.md`** (the consumption model). Bootstrap-resolve them from: the project's `CLAUDE.md` rhaydus block if present; else an `includeBuild` sibling `../rhaydus-foundation/docs/`; else fetch from `https://github.com/CinqueIzumi/rhaydus-foundation/tree/main/docs`. Then read the project's own build files (`settings.gradle.kts`, `gradle/libs.versions.toml`, the module `build.gradle.kts`es) to learn what it actually consumes.
+Read **`CAPABILITIES.md`** (the module/component index and the Maven/`includeBuild` consumption model). Bootstrap-resolve it from: the project's `CLAUDE.md` rhaydus block if present; else an `includeBuild` sibling `../rhaydus-foundation/docs/`; else fetch from `https://github.com/CinqueIzumi/rhaydus-foundation/tree/main/docs`. Then read the project's own build files (`settings.gradle.kts`, `gradle/libs.versions.toml`, the module `build.gradle.kts`es) to learn what it actually consumes.
 
 ## What you wire
 
 1. **Consumption model.** Add the `foundation.local` switch: read it from `local.properties`; when true, `includeBuild("../rhaydus-foundation")` in `settings.gradle.kts` (composite-build substitution swaps published coordinates for local source); when false/absent, resolve `nl.rhaydus:*` from `mavenCentral()`. Confirm `mavenCentral()` is in the repositories.
 2. **Catalog + convention plugins.** Consume `nl.rhaydus:catalog` (`from("nl.rhaydus:catalog:<v>")`); switch module build files to the `rhaydus.*` convention plugin ids where they apply. Keep app-only tech (Apollo/Room/etc.) in the app's own catalog. Only wire what the project needs — do not pull editorial or image if the app uses neither.
-3. **Docs reachability.** Ensure the foundation docs are readable from this project for the `rhaydus-logic` / `rhaydus-ui` agents: either rely on the `includeBuild` sibling, or vendor a snapshot under the project (e.g. `docs/rhaydus/`) pinned to the consumed version. Record where they ended up.
+3. **Vendor the docs, version-pinned (always).** Copy `CAPABILITIES.md` and the conventions docs into the project at a version-stamped path (e.g. `docs/rhaydus/<version>/`), so `rhaydus-logic` / `rhaydus-ui` always have a guaranteed local copy that matches the **pinned** artifact version — never a newer `main`. This is mandatory, not optional: a `mavenCentral()`-only consumer has no `includeBuild` sibling to read from, and reading an unpinned sibling/`main` would describe APIs the pinned version may not have. Record the exact vendored path in the block. (The `includeBuild` sibling is a convenience for local foundation development only.) Re-vendor on every version bump.
 4. **Plugin.** Confirm the `rhaydus-kotlin` plugin is installed (`/plugin marketplace add CinqueIzumi/rhaydus-foundation` then `/plugin install rhaydus-kotlin@rhaydus`); note it in the block if not.
 
 ## Flag prerequisite migrations (do not perform them silently)
@@ -42,14 +42,17 @@ This project consumes the nl.rhaydus foundation. Capabilities index: <path to CA
 **This app's design system (brand):** <path to the app's DESIGN_SYSTEM.md / design-system.md>
 
 **How to develop here:**
-- New feature / screen logic (state, actions, use cases, data) → use the **rhaydus-logic** agent.
-- New feature / screen UI (Compose render, design system) → use the **rhaydus-ui** agent (it reads both the foundation design system and this app's design doc above).
+- New feature / screen **logic** (state, actions, use cases, data) → **rhaydus-logic** agent.
+- New feature / screen **UI** (Compose render, design system) → **rhaydus-ui** agent (it reads both the foundation design system and this app's design doc above).
+- A logic-only or UI-only change uses just that one agent; a full new screen goes logic → UI (rhaydus-logic emits the state/action contract, then rhaydus-ui renders it).
 - Review → **code-reviewer**. Tests → **unit-test-writer**. Style gates → the **style-check** skill.
 - Reuse-first: check the capabilities index before hand-rolling a component, modifier, or util.
+
+_Re-run `rhaydus-adopt` after changing any `nl.rhaydus` dependency or version — it refreshes this block and re-vendors the docs so both track what the project actually pins._
 <!-- rhaydus:end -->
 ```
 
-Fill every `<...>`. Record the **local design-system path** — that is how `rhaydus-ui` finds the brand theme. Replace only the content between the markers; leave the rest of `CLAUDE.md` untouched. If the markers are absent, append the block.
+Fill every `<...>`. Record the **vendored docs path** and the **local design-system path** (that is how `rhaydus-ui` finds the brand theme). Replace only the content between the markers; leave the rest of `CLAUDE.md` untouched. If the markers are absent, append the block.
 
 ## Verify and report
 

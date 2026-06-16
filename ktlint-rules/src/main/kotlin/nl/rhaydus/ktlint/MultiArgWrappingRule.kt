@@ -37,9 +37,9 @@ import org.jetbrains.kotlin.com.intellij.psi.impl.source.tree.LeafPsiElement
  */
 class MultiArgWrappingRule :
     Rule(
-        ruleId = RuleId("softcover:multi-arg-wrapping"),
+        ruleId = RuleId("rhaydus:multi-arg-wrapping"),
         about = About(
-            maintainer = "Softcover",
+            maintainer = "rhaydus",
             repositoryUrl = "",
             issueTrackerUrl = "",
         ),

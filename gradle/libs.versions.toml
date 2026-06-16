@@ -1,5 +1,5 @@
-# Foundation version catalog. Seeded from Softcover (the more advanced of the two apps) and trimmed to
-# what foundation modules actually need. App-only libraries (Apollo, Room, CameraX, MLKit,
+# Foundation version catalog, trimmed to what foundation modules actually need. App-only libraries
+# (Apollo, Room, CameraX, MLKit,
 # markdown, DataStore, etc.) stay in each app's own catalog. (Coil entered here for :designsystem-image;
 # the network fetcher stays an app choice.) In phase 2 this is published as a
 # `version-catalog` artifact and consumed by both apps via `from("nl.rhaydus:catalog:<v>")`.
