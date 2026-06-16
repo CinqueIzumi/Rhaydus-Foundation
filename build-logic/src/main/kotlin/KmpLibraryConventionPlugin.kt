@@ -79,6 +79,25 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 runtimeOnly(libs.library("junit-platform-launcher"))
                 implementation(libs.library("mockk"))
             }
+
+            // `mobileMain` is the Android+iOS (non-JVM) shared set KMP has no template for, so an
+            // `expect` in `commonMain` is satisfied by one `actual` here plus one in `jvmMain`.
+            // `applyDefaultHierarchyTemplate()` must be called explicitly: the manual `dependsOn` edges
+            // below otherwise disable its auto-application, and `androidMain`/`iosMain` must exist first.
+            applyDefaultHierarchyTemplate()
+
+            val mobileMain = sourceSets.maybeCreate("mobileMain")
+            mobileMain.dependsOn(sourceSets.getByName("commonMain"))
+            sourceSets.getByName("androidMain").dependsOn(mobileMain)
+            // A future non-iOS Apple target (macOS/watchOS) would NOT inherit the seam via `appleMain`
+            // and must add its own `dependsOn(mobileMain)`.
+            sourceSets.getByName("iosMain").dependsOn(mobileMain)
+
+            val mobileTest = sourceSets.maybeCreate("mobileTest")
+            mobileTest.dependsOn(sourceSets.getByName("commonTest"))
+            sourceSets.getByName("androidHostTest").dependsOn(mobileTest)
+            // `iosTest` is materialised lazily, so guard against its absence.
+            sourceSets.findByName("iosTest")?.dependsOn(mobileTest)
         }
 
         // JVM target for the Android (and any host) Kotlin compilations — matches the Android-only

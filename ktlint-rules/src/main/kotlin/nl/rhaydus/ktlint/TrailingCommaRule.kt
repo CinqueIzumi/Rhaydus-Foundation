@@ -23,9 +23,9 @@ import org.jetbrains.kotlin.com.intellij.psi.impl.source.tree.LeafPsiElement
  */
 class TrailingCommaRule :
     Rule(
-        ruleId = RuleId("softcover:trailing-comma"),
+        ruleId = RuleId("rhaydus:trailing-comma"),
         about = About(
-            maintainer = "Softcover",
+            maintainer = "rhaydus",
             repositoryUrl = "",
             issueTrackerUrl = "",
         ),

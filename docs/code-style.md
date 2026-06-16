@@ -119,10 +119,29 @@ data class HoursMinutesSeconds(...)
 
 ## Comments
 
-Keep code self-documenting; prefer descriptive names over comments. Only write a comment when it
-earns its place: a non-obvious edge case, a workaround, a spec requirement, or a name that genuinely
-can't be made clearer. Never write a comment that restates what the code or a descriptive name
-already says; comments that aren't necessary are noise.
+**The default is no comment.** Code is kept self-documenting through descriptive names and small,
+obvious functions; a comment is the exception that has to justify its own existence, not a habit. Before
+writing one, try to make the code say it instead (a clearer name, an extracted function, a named
+constant). Most comments that get written are noise and should simply be deleted.
+
+A comment earns its place only when the code genuinely cannot carry the meaning on its own:
+
+- a **non-obvious edge case** (e.g. why a value must be created on every recomposition, a first-frame
+  guard, an off-by-one boundary),
+- a **workaround or gotcha** (why the non-obvious API was chosen over the obvious one, a framework
+  footgun, a deliberate `runCatching` swallow),
+- a **rationale that is not derivable from the code** (why a magic constant has exactly this value, a
+  spec or design requirement the code satisfies).
+
+**Never narrate.** A comment that restates what the next line plainly does ("opens the sheet", "loops
+over items", "the back button") adds nothing and must not be written. If a comment only describes
+*what* the code does rather than *why*, delete it.
+
+**KDoc is documentation, not narration.** A `/** ... */` doc comment on the public, cross-module surface
+of a shared module (the published API: components, modifiers, contracts) is expected and welcome -- it is
+the consumer's documentation, not an inline aside. It should describe the contract and the *why*, never
+walk through the implementation. Private members lean on their names; give a private member KDoc only
+when it clears the same bar as any other comment above.
 
 ## Code Organization Within Files
 

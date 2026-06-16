@@ -8,7 +8,7 @@ import java.io.File
 import kotlin.system.exitProcess
 
 /**
- * Drives the custom Softcover ktlint ruleset directly via ktlint's rule-engine — no Spotless or
+ * Drives the custom rhaydus ktlint ruleset directly via ktlint's rule-engine — no Spotless or
  * ktlint-gradle plugin, so the ktlint version is fully under our control.
  *
  * Usage: Main <format|check> <rootDir>

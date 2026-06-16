@@ -2,7 +2,9 @@ name: Publish
 
 # Builds and tests on every push/PR, and publishes all foundation artifacts to Maven Central (Central
 # Portal) when a version tag (v*) is pushed. The version published is whatever foundation.version is
-# set to in gradle.properties — tag and property should agree for a release.
+# set to in gradle.properties — tag and property should agree for a release. The build job also runs
+# `verifyPluginVersion` (via `check`), which fails if the rhaydus-kotlin Claude plugin's version in
+# plugin.json diverges from foundation.version — the two are locked and must move together.
 #
 # Runs on macOS because the KMP modules have iOS (Kotlin/Native) targets that cannot build on Linux.
 # Standard runners (incl. macOS) are free for public repositories.

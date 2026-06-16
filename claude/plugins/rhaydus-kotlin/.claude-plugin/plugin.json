@@ -1,8 +1,8 @@
 {
   "name": "rhaydus-kotlin",
   "displayName": "rhaydus Kotlin toolkit",
-  "description": "Shared Claude Code assets for the nl.rhaydus Kotlin/Compose/TOAD apps: code-reviewer and unit-test-writer subagents, a style-check skill, and a docs-first exploration hook.",
-  "version": "0.1.0",
+  "description": "Shared Claude Code assets for the nl.rhaydus Kotlin/Compose/TOAD apps: the rhaydus-adopt / rhaydus-logic / rhaydus-ui specialist agents, code-reviewer and unit-test-writer subagents, a style-check skill, and a docs-first exploration hook.",
+  "version": "0.2.0",
   "author": {
     "name": "Cinque"
   },

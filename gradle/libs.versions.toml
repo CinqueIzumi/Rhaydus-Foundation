@@ -1,6 +1,7 @@
-# Foundation version catalog. Seeded from Softcover (the more advanced of the two apps) and trimmed to
-# what foundation modules actually need. App-only libraries (Apollo, Room, Coil, CameraX, MLKit,
-# markdown, DataStore, etc.) stay in each app's own catalog. In phase 2 this is published as a
+# Foundation version catalog, trimmed to what foundation modules actually need. App-only libraries
+# (Apollo, Room, CameraX, MLKit,
+# markdown, DataStore, etc.) stay in each app's own catalog. (Coil entered here for :designsystem-image;
+# the network fetcher stays an app choice.) In phase 2 this is published as a
 # `version-catalog` artifact and consumed by both apps via `from("nl.rhaydus:catalog:<v>")`.
 
 [versions]
@@ -19,6 +20,7 @@ composeUiTooling = "1.10.2"
 activityCompose = "1.12.0"
 lifecycleRuntimeKtx = "2.10.0"
 material3ComposeVersion = "1.5.0-alpha13"
+coil = "3.2.0"
 voyager = "1.1.0-beta02"
 koinVersion = "3.5.3"
 koinComposeMultiplatform = "1.1.2"
@@ -69,6 +71,9 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "composeUiTooling" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3ComposeVersion" }
+
+# Image loading (:designsystem-image) — coil-compose only; the network fetcher (okhttp/ktor) is an app choice
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 
 # Test stack
 junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jUnitVersion" }

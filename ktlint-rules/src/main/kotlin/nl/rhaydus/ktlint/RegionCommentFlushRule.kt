@@ -15,9 +15,9 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
  */
 class RegionCommentFlushRule :
     Rule(
-        ruleId = RuleId("softcover:region-comment-flush"),
+        ruleId = RuleId("rhaydus:region-comment-flush"),
         about = About(
-            maintainer = "Softcover",
+            maintainer = "rhaydus",
             repositoryUrl = "",
             issueTrackerUrl = "",
         ),

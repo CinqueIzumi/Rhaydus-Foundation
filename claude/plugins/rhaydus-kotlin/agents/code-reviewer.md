@@ -39,6 +39,13 @@ You review **recently changed files** across three dimensions:
 - Check that dependencies flow in the correct direction
 - Verify that new abstractions are warranted and existing abstractions are reused where appropriate
 
+### 4. Foundation awareness (when a `CAPABILITIES.md` is reachable)
+
+If the project consumes or is the `nl.rhaydus` foundation (a `CAPABILITIES.md` exists in the repo or at the vendored path recorded in `CLAUDE.md`), read it and apply two extra checks:
+
+- **Reuse-first.** Flag changes that hand-roll something the foundation already ships — a button reimplemented instead of the `RhaydusButton` family, a bespoke shimmer/placeholder image instead of `designsystem-image`, a window-size or two-pane helper instead of the `designsystem-core` layout primitives, a re-declared TOAD primitive instead of `nl.rhaydus:toad`, etc. Reinventing an available foundation API is a 🟡 **Important** finding, not a nit.
+- **Capabilities/doc sync (when reviewing the foundation itself).** A change that adds, removes, or renames a published module, component, or public API **must** update `CAPABILITIES.md` (and the governing doc, e.g. `design-system-foundations.md`) in the same change. A divergence is a 🔴 blocker — the agents and consumers rely on that index being accurate for the pinned version.
+
 ## Review Process
 
 1. **Gather context**: Use `git diff` or `git diff --cached` or `git log` to identify changed files. Read the changed files in full to understand context. Read surrounding files if needed to understand integration points.
