@@ -28,23 +28,23 @@ rather than a memorized snapshot.
 | Coordinate | Purpose | Key public surface | Governing doc |
 |---|---|---|---|
 | `nl.rhaydus:toad` | TOAD presentation runtime (KMP, `commonMain`) | `ToadScreenModel`, `UiState`, `UiAction`, `UiEvent`, `Collector`, `ActionDependencies`, `ActionScope`, `LocalVariables` | `toad-architecture.md` |
-| `nl.rhaydus:core-ui` | Non-visual UI seams | `AppDispatchers`, `TimeFormat`, `CurrentDate`, `HoursMinutesSeconds`, `NumberFormat` | `architecture.md` |
+| `nl.rhaydus:core-ui` | Non-visual UI seams | `AppDispatchers`, `AppLog`, `runCatchingCancellable`, `runCatchingLogged`, `TimeFormat`, `CurrentDate`, `HoursMinutesSeconds`, `NumberFormat` | `architecture.md` |
 | `nl.rhaydus:designsystem-core` | Design-agnostic Compose skeleton (no brand tokens) | see **designsystem-core surface** below | `design-system-foundations.md`, `code-style.md` |
 | `nl.rhaydus:designsystem-editorial` | Opt-in editorial design language (depends on core) | `EditorialTypography`, `buildEditorialTypography`, `EditorialTheme`, `MaterialTheme.editorialTypography`; components `EditorialSectionHeader`, `HeroStatNumberField` + `EditorialSuffix`, `PullToRefreshEyebrow`, `DropCapText`, `EditorialSearchField` | `design-system-foundations.md` §2 |
 | `nl.rhaydus:designsystem-image` | Opt-in async images on Coil (depends on core) | `RhaydusImage` (plain), `RhaydusPlaceholderImage` (placeholder slot), `RhaydusShimmerImage` (shimmer) | `design-system-foundations.md` §8 |
 | `nl.rhaydus:catalog` | Shared version catalog | `libs.*` aliases for the shared third-party stack | — |
-| `nl.rhaydus:ktlint-rules` | Custom ktlint ruleset (10 rules) | `ktlintCheck` / `ktlintFormat` gates | `code-style.md` |
+| `nl.rhaydus:ktlint-rules` | Custom ktlint ruleset (8 rules) | `ktlintCheck` / `ktlintFormat` gates | `code-style.md` |
 
 ### designsystem-core surface
 
 - **theme/** — `RhaydusTheme(colorScheme, typography, motionScheme)` (the Material 3 Expressive scaffold; the app supplies tokens), `StandardPreview`.
 - **layout/** — `rememberWindowSizeClass()` + `WindowSizeClass` / `WindowWidthClass` (the single breakpoint source: COMPACT < 600dp, MEDIUM 600-840dp, EXPANDED >= 840dp), `TwoPaneScaffold`, `ContentMaxWidth` + `Modifier.cappedContentWidth`, `LocalBottomBarPadding` + `rememberBottomBarPadding()`, `BottomNavigationSpacer`, spacers.
-- **modifier/** — `pressScale`, `pressScaleClickable`, `pressScaleCombinedClickable`, `noRippleClickable`, `pointerHandCursor`, `hoverHighlight`, `shimmer`, `grayscale`, `conditional`, `ShakeOnError`; jvm-only `dismissOnEscape`.
+- **modifier/** — `pressScale`, `pressScaleClickable`, `pressScaleCombinedClickable`, `noRippleClickable`, `pointerHandCursor`, `hoverHighlight`, `shimmer`, `grayscale`, `conditional`, `shakeOnError`; jvm-only `dismissOnEscape`.
 - **component/** — `AdaptiveModalSheet` (+ `LocalModalSheetForm` / `LocalModalSheetDismiss`), `DesktopTooltip`, `DesktopContextMenu` (+ `DesktopContextMenuItem`), jvm-only `DesktopBackStrip`, `StaggeredEntry` (`rememberStaggeredEntryCoordinator` + `Modifier.staggeredEntry`), `LazyItemMutationAnimator` (`rememberLazyItemMutationAnimator` + `Modifier.mutationAnimated`), the **button family** `RhaydusButton` / `RhaydusToggleButton` / `RhaydusIconToggleButton` / `RhaydusSplitButton`.
 - **model/** — `ButtonSize`, `ButtonStyle`, `ToggleButtonStyle`, `IconToggleButtonStyle`, `IconToggleButtonShape`, `SplitButtonStyle`, `ModalSheetForm`, `RhaydusMenuItem`.
 - **motion/** — `playDecorativeMotion()` (reduced-motion gate; every animation routes through it).
 - **haptics/** — `Haptics`, `rememberHaptics()`, `LocalHaptics`.
-- **util/** — `ObserveAsEvents`, `SnackBarManager`, `SkeletonCrossfade`, `HtmlToAnnotatedString`, `ClipboardReader`.
+- **util/** — `ObserveAsEvents`, `SnackBarManager`, `SkeletonCrossfade`, `htmlToAnnotatedString`, `ClipboardReader`.
 - **icon/** — `RhaydusIconResource` (the brand-agnostic icon wrapper; the app supplies its own icon catalog).
 
 ## Dependency graph

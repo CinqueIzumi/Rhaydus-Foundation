@@ -525,10 +525,13 @@ The error model is layered. In short:
   the exception propagates. Repository-level `try`/`catch`/`runCatching` is reserved for *deliberate
   business decisions* (e.g. falling back to a placeholder), never for hiding errors the caller should
   see or for running failure-policy side effects.
-- **Every use case returns `Result<T>` and owns failure policy,** wrapping its repository call in a
-  cancellation-aware `runCatchingCancellable` - a `runCatching` that rethrows `CancellationException`
-  so a cancelled coroutine never becomes a `Result.failure`. Never use bare `runCatching` around a
-  suspend call. Reactions to a failure that span operations belong here, not in the repository.
+- **Every use case returns `Result<T>` and owns failure policy,** wrapping its repository call in the
+  cancellation-aware `runCatchingCancellable` from `nl.rhaydus:core-ui` - a `runCatching` that rethrows
+  `CancellationException` so a cancelled coroutine never becomes a `Result.failure`. Never use bare
+  `runCatching` around a suspend call. Reactions to a failure that span operations belong here, not in
+  the repository. When the use case should also log the failure at the boundary, use `runCatchingLogged`
+  (same module) - `runCatchingCancellable` plus a single `AppLog.e`, so a failure is never silently
+  dropped; it logs through whatever tag the app passed to `AppLog.install(...)`.
 - **Screen-model actions unpack the `Result` with `.onSuccess { }` / `.onFailure { }`** and fold the
   outcome into UI state. **Never use `.fold()`** - `.onSuccess`/`.onFailure` only. Actions therefore
   carry no `try`/`catch` of their own; the use case already converted the throw into a `Result`.

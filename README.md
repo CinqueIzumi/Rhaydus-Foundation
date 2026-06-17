@@ -39,7 +39,7 @@ It ships three things most "shared module" repos don't bother to keep together:
 | **Design system — editorial** | `nl.rhaydus:designsystem-editorial` | **Opt-in** editorial design language: shared type-role contract + components (section header, hero stat, drop cap, search field, pull-to-refresh eyebrow). |
 | **Design system — image** | `nl.rhaydus:designsystem-image` | **Opt-in** async images on Coil: plain, placeholder, and shimmer variants. |
 | **Version catalog** | `nl.rhaydus:catalog` | The shared third-party version set, consumable as a Gradle version catalog. |
-| **ktlint rules** | `nl.rhaydus:ktlint-rules` | 10 custom layout rules (one-per-line arg wrapping, trailing commas, blank-line rules, sibling-composable spacing, and more) with auto-fix. |
+| **ktlint rules** | `nl.rhaydus:ktlint-rules` | 8 custom layout rules (one-per-line arg wrapping, trailing commas, blank-line rules, sibling-composable spacing, and more) with auto-fix. |
 
 ### Tooling
 

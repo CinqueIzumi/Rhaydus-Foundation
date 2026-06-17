@@ -295,7 +295,8 @@ Koin. Each feature and each `core/*` operation service owns exactly **one** `mod
 - Shared dependencies (storage, the API client, dispatchers) come from their owning `core/*` unit.
 
 See [`toad-architecture.md`](toad-architecture.md) for the per-feature Koin wiring of screen models
-and flow collectors (`getAll()` aggregation, `bind <Feature>Initializer::class`).
+and flow collectors (the `factory { XScreenModel(..., flows = listOf(SomeCollector)) }` pattern —
+collectors are passed inline into the screen-model factory, *not* bound in Koin).
 
 ---
 
