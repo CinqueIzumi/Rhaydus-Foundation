@@ -33,7 +33,8 @@ rather than a memorized snapshot.
 | `nl.rhaydus:designsystem-editorial` | Opt-in editorial design language (depends on core) | `EditorialTypography`, `buildEditorialTypography`, `EditorialTheme`, `MaterialTheme.editorialTypography`; components `EditorialSectionHeader`, `HeroStatNumberField` + `EditorialSuffix`, `PullToRefreshEyebrow`, `DropCapText`, `EditorialSearchField` | `design-system-foundations.md` §2 |
 | `nl.rhaydus:designsystem-image` | Opt-in async images on Coil (depends on core) | `RhaydusImage` (plain), `RhaydusPlaceholderImage` (placeholder slot), `RhaydusShimmerImage` (shimmer) | `design-system-foundations.md` §8 |
 | `nl.rhaydus:catalog` | Shared version catalog | `libs.*` aliases for the shared third-party stack | — |
-| `nl.rhaydus:ktlint-rules` | Custom ktlint ruleset (8 rules) | `ktlintCheck` / `ktlintFormat` gates | `code-style.md` |
+| `nl.rhaydus:ktlint-rules` | Custom ktlint ruleset (13 rules) | `ktlintCheck` / `ktlintFormat` gates | `code-style.md` |
+| `nl.rhaydus:detekt-rules` | Custom detekt ruleset (type-resolved crash-safety) + shared baseline config | `rhaydus` ruleset (`UnguardedFlowTerminalRead`), bundled `config/detekt.yml`, `detektCheck` gate | `code-style.md` |
 
 ### designsystem-core surface
 

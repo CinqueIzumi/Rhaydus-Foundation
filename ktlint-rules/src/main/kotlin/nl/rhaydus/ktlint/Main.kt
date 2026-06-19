@@ -23,6 +23,11 @@ private val ruleProviders: Set<RuleProvider> =
         RuleProvider { BraceBlankLineRule() },
         RuleProvider { SiblingComposableBlankLineRule() },
         RuleProvider { VisibilityModifierRule() },
+        RuleProvider { OneTypePerFileRule() },
+        RuleProvider { InlineFullyQualifiedReferenceRule() },
+        RuleProvider { ProjectImportOrderRule() },
+        RuleProvider { InlineMockkStubRule() },
+        RuleProvider { UseCaseRunCatchingRule() },
     )
 
 fun main(args: Array<String>) {

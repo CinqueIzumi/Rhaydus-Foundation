@@ -34,12 +34,13 @@ It ships three things most "shared module" repos don't bother to keep together:
 | Module | Coordinate | What it gives you |
 |---|---|---|
 | **TOAD runtime** | `nl.rhaydus:toad` | The home-grown MVI-style presentation framework: `ToadScreenModel`, `UiState`/`UiAction`/`UiEvent`, `Collector`, `ActionScope`. |
-| **Core UI seams** | `nl.rhaydus:core-ui` | Non-visual seams: `AppDispatchers`, date/time/number formatting. |
+| **Core UI seams** | `nl.rhaydus:core-ui` | Non-visual seams: `AppDispatchers`, the `AppLog` logging facade, `runCatchingCancellable` / `runCatchingLogged`, date/time/number formatting. |
 | **Design system — core** | `nl.rhaydus:designsystem-core` | The **design-agnostic** Compose skeleton: theme scaffold, layout primitives (window-size classes, two-pane, content-width caps), modifiers, motion + reduced-motion seam, haptics, the button family. |
 | **Design system — editorial** | `nl.rhaydus:designsystem-editorial` | **Opt-in** editorial design language: shared type-role contract + components (section header, hero stat, drop cap, search field, pull-to-refresh eyebrow). |
 | **Design system — image** | `nl.rhaydus:designsystem-image` | **Opt-in** async images on Coil: plain, placeholder, and shimmer variants. |
 | **Version catalog** | `nl.rhaydus:catalog` | The shared third-party version set, consumable as a Gradle version catalog. |
-| **ktlint rules** | `nl.rhaydus:ktlint-rules` | 8 custom layout rules (one-per-line arg wrapping, trailing commas, blank-line rules, sibling-composable spacing, and more) with auto-fix. |
+| **ktlint rules** | `nl.rhaydus:ktlint-rules` | 13 custom rules: layout (one-per-line arg wrapping, trailing commas, blank-line rules, sibling-composable spacing) with auto-fix, plus gating checks (one-type-per-file, no fully-qualified references, project-import order, no inline mockk stubs, no bare `runCatching` in use cases). |
+| **detekt rules** | `nl.rhaydus:detekt-rules` | Custom detekt ruleset (a type-resolved crash-safety rule for unguarded `Flow.first()` / `single()`) plus the shared detekt baseline config every app builds on. |
 
 ### Tooling
 

@@ -5,9 +5,10 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 
-// Single-pass HTML parser: each `continue` advances past a distinct token class (tag, entity, plain char); collapsing
-// them would obscure the per-branch index bookkeeping.
-@Suppress("LoopWithTooManyJumpStatements")
+// Single-pass HTML parser: inherently branchy (one `continue` per token class - tag, entity, plain char), so its
+// length, cyclomatic complexity and nesting are intrinsic to the algorithm, not accidental; collapsing the branches
+// would obscure the per-branch index bookkeeping.
+@Suppress("LoopWithTooManyJumpStatements", "LongMethod", "CyclomaticComplexMethod", "NestedBlockDepth")
 fun htmlToAnnotatedString(html: String): AnnotatedString {
     val builder = AnnotatedString.Builder()
     val openSpans = ArrayDeque<Int>()

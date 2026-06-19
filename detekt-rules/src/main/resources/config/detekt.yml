@@ -1,0 +1,59 @@
+# Shared nl.rhaydus detekt baseline, bundled in nl.rhaydus:detekt-rules.
+#
+# Consume it with `buildUponDefaultConfig = true` and `config.from(<this file>)`; layer app-specific
+# thresholds (Room/DAO counts, network-client exception policy, etc.) in the app's own override file.
+# It carries only calibrations that every nl.rhaydus app wants: the Compose/TOAD/Koin conventions, the
+# guard-clause style, snake_case package segments, and the custom crash-safety ruleset. The mechanizable
+# layout rules are owned by nl.rhaydus:ktlint-rules, so detekt's `formatting` ruleset stays off here.
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+# Custom rules from nl.rhaydus:detekt-rules (added to the detektPlugins classpath). Requires type
+# resolution (the `detektMain` / `:detekt<Target>` tasks), so it is inert on a non-typed run.
+rhaydus:
+  UnguardedFlowTerminalRead:
+    active: true
+
+# Note: detekt's `formatting` ruleset (the ktlint wrapper) is deliberately NOT on the classpath - the
+# mechanizable layout rules are owned by nl.rhaydus:ktlint-rules. So there is no `formatting:` block here;
+# do not add the detekt-formatting plugin alongside this config.
+
+complexity:
+  LongMethod:
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  CyclomaticComplexMethod:
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  TooManyFunctions:
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  LongParameterList:
+    # TOAD *ScreenModel / *Dependencies inject many use cases via Koin; a parameter object is not
+    # idiomatic for constructor DI, so the constructor threshold is generous.
+    constructorThreshold: 30
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  LargeClass:
+    # A screen file is a Voyager Screen plus its private @Composables - large by design.
+    threshold: 2500
+
+naming:
+  FunctionNaming:
+    # @Composable functions are PascalCase by convention.
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  TopLevelPropertyNaming:
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  PackageNaming:
+    # Module/package names use snake_case segments (e.g. feature.book_detail).
+    packagePattern: '[a-z][a-z0-9]*(_[a-z0-9]+)*(\.[a-z][a-z0-9]*(_[a-z0-9]+)*)*'
+
+style:
+  MagicNumber:
+    # Compose dp/sp/alpha/weight literals saturate this rule with noise.
+    active: false
+  ReturnCount:
+    max: 8
+    excludeGuardClauses: true
+  MaxLineLength:
+    maxLineLength: 140
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']

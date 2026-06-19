@@ -11,6 +11,7 @@ ktlint = "1.7.1"
 coroutines = "1.10.2"
 kotlinxDatetime = "0.7.1"
 kermit = "2.0.6"
+detekt = "1.23.8"
 composeMultiplatform = "1.11.0"
 composeMaterial3Expressive = "1.11.0-alpha07"
 # Android-target Compose (consumed by the rhaydus.android.compose convention)
@@ -40,6 +41,10 @@ vanniktechMavenPublish = "0.30.0"
 ktlint-ruleEngine = { group = "com.pinterest.ktlint", name = "ktlint-rule-engine", version.ref = "ktlint" }
 ktlint-ruleEngineCore = { group = "com.pinterest.ktlint", name = "ktlint-rule-engine-core", version.ref = "ktlint" }
 ktlint-cliRulesetCore = { group = "com.pinterest.ktlint", name = "ktlint-cli-ruleset-core", version.ref = "ktlint" }
+ktlint-test = { group = "com.pinterest.ktlint", name = "ktlint-test", version.ref = "ktlint" }
+detekt-api = { group = "io.gitlab.arturbosch.detekt", name = "detekt-api", version.ref = "detekt" }
+detekt-cli = { group = "io.gitlab.arturbosch.detekt", name = "detekt-cli", version.ref = "detekt" }
+detekt-test = { group = "io.gitlab.arturbosch.detekt", name = "detekt-test", version.ref = "detekt" }
 
 # Gradle plugin artifacts — consumed by build-logic convention plugins (compileOnly, phase 2)
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }

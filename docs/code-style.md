@@ -11,9 +11,17 @@ guide covers everything else.
 Mechanizable style is enforced by the shared custom ktlint ruleset published as
 `nl.rhaydus:ktlint-rules` (package `nl.rhaydus.ktlint`). Run it via `./gradlew ktlintFormat` to
 auto-fix, and `./gradlew ktlintCheck` to verify. The ruleset gates the uniformly-internal
-visibility categories and other mechanical rules described below. It is deliberately conservative:
-the remaining cases (cross-module mappers, shared components, anything subtler) are caught in
-review.
+visibility categories and other mechanical rules described below - including the formerly advisory
+checks now promoted to blocking rules: one-type-per-file, no inline fully-qualified references,
+project-import order, no inline mockk stubs, and no bare `runCatching` in a `*UseCase*`. It is
+deliberately conservative: the remaining cases (cross-module mappers, shared components, anything
+subtler) are caught in review.
+
+A second gate, the custom detekt ruleset `nl.rhaydus:detekt-rules` (`./gradlew detektCheck`, plus the
+shared `config/detekt.yml` baseline), adds the crash-safety checks that need type resolution - notably
+`UnguardedFlowTerminalRead`, which flags an unguarded terminal read of a `Flow` (`first()` / `single()`)
+without flagging the identically named `Collection` operators. detekt's `formatting` ruleset stays off:
+the mechanizable layout rules are owned by `ktlint-rules`.
 
 ## Naming Conventions
 
