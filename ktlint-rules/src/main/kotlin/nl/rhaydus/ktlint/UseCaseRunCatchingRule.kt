@@ -13,7 +13,7 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
  * `runCatching { … }`. Bare `runCatching` swallows `CancellationException` (breaking structured
  * concurrency) and logs nothing, so a failure dropped by the caller vanishes silently. The
  * cancellation-safe `runCatchingLogged` (and the pure `runCatchingCancellable` primitive) live in
- * `nl.rhaydus:core-ui`.
+ * `nl.rhaydus:core-common`.
  *
  * Detect-only (not auto-corrected): the right replacement (`runCatchingLogged` vs `runCatchingCancellable`)
  * is a judgement call. Scoped to production `*UseCase*.kt` source, matching the convention's reach.

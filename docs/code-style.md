@@ -534,7 +534,7 @@ The error model is layered. In short:
   business decisions* (e.g. falling back to a placeholder), never for hiding errors the caller should
   see or for running failure-policy side effects.
 - **Every use case returns `Result<T>` and owns failure policy,** wrapping its repository call in the
-  cancellation-aware `runCatchingCancellable` from `nl.rhaydus:core-ui` - a `runCatching` that rethrows
+  cancellation-aware `runCatchingCancellable` from `nl.rhaydus:core-common` - a `runCatching` that rethrows
   `CancellationException` so a cancelled coroutine never becomes a `Result.failure`. Never use bare
   `runCatching` around a suspend call. Reactions to a failure that span operations belong here, not in
   the repository. When the use case should also log the failure at the boundary, use `runCatchingLogged`

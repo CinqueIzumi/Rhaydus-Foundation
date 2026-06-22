@@ -359,6 +359,21 @@ An `AppDispatchers` abstraction provides `Main` / `IO` / `Default` dispatchers v
 testability. TOAD actions run on `Main`; use cases, data sources, and repositories switch to `IO` for
 network and disk work internally.
 
+`AppDispatchers` lives in `core-common`, the module of non-visual shared primitives (dispatchers,
+logging, result helpers, formatting). The platform-capability seams every KMP app needs live one module
+out in `core-platform` (which depends on `core-common`), each an interface in `commonMain` with a public
+per-platform implementation the app wires into its own DI:
+
+- **`SecureStorage`** - a keyed read/write/delete secret store backed by hardware-backed storage
+  (`AndroidSecureStorage` over the Keystore, `IosSecureStorage` over the Keychain, `JvmSecureStorage`
+  over the desktop OS secret store).
+- **`NetworkAvailabilityProvider`** - reactive connectivity (`isOnline: StateFlow<Boolean>`,
+  `awaitOnline()`) with per-platform providers (Android `ConnectivityManager`, iOS `nw_path_monitor`,
+  desktop reachability polling). The companion `NetworkAvailability` singleton exposes the same state as
+  an instant, non-suspending check for guard clauses; install the provider once at startup. The desktop
+  provider owns a polling coroutine and is `AutoCloseable` - the app must `close()` it on shutdown, or
+  the loop leaks for the process lifetime.
+
 ---
 
 ## 7. Build setup and convention plugins

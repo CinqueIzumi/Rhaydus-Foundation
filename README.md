@@ -34,7 +34,8 @@ It ships three things most "shared module" repos don't bother to keep together:
 | Module | Coordinate | What it gives you |
 |---|---|---|
 | **TOAD runtime** | `nl.rhaydus:toad` | The home-grown MVI-style presentation framework: `ToadScreenModel`, `UiState`/`UiAction`/`UiEvent`, `Collector`, `ActionScope`. |
-| **Core UI seams** | `nl.rhaydus:core-ui` | Non-visual seams: `AppDispatchers`, the `AppLog` logging facade, `runCatchingCancellable` / `runCatchingLogged`, date/time/number formatting. |
+| **Core common** | `nl.rhaydus:core-common` | Non-visual shared primitives: `AppDispatchers`, the `AppLog` logging facade, `runCatchingCancellable` / `runCatchingLogged`, date/time/number formatting. |
+| **Core platform** | `nl.rhaydus:core-platform` | Platform-capability seams (depends on core-common): `SecureStorage` and `NetworkAvailabilityProvider`, each with Android / iOS / desktop implementations. |
 | **Design system — core** | `nl.rhaydus:designsystem-core` | The **design-agnostic** Compose skeleton: theme scaffold, layout primitives (window-size classes, two-pane, content-width caps), modifiers, motion + reduced-motion seam, haptics, the button family. |
 | **Design system — editorial** | `nl.rhaydus:designsystem-editorial` | **Opt-in** editorial design language: shared type-role contract + components (section header, hero stat, drop cap, search field, pull-to-refresh eyebrow). |
 | **Design system — image** | `nl.rhaydus:designsystem-image` | **Opt-in** async images on Coil: plain, placeholder, and shimmer variants. |
@@ -55,7 +56,7 @@ graph LR
   image["designsystem-image<br/><i>async images</i>"] --> core
   image -. brings .-> coil["Coil"]
   toad["toad<br/><i>presentation runtime</i>"]
-  coreui["core-ui<br/><i>non-visual seams</i>"]
+  platform["core-platform<br/><i>platform seams</i>"] --> common["core-common<br/><i>non-visual primitives</i>"]
 ```
 
 An app that wants a different look depends on `designsystem-core` alone and never pulls the editorial language or Coil — the opinionated layers are opt-in by design.
