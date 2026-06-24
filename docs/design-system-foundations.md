@@ -132,11 +132,25 @@ bottom bar's footprint** so the last item is never occluded.
 This is wired through a CompositionLocal, not passed by hand down every screen:
 
 - A `LocalBottomBarPadding` CompositionLocal (default `0.dp`) carries the current bottom-bar footprint.
-- The bottom-bar host screen measures the bar's height, adds spacing and the `navigationBars` window inset,
-  and **provides** that total through `CompositionLocalProvider(LocalBottomBarPadding provides ...)`.
+- `BottomBarScaffold(bottomBar, barSpacing, content)` is the shipped host: the app hands it the brand-styled
+  bar as a slot, and it measures the bar's laid-out footprint, adds `barSpacing`, and **provides** that total
+  through `CompositionLocalProvider(LocalBottomBarPadding provides ...)`. No per-app host boilerplate.
+- **Measure once - never re-add the inset.** The host measures the *laid-out* bar (its `onSizeChanged` sits
+  outside the bar's `windowInsetsPadding`), so the `navigationBars` inset the bar reserves is already baked
+  into the measured height and counted exactly once. Recomputing and re-adding `WindowInsets.navigationBars`
+  on top of a measured height double-counts it.
+- **Floating vs docked.** `BottomBarScaffold` (and the `LocalBottomBarPadding` it writes) is for an
+  **overlay / floating** bar that draws *over* content - the only case a padding channel is needed, since an
+  overlay bar cannot be reserved by layout. A **docked** bar instead lives in a Material `Scaffold { bottomBar }`
+  and its space comes from `innerPadding`; there `LocalBottomBarPadding` correctly stays `0.dp`.
 - Screens read it through a `rememberBottomBarPadding()` helper and apply it as trailing content padding.
 - A companion `BottomNavigationSpacer()` helper emits a `Spacer` sized to the bottom navigation-bar inset
   for screens that need the raw inset.
+
+The **rendered bar and the tab host stay app-side** (they name concrete features and brand chrome; section
+8): the foundation ships the reusable pieces the shell leans on - `BottomBarScaffold`, the window-size
+primitives (§5.7), `TwoPaneScaffold` (§5.8), and the cross-tab pulse (§7) - and the app composes them into
+its own adaptive nav shell.
 
 **Root tabs prefer an in-page title over a chrome title.** On a root tab, the screen's identity renders
 *inside* the scroll (an in-page `pageTitle`-style role), so it shares the editorial scale with the section
@@ -256,6 +270,11 @@ multiplatform resources) is an app-level decision and belongs in the app's own d
   screen-entry window, never an animate-on-scroll effect. `rememberStaggeredEntryCoordinator(key)` +
   `Modifier.staggeredEntry(coordinator, index)` provide it; "first entry" is tracked per key for the
   process lifetime, so a return visit to the same screen renders statically.
+- **Cross-tab nav pulse.** When an event lands on a tab other than the current one (a book added from the
+  Reading tab landing on the Library shelf), that tab's icon briefly pulses. `NavPulse` (§nav) is a keyed,
+  instance-owned signal - the app fires `navPulse.pulse(key)` from wherever the event originates (safe outside
+  composition) and the nav chrome reads `rememberPulseScale(navPulse, key)` to scale the icon. The concrete
+  key (which tab, what event) stays app-side; the foundation ships only the mechanism.
 - **All motion is suppressed under reduced motion** (system animations disabled): the reduced path is an
   instant, un-animated swap. This gate is mandatory for every animation.
 
@@ -282,7 +301,8 @@ The network fetcher stays an app choice, configured on the app's Coil `ImageLoad
 - **Reusable building blocks live in `core/presentation/widget/` (or the app's design-system module);
   theming lives in `core/presentation/theme/`.** Shell-tier components that enumerate concrete app tabs
   (bottom navigation, the tab host) live at the shell/orchestration tier, not in generic `core`, because they
-  name concrete features; the reusable pieces they lean on (icon toggles, color roles) stay in `core`.
+  name concrete features; the reusable pieces they lean on (icon toggles, color roles, `BottomBarScaffold`
+  and its padding contract §5.2, the `NavPulse` cross-tab pulse §7) stay in `core`.
 - **One declaration per file**, named after the declaration. One action per file in TOAD features (section 9).
 - **Slot APIs over flags where the content varies.** A pill chip takes an optional `onClick` (interactive
   when present, a read-only tag when omitted) rather than a boolean mode. Components prefer the canonical
