@@ -298,6 +298,12 @@ The network fetcher stays an app choice, configured on the app's Coil `ImageLoad
   as `RhaydusIconResource`. Reach for these rather than calling Material `Button` directly; the filled style
   carries the press-scale feedback (section 7). They use Material typography, so they carry no editorial
   dependency.
+- **Shared interactive widgets stay brand-agnostic via params, not brand values.** `StarRatingInput`
+  (`component/`) is a half-star tap/drag-scrub rating control; its star glyph is a `RhaydusIconResource` and
+  its filled/empty tints are colour params (defaulting to Material roles), so no brand token leaks in.
+  `ExpandableFlowRow` (`layout/`) is a `FlowRow` that collapses to N lines behind a replaceable "show more"
+  affordance and reveals more per tap. Reach for these before hand-rolling a rating row or a collapsing
+  chip/tag set.
 - **Reusable building blocks live in `core/presentation/widget/` (or the app's design-system module);
   theming lives in `core/presentation/theme/`.** Shell-tier components that enumerate concrete app tabs
   (bottom navigation, the tab host) live at the shell/orchestration tier, not in generic `core`, because they
