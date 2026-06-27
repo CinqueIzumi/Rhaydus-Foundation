@@ -375,7 +375,7 @@ Walk this before reaching for novelty. Brand-specific rules extend this list in 
 Compose Multiplatform runs the same shared composables on a desktop (jvm) window, where a pointer and a
 physical keyboard exist. These affordances make a shared surface feel native there while staying inert on
 touch, so a shared composable can carry them unconditionally. The desktop-only ones live in `jvmMain`; the
-two modifiers below are in `commonMain` and no-op on touch.
+`commonMain` modifiers below (`pointerHandCursor`, `hoverHighlight`, `platformModifierClick`) no-op on touch.
 
 - **Hand cursor.** `Modifier.pointerHandCursor()` shows the platform "clickable" hand cursor while the
   pointer hovers a clickable surface that lacks an obvious built-in cursor affordance. A no-op on touch
@@ -392,6 +392,13 @@ two modifiers below are in `commonMain` and no-op on touch.
 - **Back strip.** `DesktopBackStrip(...)` is the static leading-gutter back button a pushed desktop screen
   carries instead of a scroll-collapsing top bar. The app supplies its own arrow glyph (wrapped in
   `RhaydusIconResource`); no icon asset is baked into the shared module.
+- **Scrollbar.** `DesktopVerticalScrollbar(state)` overlays a persistent, themed vertical scrollbar on the
+  trailing edge of a scrolling region — mouse-driven desktop scrolling has no fling indicator, so the bar
+  is how a desktop user reads and grabs their position in a long list. It takes a `LazyGridState`,
+  `LazyListState`, or `ScrollState` (prefer the `ScrollState` overload when items vary wildly in height, so
+  the thumb reflects the exact extent instead of a lazy estimate). The thumb is keyed to
+  `MaterialTheme.colorScheme.onSurface` so it stays visible on dark surfaces where Compose Desktop's
+  near-black default disappears. jvm-only (touch has no scrollbar; the fling + edge-glow is the affordance).
 - **Esc dismisses in-app overlays.** `Modifier.dismissOnEscape(enabled) { onDismiss() }` closes an in-app
   surface that sits over the page (a full-screen viewer, a transient selection mode) on the Esc key. It is
   only for surfaces that are **not** a `Dialog` / `Popup`: a `Dialog` (including `AdaptiveModalSheet`'s
@@ -401,6 +408,12 @@ two modifiers below are in `commonMain` and no-op on touch.
 - **Selection on desktop.** Where touch enters a multi-select mode by long-press, desktop also honors the
   pointer idioms (right-click to open the selection, modifier-click to extend it). The concrete gestures
   are an app decision; the rule is that a desktop layout does not leave long-press as the only entry.
+- **Modifier-click selection.** `Modifier.platformModifierClick(onCtrlClick, onShiftClick)` is the concrete
+  modifier-click gesture for the rule above: on desktop a primary click with **Ctrl/Cmd** held toggles this
+  item's selection and with **Shift** held range-selects to it. It intercepts in the pointer **Initial**
+  phase and consumes the press only when a modifier is held, so a plain click still reaches the surface's
+  own inner `combinedClickable` (no double-fire); Shift wins when both are held. It lives in `commonMain`
+  and is a pure pass-through on touch, so a shared cell can wire it unconditionally.
 - **Right-click menu.** `DesktopContextMenu(items) { content }` wraps a surface in a desktop secondary-click
   menu (the pointer counterpart to a touch long-press) and is a pure pass-through on touch and for an empty
   `items` list, so a shared composable can wrap unconditionally and populate items only where a menu applies.
