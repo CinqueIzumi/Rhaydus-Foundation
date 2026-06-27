@@ -302,8 +302,11 @@ The network fetcher stays an app choice, configured on the app's Coil `ImageLoad
   (`component/`) is a half-star tap/drag-scrub rating control; its star glyph is a `RhaydusIconResource` and
   its filled/empty tints are colour params (defaulting to Material roles), so no brand token leaks in.
   `ExpandableFlowRow` (`layout/`) is a `FlowRow` that collapses to N lines behind a replaceable "show more"
-  affordance and reveals more per tap. Reach for these before hand-rolling a rating row or a collapsing
-  chip/tag set.
+  affordance and reveals more per tap. `InlineErrorState` (`component/`) is the standard in-content
+  load/submit-failure surface — a message in the Material `error` role above a `RhaydusButton` retry — with
+  its retry label and text style as params (the app supplies its own copy and editorial role); it is the
+  render side of the TOAD error-slot convention (`toad-architecture.md`). Reach for these before hand-rolling
+  a rating row, a collapsing chip/tag set, or an error-and-retry block.
 - **Reusable building blocks live in `core/presentation/widget/` (or the app's design-system module);
   theming lives in `core/presentation/theme/`.** Shell-tier components that enumerate concrete app tabs
   (bottom navigation, the tab host) live at the shell/orchestration tier, not in generic `core`, because they
