@@ -292,6 +292,17 @@ opt-in `designsystem-image` module (it brings Coil): `RhaydusImage` (plain), `Rh
 caller-supplied placeholder slot while loading), and `RhaydusShimmerImage` (the placeholder is a shimmer).
 The network fetcher stays an app choice, configured on the app's Coil `ImageLoader`.
 
+- **Exporting a composable as an image is a shared seam.** `ShareCardCapture` (`share/`, in `designsystem-core`)
+  captures a composable to a PNG and saves or shares it: wrap the card in `CapturableShareCard(capture) { … }`
+  (the app's card design is the `@Composable` slot), then call `saveToGallery` / `saveToCache` / `share` on the
+  `rememberShareCardCapture(config)` instance. The platform fiddliness is handled inside the seam — Android
+  MediaStore/scoped-storage save + a `FileProvider` share `Intent`, desktop native save dialog + clipboard copy,
+  iOS `UIActivityViewController` — while the brand-specific bits (file-name prefix, gallery album, the Android
+  `FileProvider` authority the app must declare in its manifest) come in through `ShareCardCaptureConfig`. It is
+  self-contained (kotlinx `Dispatchers`, no Koin), so failures surface through the `SaveOutcome` / `ShareOutcome`
+  return types rather than a logger. `GalleryWritePermissionRequester` gates the legacy Android write permission
+  (API ≤ 28); it reports granted immediately elsewhere.
+
 - **The button family is shared.** `RhaydusButton`, `RhaydusToggleButton`, `RhaydusIconToggleButton`, and
   `RhaydusSplitButton` (in `designsystem-core`) are the canonical buttons, parameterized by the `ButtonSize`
   / `ButtonStyle` / `ToggleButtonStyle` / `IconToggleButtonStyle` / `SplitButtonStyle` enums and taking icons

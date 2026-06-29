@@ -49,6 +49,7 @@ rather than a memorized snapshot.
 - **haptics/** — `Haptics`, `rememberHaptics()`, `LocalHaptics`.
 - **util/** — `ObserveAsEvents`, `SnackBarManager`, `SkeletonCrossfade`, `htmlToAnnotatedString`, `ClipboardReader`.
 - **icon/** — `RhaydusIconResource` (the brand-agnostic icon wrapper; the app supplies its own icon catalog).
+- **share/** — `ShareCardCapture` (`rememberShareCardCapture(config)`) captures a composable to a PNG and saves/shares it (Android MediaStore + share `Intent`, desktop file dialog + clipboard, iOS share sheet); `CapturableShareCard` is the capture host taking the app's card as a `@Composable` slot; `ShareCardCaptureConfig` supplies the file-name prefix / gallery album / Android `FileProvider` authority; `SaveOutcome` / `ShareOutcome` are the result types; `GalleryWritePermissionRequester` gates the Android API ≤ 28 write permission. Self-contained (no Koin/`AppDispatchers`); the Android target pulls `androidx.core` + `activity-compose`.
 
 ## Dependency graph
 
