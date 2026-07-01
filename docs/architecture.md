@@ -374,6 +374,32 @@ per-platform implementation the app wires into its own DI:
   provider owns a polling coroutine and is `AutoCloseable` - the app must `close()` it on shutdown, or
   the loop leaks for the process lifetime.
 
+### Offline write queue (`offline-sync`)
+
+The `offline-sync` module (depends on `core-platform`) is the brand-agnostic skeleton for an
+optimistic-write / drain-and-reconcile engine: when a mutation can't reach the server, enqueue it locally
+and replay it when connectivity returns. It owns the generic algorithm and leaves the app's concrete write
+shapes, persistence, and remote dispatch as injected seams.
+
+- **`PendingWriteStore<P>`** (extends **`WriteQueue<P>`**) is the persistence seam the app implements
+  (Room / SQLite / DataStore): `enqueue(payload)`, `getPending(maxAttempts)` (oldest-first, poison-capped),
+  `delete(localId)`, `incrementAttempts(localId)`. The concrete table, the payload↔row codec, and any
+  coalescing (upsert-replacing same-kind writes for an entity) stay app-side. `P` is the app's opaque
+  write payload; a `PendingWrite<P>` row carries `localId` + `attempts`.
+- **`DefaultOfflineWriteDrainer<P, I, K>`** (implements **`OfflineWriteDrainer<I, K>`**) is the engine.
+  `start(scope)` drains on every connectivity return (via `NetworkAvailabilityProvider`) and once at
+  startup; `drain()` runs one pass on demand and returns the **reconciliation hints** `Map<I, Set<K>>`
+  (per entity id, the write kinds that synced) so the caller preserves only the fields each replayed write
+  owns when merging a fresh fetch. The app supplies the `replay: suspend (P) -> ReplayOutcome` dispatch,
+  a `hintKey: (P) -> Pair<I, K>?` extractor, an `isTransient: (Throwable) -> Boolean` classifier, and a
+  `DrainPolicy` (poison cap + in-drain exponential backoff). A **transient** replay failure bumps the
+  row's attempts and halts the pass (preserving enqueue order); a **terminal** failure discards the row.
+  `isTransient` defaults to treating every failure as transient (never lose a queued write); override it
+  to discard writes the server will always reject.
+
+The app owns the drain→fetch→reconcile *composition* (the field-preserving merge is inherently
+app-specific); the module ships only the drainer that yields the hints.
+
 ---
 
 ## 7. Build setup and convention plugins

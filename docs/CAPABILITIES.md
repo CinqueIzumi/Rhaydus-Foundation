@@ -30,6 +30,7 @@ rather than a memorized snapshot.
 | `nl.rhaydus:toad` | TOAD presentation runtime (KMP, `commonMain`) | `ToadScreenModel`, `UiState`, `UiAction`, `UiEvent`, `Collector`, `ActionDependencies`, `ActionScope`, `LocalVariables` | `toad-architecture.md` |
 | `nl.rhaydus:core-common` | Non-visual shared primitives | `AppDispatchers`, `AppLog`, `runCatchingCancellable`, `runCatchingLogged`, `TimeFormat`, `CurrentDate`, `HoursMinutesSeconds`, `NumberFormat` | `architecture.md` |
 | `nl.rhaydus:core-platform` | Platform-capability seams (depends on core-common) | `SecureStorage` (Android/iOS/JVM), `NetworkAvailabilityProvider` + `NetworkAvailability` (Android/iOS/JVM) | `architecture.md` |
+| `nl.rhaydus:offline-sync` | Offline optimistic-write queue skeleton (depends on core-platform) | `WriteQueue` / `PendingWriteStore` (app-implemented persistence seam), `PendingWrite`, `OfflineWriteDrainer` + `DefaultOfflineWriteDrainer`, `ReplayOutcome`, `DrainPolicy` | `architecture.md` |
 | `nl.rhaydus:designsystem-core` | Design-agnostic Compose skeleton (no brand tokens) | see **designsystem-core surface** below | `design-system-foundations.md`, `code-style.md` |
 | `nl.rhaydus:designsystem-editorial` | Opt-in editorial design language (depends on core) | `EditorialTypography`, `buildEditorialTypography`, `EditorialTheme`, `MaterialTheme.editorialTypography`; components `EditorialSectionHeader`, `HeroStatNumberField` + `EditorialSuffix`, `PullToRefreshEyebrow`, `DropCapText`, `EditorialSearchField` | `design-system-foundations.md` §2 |
 | `nl.rhaydus:designsystem-image` | Opt-in async images on Coil (depends on core) | `RhaydusImage` (plain), `RhaydusPlaceholderImage` (placeholder slot), `RhaydusShimmerImage` (shimmer) | `design-system-foundations.md` §8 |
@@ -56,6 +57,7 @@ rather than a memorized snapshot.
 ```
 designsystem-editorial ──► designsystem-core
 designsystem-image     ──► designsystem-core   (+ Coil: coil-compose; the network fetcher is an app choice)
+offline-sync           ──► core-platform ──► core-common
 core-platform          ──► core-common
 core-common, toad      (standalone)
 ```
