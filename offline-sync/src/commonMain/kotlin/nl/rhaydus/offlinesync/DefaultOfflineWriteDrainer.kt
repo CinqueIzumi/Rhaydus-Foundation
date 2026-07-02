@@ -98,14 +98,20 @@ class DefaultOfflineWriteDrainer<P, I, K>(
                 }
                 .onFailure { error ->
                     if (isTransient(error)) {
-                        logTransientHalt(error, row.attempts)
+                        logTransientHalt(
+                            error,
+                            row.attempts,
+                        )
 
                         store.incrementAttempts(row.localId)
 
                         return
                     }
 
-                    AppLog.w(error, "offline drain: discarding terminally-rejected write")
+                    AppLog.w(
+                        error,
+                        "offline drain: discarding terminally-rejected write",
+                    )
 
                     store.delete(row.localId)
                 }
@@ -119,9 +125,15 @@ class DefaultOfflineWriteDrainer<P, I, K>(
         val nextAttempts = attempts + 1
 
         if (nextAttempts >= policy.maxAttempts) {
-            AppLog.w(error, "offline drain: write poisoned after $nextAttempts attempts; it will no longer be retried")
+            AppLog.w(
+                error,
+                "offline drain: write poisoned after $nextAttempts attempts; it will no longer be retried",
+            )
         } else {
-            AppLog.w(error, "offline drain halted by a transient failure (attempt $nextAttempts of ${policy.maxAttempts})")
+            AppLog.w(
+                error,
+                "offline drain halted by a transient failure (attempt $nextAttempts of ${policy.maxAttempts})",
+            )
         }
     }
 
