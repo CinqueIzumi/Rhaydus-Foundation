@@ -430,8 +430,23 @@ Other build conventions:
 
 A single-module app has no module graph to gate, but the same package boundaries and the same
 "declare what you import" discipline keep it ready for extraction. The multi-module shape additionally
-gates the tier rules mechanically: a Gradle check derives each module's tier from its path and fails
-the build on any `project(...)` dependency pointing sideways or upward.
+gates three things mechanically, each wired into every module's `check`:
+
+- **Module-graph tiers** — the root-applied `rhaydus.module-graph` convention plugin registers a
+  `checkModuleGraph` task that derives each module's tier from its path and fails the build on any
+  `project(...)` dependency pointing sideways or upward. It also enforces api-visibility: an `api`
+  edge to a designated data-area module must be allowlisted, so re-exporting a whole data/use-case
+  layer is always a deliberate decision. The mechanism is shared; each build supplies its own tiers,
+  module→tier mapping, and allowlists via the `moduleGraph { }` block in its root build script.
+- **Dependency health** — the `com.autonomousapps.dependency-analysis` policy fails on a genuinely
+  unused dependency or a wrong `api`-vs-`implementation` exposure; each module's `projectHealth` is
+  wired into its `check` (the `buildHealth` task aggregates them). The uniform runtime /
+  test / Compose bundle the convention plugins inject centrally is excluded (it is never a per-module
+  "unused" finding); transitive-completeness and compile-vs-runtime advice stay informational.
+- **Android lint** — every module runs lint with `warningsAsErrors` + `abortOnError` against the
+  shared root `lint.xml`, whose version-freshness checks (`NewerVersionAvailable` / `GradleDependency`
+  / `AndroidGradlePluginVersion`) are held `informational` so a newer upstream release never breaks a
+  build that is deliberately pinned to the foundation catalog.
 
 ---
 

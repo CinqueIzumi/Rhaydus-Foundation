@@ -35,5 +35,9 @@ gradlePlugin {
             id = "rhaydus.kmp.compose"
             implementationClass = "KmpComposeConventionPlugin"
         }
+        register("moduleGraph") {
+            id = "rhaydus.module-graph"
+            implementationClass = "ModuleGraphConventionPlugin"
+        }
     }
 }

@@ -1,3 +1,7 @@
+// This is the ktlint CLI entrypoint: stdout is its report channel and stderr its failure summary, so
+// the println / System.err.println calls below are the tool's output, not stray app logging.
+@file:Suppress("ktlint:rhaydus:no-raw-logging")
+
 package nl.rhaydus.ktlint
 
 import com.pinterest.ktlint.rule.engine.api.Code
@@ -28,6 +32,7 @@ private val ruleProviders: Set<RuleProvider> =
         RuleProvider { ProjectImportOrderRule() },
         RuleProvider { InlineMockkStubRule() },
         RuleProvider { UseCaseRunCatchingRule() },
+        RuleProvider { NoRawLoggingRule() },
     )
 
 fun main(args: Array<String>) {

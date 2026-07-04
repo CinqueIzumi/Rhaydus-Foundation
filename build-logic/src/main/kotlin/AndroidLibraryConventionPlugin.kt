@@ -38,9 +38,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
 
             lint {
-                warningsAsErrors = true
-                abortOnError = true
-                lintConfig = target.rootProject.file("lint.xml")
+                applyRhaydusLintPolicy(target)
             }
         }
 

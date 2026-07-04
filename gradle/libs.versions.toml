@@ -28,6 +28,7 @@ voyager = "1.1.0-beta02"
 koinVersion = "3.5.3"
 koinComposeMultiplatform = "1.1.2"
 ksp = "2.3.9"
+dependencyAnalysis = "3.14.1"
 # KSafe backs the desktop (JVM) SecureStorage actual: it custodies the encryption key in the OS
 # secret store (macOS Keychain / Windows DPAPI / Linux Secret Service).
 ksafe = "2.1.2"
@@ -107,3 +108,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
+dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" }

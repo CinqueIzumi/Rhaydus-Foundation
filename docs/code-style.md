@@ -13,9 +13,10 @@ Mechanizable style is enforced by the shared custom ktlint ruleset published as
 auto-fix, and `./gradlew ktlintCheck` to verify. The ruleset gates the uniformly-internal
 visibility categories and other mechanical rules described below - including the formerly advisory
 checks now promoted to blocking rules: one-type-per-file, no inline fully-qualified references,
-project-import order, no inline mockk stubs, and no bare `runCatching` in a `*UseCase*`. It is
-deliberately conservative: the remaining cases (cross-module mappers, shared components, anything
-subtler) are caught in review.
+project-import order, no inline mockk stubs, and no bare `runCatching` in a `*UseCase*`. It also bans
+raw logging (`no-raw-logging`): use the `AppLog` facade (`nl.rhaydus:core-common`) — never `println`
+or `android.util.Log.*`. It is deliberately conservative: the remaining cases (cross-module mappers,
+shared components, anything subtler) are caught in review.
 
 A second gate, the custom detekt ruleset `nl.rhaydus:detekt-rules` (`./gradlew detektCheck`, plus the
 shared `config/detekt.yml` baseline), adds the crash-safety checks that need type resolution - notably
