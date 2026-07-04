@@ -20,7 +20,7 @@ public API, so you reuse what exists. The canonical conventions live in [`docs/`
 
 ## Versioning
 
-`foundation.version` in `gradle.properties` is the single source for all seven published artifacts. The
+`foundation.version` in `gradle.properties` is the single source for all ten published artifacts. The
 Claude plugin's `plugin.json` version is **locked** to it by the `verifyPluginVersion` gate (wired into
 `check`) — bump them together. A `v*` tag publishes to Maven Central via CI.
 
