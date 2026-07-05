@@ -22,10 +22,19 @@ class InlineMockkStubRuleTest {
             // Line 2: "coEvery " = 8 chars, lambda { starts at col 9
             ruleAssertThat(code)
                 .asFileWithPath("/x/src/commonTest/kotlin/FooTest.kt")
-                .hasLintViolationWithoutAutoCorrect(
+                .hasLintViolation(
                     2,
                     9,
-                    "Open the coEvery block onto its own line, blank line after its closing } (§Whitespace)",
+                    "Open the coEvery block onto its own line (§Whitespace)",
+                )
+                .isFormattedAs(
+                    """
+                    fun test() {
+                    coEvery {
+                        repo.load()
+                    } returns 5
+                    }
+                    """.trimIndent(),
                 )
         }
 
@@ -42,10 +51,19 @@ class InlineMockkStubRuleTest {
             // Line 2: "every " = 6 chars, lambda { starts at col 7
             ruleAssertThat(code)
                 .asFileWithPath("/x/src/commonTest/kotlin/FooTest.kt")
-                .hasLintViolationWithoutAutoCorrect(
+                .hasLintViolation(
                     2,
                     7,
-                    "Open the every block onto its own line, blank line after its closing } (§Whitespace)",
+                    "Open the every block onto its own line (§Whitespace)",
+                )
+                .isFormattedAs(
+                    """
+                    fun test() {
+                    every {
+                        repo.name
+                    } returns "foo"
+                    }
+                    """.trimIndent(),
                 )
         }
     }

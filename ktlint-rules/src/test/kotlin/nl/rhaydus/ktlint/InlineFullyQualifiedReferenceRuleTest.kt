@@ -42,6 +42,22 @@ class InlineFullyQualifiedReferenceRuleTest {
                 message,
             )
         }
+
+        @Test
+        fun `fires for androidx fragment type - only nl_rhaydus generated fragments are exempt`() {
+            // ----- Arrange -----
+            val code = """
+                val x: androidx.fragment.app.Fragment? = null
+            """.trimIndent()
+
+            // ----- Act & Assert -----
+            // "val x: " = 7 chars, so androidx starts at col 8
+            ruleAssertThat(code).hasLintViolationWithoutAutoCorrect(
+                1,
+                8,
+                message,
+            )
+        }
     }
 
     @Nested
@@ -75,6 +91,17 @@ class InlineFullyQualifiedReferenceRuleTest {
             // ----- Arrange -----
             val code = """
                 package nl.rhaydus.core.example
+            """.trimIndent()
+
+            // ----- Act & Assert -----
+            ruleAssertThat(code).hasNoLintViolations()
+        }
+
+        @Test
+        fun `clean for a generated nl_rhaydus fragment type left fully-qualified`() {
+            // ----- Arrange -----
+            val code = """
+                val x: nl.rhaydus.softcover.fragment.BookListFragment? = null
             """.trimIndent()
 
             // ----- Act & Assert -----
