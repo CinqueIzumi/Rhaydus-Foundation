@@ -2,9 +2,12 @@ package nl.rhaydus.designsystem.layout
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -19,34 +22,95 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * The write side of the [LocalBottomBarPadding] contract: a host that overlays [bottomBar] on top of
- * [content], measures the bar's laid-out footprint, and provides that footprint (plus [barSpacing])
- * through [LocalBottomBarPadding] so scrolling content can reserve trailing space and never be
- * occluded. Content reads the value back through [rememberBottomBarPadding].
+ * The write side of the [LocalBottomBarPadding] contract: a host that puts [bottomBar] at the foot of
+ * [content] and provides, through [LocalBottomBarPadding], the trailing padding scrolling content must
+ * reserve so its last item is never occluded. Content reads the value back through
+ * [rememberBottomBarPadding].
  *
  * Pure layout - it knows nothing about navigation, screen models, tab sets, or how the bar is styled;
- * it only measures the [bottomBar] slot and shares the result. The brand-styled bar (a Material
+ * it only hosts the [bottomBar] slot and shares the resulting padding. The brand-styled bar (a Material
  * `NavigationBar`, a floating toolbar, whatever) is supplied by the caller.
  *
- * This is for an **overlay / floating** bar that draws *over* the content, which is the only case
- * [LocalBottomBarPadding] exists for: an overlay bar cannot be reserved by layout, so content needs a
- * shared channel to learn its height. A **docked** bar is a different pattern - host it in a Material
- * `Scaffold { bottomBar }` and read the reserved space from `innerPadding`; there [LocalBottomBarPadding]
- * correctly stays `0.dp` and this scaffold is not used.
+ * [placement] decides both how the bar is laid out and what the provided padding means:
  *
- * Double-inset safety: the footprint is *measured* from the laid-out bar via [onSizeChanged] placed
- * **outside** [windowInsetsPadding], so the navigation-bar inset the bar reserves is already baked into
- * the measured height and counted exactly once. Do not recompute and re-add `WindowInsets.navigationBars`
- * on top of a measured height - that double-counts the inset.
+ * - [BottomBarPlacement.OVERLAY] - the bar draws *over* the content, so layout reserves nothing for it.
+ *   The host measures the bar's laid-out footprint and provides `footprint + barSpacing`.
+ * - [BottomBarPlacement.DOCKED] - the bar is hosted in a Material `Scaffold`, which reserves its space
+ *   through `innerPadding`. The footprint is therefore already accounted for and the host provides
+ *   [barSpacing] alone: the breathing gap between the last item and the bar.
  *
- * On first frame the footprint is `0.dp`, so content reserves only [barSpacing]; it settles to the full
- * footprint within a frame once the bar has measured.
+ * Either way the value that reaches content answers exactly one question - *how much trailing padding do
+ * I reserve?* - so screens read it unconditionally and never branch on the placement themselves. An app
+ * with a runtime docked/floating preference flips [placement] and nothing else moves.
+ *
+ * Double-inset safety (overlay): the footprint is *measured* from the laid-out bar via [onSizeChanged]
+ * placed **outside** [windowInsetsPadding], so the navigation-bar inset the bar reserves is already baked
+ * into the measured height and counted exactly once. Do not recompute and re-add
+ * `WindowInsets.navigationBars` on top of a measured height - that double-counts the inset.
+ *
+ * On the first overlay frame the footprint is `0.dp`, so content reserves only [barSpacing]; it settles to
+ * the full footprint within a frame once the bar has measured.
  */
 @Composable
 fun BottomBarScaffold(
     bottomBar: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    placement: BottomBarPlacement = BottomBarPlacement.OVERLAY,
     barSpacing: Dp = 16.dp,
+    content: @Composable () -> Unit,
+) {
+    when (placement) {
+        BottomBarPlacement.DOCKED -> DockedBottomBarScaffold(
+            bottomBar = bottomBar,
+            modifier = modifier,
+            barSpacing = barSpacing,
+            content = content,
+        )
+
+        BottomBarPlacement.OVERLAY -> OverlayBottomBarScaffold(
+            bottomBar = bottomBar,
+            modifier = modifier,
+            barSpacing = barSpacing,
+            content = content,
+        )
+    }
+}
+
+@Composable
+private fun DockedBottomBarScaffold(
+    bottomBar: @Composable () -> Unit,
+    modifier: Modifier,
+    barSpacing: Dp,
+    content: @Composable () -> Unit,
+) {
+    val contentPadding = bottomBarContentPadding(
+        barFootprint = 0.dp,
+        barSpacing = barSpacing,
+    )
+
+    Scaffold(
+        modifier = modifier,
+        contentWindowInsets = WindowInsets(0),
+        bottomBar = bottomBar,
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
+        ) {
+            CompositionLocalProvider(LocalBottomBarPadding provides contentPadding) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+private fun OverlayBottomBarScaffold(
+    bottomBar: @Composable () -> Unit,
+    modifier: Modifier,
+    barSpacing: Dp,
     content: @Composable () -> Unit,
 ) {
     val density = LocalDensity.current
@@ -77,9 +141,10 @@ fun BottomBarScaffold(
 }
 
 /**
- * The trailing padding scrolling content reserves for a bottom bar: the measured [barFootprint] (which
- * already includes the navigation-bar inset) plus a [barSpacing] breathing gap. Pure so the
- * measure-once contract can be asserted without a Compose host.
+ * The trailing padding scrolling content reserves for a bottom bar: the [barFootprint] the bar occupies
+ * over the content (already including the navigation-bar inset, and `0.dp` when the bar is docked and its
+ * space is reserved by layout) plus a [barSpacing] breathing gap. Pure so the measure-once contract can be
+ * asserted without a Compose host.
  */
 internal fun bottomBarContentPadding(
     barFootprint: Dp,

@@ -9,7 +9,7 @@ class BottomBarScaffoldTest {
     @Nested
     inner class BottomBarContentPadding {
         @Test
-        fun `returns footprint plus spacing — inset counted once`() {
+        fun `overlay placement adds measured footprint plus spacing — inset counted once`() {
             // ----- Arrange -----
 
             // ----- Act -----
@@ -23,7 +23,7 @@ class BottomBarScaffoldTest {
         }
 
         @Test
-        fun `returns spacing only when footprint is zero — first frame reserve`() {
+        fun `docked placement reserves only the breathing gap — scaffold innerPadding covers the bar itself`() {
             // ----- Arrange -----
 
             // ----- Act -----
@@ -37,7 +37,7 @@ class BottomBarScaffoldTest {
         }
 
         @Test
-        fun `returns footprint only when spacing is zero`() {
+        fun `overlay placement with no breathing gap reserves the footprint alone — bottom-anchored chrome such as a player strip`() {
             // ----- Arrange -----
 
             // ----- Act -----

@@ -14,10 +14,10 @@ fun BottomNavigationSpacer() {
 }
 
 /**
- * The bottom-bar footprint an overlay bar reserves, provided by [BottomBarScaffold]. Read this as the
- * trailing content padding of scrolling content so the last item is never occluded. Resolves to `0.dp`
- * outside a [BottomBarScaffold] (e.g. under a docked bar, where the Material `Scaffold` innerPadding
- * reserves the bar instead).
+ * The trailing padding a bottom bar demands of scrolling content, provided by [BottomBarScaffold]. Apply it
+ * as the content padding at the foot of a scrolling surface so the last item is never occluded. The value
+ * already accounts for the bar's placement - a screen never branches on docked-vs-overlay itself. Resolves
+ * to `0.dp` outside a [BottomBarScaffold], where there is no bar to clear.
  */
 @Composable
 fun rememberBottomBarPadding(): Dp = LocalBottomBarPadding.current
