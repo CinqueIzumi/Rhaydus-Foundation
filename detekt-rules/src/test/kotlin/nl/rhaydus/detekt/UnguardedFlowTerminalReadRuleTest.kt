@@ -85,6 +85,30 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 findings.size,
             )
         }
+
+        @Test
+        fun `flags StateFlow single() — hot flow exemption does not extend to single`() {
+            // ----- Arrange -----
+            val code =
+                """
+                import kotlinx.coroutines.flow.StateFlow
+                import kotlinx.coroutines.flow.single
+
+                suspend fun read(flow: StateFlow<Int>): Int = flow.single()
+                """.trimIndent()
+
+            // ----- Act -----
+            val findings = rule.compileAndLintWithContext(
+                env,
+                code,
+            )
+
+            // ----- Assert -----
+            assertEquals(
+                1,
+                findings.size,
+            )
+        }
     }
 
     @Nested
@@ -183,6 +207,102 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 suspend fun consume(flow: Flow<Int>) {
                     flow.collect { value -> println(value) }
                 }
+                """.trimIndent()
+
+            // ----- Act -----
+            val findings = rule.compileAndLintWithContext(
+                env,
+                code,
+            )
+
+            // ----- Assert -----
+            assertEquals(
+                0,
+                findings.size,
+            )
+        }
+
+        @Test
+        fun `ignores StateFlow first() with predicate — the awaitOnline() shape`() {
+            // ----- Arrange -----
+            val code =
+                """
+                import kotlinx.coroutines.flow.StateFlow
+                import kotlinx.coroutines.flow.first
+
+                suspend fun awaitOnline(flow: StateFlow<Boolean>): Boolean = flow.first { it }
+                """.trimIndent()
+
+            // ----- Act -----
+            val findings = rule.compileAndLintWithContext(
+                env,
+                code,
+            )
+
+            // ----- Assert -----
+            assertEquals(
+                0,
+                findings.size,
+            )
+        }
+
+        @Test
+        fun `ignores StateFlow first() with no argument`() {
+            // ----- Arrange -----
+            val code =
+                """
+                import kotlinx.coroutines.flow.StateFlow
+                import kotlinx.coroutines.flow.first
+
+                suspend fun read(flow: StateFlow<Int>): Int = flow.first()
+                """.trimIndent()
+
+            // ----- Act -----
+            val findings = rule.compileAndLintWithContext(
+                env,
+                code,
+            )
+
+            // ----- Assert -----
+            assertEquals(
+                0,
+                findings.size,
+            )
+        }
+
+        @Test
+        fun `ignores SharedFlow first()`() {
+            // ----- Arrange -----
+            val code =
+                """
+                import kotlinx.coroutines.flow.SharedFlow
+                import kotlinx.coroutines.flow.first
+
+                suspend fun read(flow: SharedFlow<Int>): Int = flow.first()
+                """.trimIndent()
+
+            // ----- Act -----
+            val findings = rule.compileAndLintWithContext(
+                env,
+                code,
+            )
+
+            // ----- Assert -----
+            assertEquals(
+                0,
+                findings.size,
+            )
+        }
+
+        @Test
+        fun `ignores MutableStateFlow first() — subtype of StateFlow`() {
+            // ----- Arrange -----
+            val code =
+                """
+                import kotlinx.coroutines.flow.MutableStateFlow
+                import kotlinx.coroutines.flow.first
+
+                suspend fun read(flow: MutableStateFlow<Int>): Int = flow.first()
                 """.trimIndent()
 
             // ----- Act -----

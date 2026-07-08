@@ -16,12 +16,12 @@ Steps:
 2. Run the verification gate: `./gradlew check`. This typically covers lint, unit tests, and
    `ktlintCheck`; in a multiplatform project it also compiles every target (iOS Kotlin/Native compiles
    only on macOS). If the project defines extra gates — e.g. `buildHealth` (dependency analysis),
-   `styleCheck` (mechanical style script), `checkModuleGraph` — run those too. Discover them with
+   `styleCheck` (type-resolved detekt), `checkModuleGraph` — run those too. Discover them with
    `./gradlew tasks --group=verification` if unsure.
 3. If a gate fails, surface the failing task(s) and the relevant output. Do not attempt non-mechanical
    fixes automatically — `check`/`buildHealth` failures are blocking and need a human decision.
 4. Report which auto-fixes were applied (mention `git diff` is available to review them) and the gate
-   result. Treat advisory findings (e.g. `styleCheck`) as advisory; treat `check`/`buildHealth`
-   failures as blocking.
+   result. Treat `check` / `styleCheck` / `buildHealth` failures as blocking — `styleCheck` runs the
+   shared detekt baseline plus the `rhaydus` crash-safety ruleset and gates from zero.
 
 Do not create a commit.
