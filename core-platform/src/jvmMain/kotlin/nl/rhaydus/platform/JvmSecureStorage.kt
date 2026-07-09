@@ -12,6 +12,12 @@ import nl.rhaydus.common.runCatchingCancellable
  * Secret Service), falling back to a software key (with a warning) when no OS vault is available. The
  * desktop counterpart of the Android Keystore / iOS Keychain implementations; I/O runs on the IO
  * dispatcher.
+ *
+ * **Cross-app isolation is the caller's job here, unlike the mobile targets.** The OS secret store is
+ * scoped to the *user*, not to the application, and this class passes `key` through to [KSafe] verbatim
+ * without namespacing it. Separation between two rhaydus desktop apps therefore comes entirely from the
+ * `appNamespace` on the [KSafe] the caller constructs and injects. Two apps that omit it, or pick the
+ * same one, will read and overwrite each other's secrets.
  */
 class JvmSecureStorage(
     private val ksafe: KSafe,

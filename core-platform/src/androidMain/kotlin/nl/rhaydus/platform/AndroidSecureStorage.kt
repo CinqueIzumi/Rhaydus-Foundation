@@ -19,6 +19,10 @@ import nl.rhaydus.common.runCatchingCancellable
  * Keystore, and the ciphertext (IV size byte + IV + ciphertext) is written to a per-key file under
  * `filesDir` (`secure_<sanitized-key>.enc`). The Keystore custodies the encryption key; only the
  * ciphertext ever touches disk.
+ *
+ * Two rhaydus apps on one device do not collide despite sharing the [KEY_ALIAS] name: the Keystore is
+ * scoped per-UID and `filesDir` is private per-app, so the alias resolves to a different key object in
+ * each. Nothing here needs an app-specific namespace.
  */
 class AndroidSecureStorage(
     private val context: Context,

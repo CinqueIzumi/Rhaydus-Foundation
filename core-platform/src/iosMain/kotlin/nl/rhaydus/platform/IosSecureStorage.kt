@@ -48,6 +48,12 @@ import nl.rhaydus.common.AppLog
  * iOS secure storage: each secret is a generic-password Keychain item keyed by `key` (as the
  * account) under a fixed service. The Keychain encrypts and protects the secret itself, so, unlike
  * Android, there is no separate ciphertext file or manual crypto.
+ *
+ * Two rhaydus apps normally do not collide despite sharing the fixed [SERVICE]: an item is addressed
+ * within a keychain access group, and each app inherits its own default group
+ * (`$(AppIdentifierPrefix)$(CFBundleIdentifier)`). The exception is deliberate — two apps from the same
+ * team that both enable the Keychain Sharing entitlement onto a *shared* access group WILL collide on an
+ * identical `(service, account)` pair. Give them distinct keys, or accept that the secret is shared.
  */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 class IosSecureStorage(private val dispatchers: AppDispatchers) : SecureStorage {
