@@ -32,7 +32,13 @@ allprojects {
 // dependency-analysis (buildHealth): the root application (plugins block) registers the aggregate task;
 // each subproject needs the plugin too so it produces a project-health report, and its `check` depends on
 // that per-module `projectHealth` so the policy actually gates (not just a manually-invoked report).
+//
+// :catalog is skipped: it is a `version-catalog` project with no source set and no dependency graph to
+// analyse, so dependency-analysis registers no `projectHealth` task there and wiring `check` to one would
+// fail the task graph before any task runs.
 subprojects {
+    if (path == ":catalog") return@subprojects
+
     apply(plugin = "com.autonomousapps.dependency-analysis")
 
     tasks.matching { it.name == "check" }.configureEach {
