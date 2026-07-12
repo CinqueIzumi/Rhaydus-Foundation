@@ -33,6 +33,9 @@ class SiblingComposableBlankLineRule :
         ),
     ),
     RuleAutocorrectApproveHandler {
+    // The sibling-statement scan advances past several distinct node classes; the multiple loop jumps are clearer
+    // inline than refactored into predicates.
+    @Suppress("LoopWithTooManyJumpStatements")
     override fun beforeVisitChildNodes(
         node: ASTNode,
         emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision,

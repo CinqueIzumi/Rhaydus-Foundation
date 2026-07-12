@@ -1,0 +1,93 @@
+# Shared nl.rhaydus detekt baseline, bundled in nl.rhaydus:detekt-rules.
+#
+# Consume it with `buildUponDefaultConfig = true` and `config.from(<this file>)`; layer app-specific
+# thresholds (Room/DAO counts, network-client exception policy, etc.) in the app's own override file.
+# It carries only calibrations that every nl.rhaydus app wants: the Compose/TOAD/Koin conventions, the
+# guard-clause style, snake_case package segments, and the custom crash-safety ruleset. The mechanizable
+# layout rules are owned by nl.rhaydus:ktlint-rules, so detekt's `formatting` ruleset stays off here.
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+# Custom rules from nl.rhaydus:detekt-rules (added to the detektPlugins classpath). Requires type
+# resolution (the `detektMain` / `:detekt<Target>` tasks), so it is inert on a non-typed run.
+rhaydus:
+  UnguardedFlowTerminalRead:
+    active: true
+
+# Note: detekt's `formatting` ruleset (the ktlint wrapper) is deliberately NOT on the classpath - the
+# mechanizable layout rules are owned by nl.rhaydus:ktlint-rules. So there is no `formatting:` block here;
+# do not add the detekt-formatting plugin alongside this config.
+
+# ---------------------------------------------------------------------------------------------------
+# Type-resolution calibration.
+#
+# On a type-resolved run (`detektAndroidMain` / `detektJvmMain` / `detektMain`) detekt activates a class
+# of rules that are silently inert on a syntactic run. Two of them cannot produce a true positive on a
+# Kotlin 2.x codebase, because detekt 1.23 embeds a Kotlin 1.9 compiler frontend and its control-flow and
+# usage analyses mis-read modern sources. These are switched off with cause, not to hide debt - they are
+# noise generators, and every finding either team has inspected has been a false positive.
+#
+# REVISIT when detekt 2.x (K2-based frontend) is adopted: re-enable both and re-triage.
+# ---------------------------------------------------------------------------------------------------
+potential-bugs:
+  UnreachableCode:
+    # The 1.9 frontend types an elvis whose right side is `throw` / `return` as `Nothing` and marks
+    # everything after it unreachable - i.e. it flags the entire body of any function using the
+    # guard-clause style this ruleset's `ReturnCount.excludeGuardClauses` explicitly endorses.
+    active: false
+  IgnoredReturnValue:
+    # Does not recognise a call in the last-expression position of a lambda as its return value, so
+    # idiomatic `.map { list -> list.map(::toDomain) }` is reported as an ignored result.
+    active: false
+
+coroutines:
+  InjectDispatcher:
+    # The DI module that *provides* the dispatchers is the one place they are named by construction;
+    # everything downstream injects `AppDispatchers` from it, which is what this rule wants.
+    excludes: ['**/di/**']
+  RedundantSuspendModifier:
+    # Cannot see that a callee from a dependency jar is itself `suspend`, so it reports any function
+    # whose only suspension points are external - `Animatable.snapTo(...)`, an Apollo query wrapper.
+    # Verified against the compiler: of three findings on the reference app, two did not compile once
+    # the modifier was removed. A rule that is right one time in three cannot gate a build.
+    active: false
+
+complexity:
+  LongMethod:
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  CyclomaticComplexMethod:
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  TooManyFunctions:
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  LongParameterList:
+    # TOAD *ScreenModel / *Dependencies inject many use cases via Koin; a parameter object is not
+    # idiomatic for constructor DI, so the constructor threshold is generous.
+    constructorThreshold: 30
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  LargeClass:
+    # A screen file is a Voyager Screen plus its private @Composables - large by design.
+    threshold: 2500
+
+naming:
+  FunctionNaming:
+    # @Composable functions are PascalCase by convention.
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  TopLevelPropertyNaming:
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+  PackageNaming:
+    # Module/package names use snake_case segments (e.g. feature.book_detail).
+    packagePattern: '[a-z][a-z0-9]*(_[a-z0-9]+)*(\.[a-z][a-z0-9]*(_[a-z0-9]+)*)*'
+
+style:
+  MagicNumber:
+    # Compose dp/sp/alpha/weight literals saturate this rule with noise.
+    active: false
+  ReturnCount:
+    max: 8
+    excludeGuardClauses: true
+  MaxLineLength:
+    maxLineLength: 140
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']

@@ -16,10 +16,19 @@ dependencies {
     // ktlint's rule-engine logs via slf4j; provide the api + a no-op binding at runtime
     implementation("org.slf4j:slf4j-api:2.0.16")
     runtimeOnly("org.slf4j:slf4j-nop:2.0.16")
+
+    testImplementation(libs.ktlint.test)
+    testImplementation(libs.junit.api)
+    testRuntimeOnly(libs.junit.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 kotlin {
     jvmToolchain(17)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 // Published as nl.rhaydus:ktlint-rules. Consumers resolve this jar onto a JavaExec classpath and run
@@ -70,7 +79,7 @@ val ktlintScanRoot = (project.findProperty("ktlint.root") as String?) ?: rootDir
 
 tasks.register<JavaExec>("ktlintFormat") {
     group = "formatting"
-    description = "Auto-wraps multi-arg calls/declarations across the repo (custom ktlint ruleset)."
+    description = "Auto-fixes the mechanizable layout rules (arg wrapping, trailing commas, blank lines) across the repo."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("nl.rhaydus.ktlint.MainKt")
     args("format", ktlintScanRoot)
@@ -78,7 +87,7 @@ tasks.register<JavaExec>("ktlintFormat") {
 
 tasks.register<JavaExec>("ktlintCheck") {
     group = "verification"
-    description = "Fails the build on custom-ruleset violations (multi-arg one-per-line wrapping)."
+    description = "Gates on all custom-ruleset violations (layout + structural rules)."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("nl.rhaydus.ktlint.MainKt")
     args("check", ktlintScanRoot)

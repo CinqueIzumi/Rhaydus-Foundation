@@ -20,6 +20,12 @@ kotlin {
             // ObserveAsEvents needs LocalLifecycleOwner + repeatOnLifecycle.
             implementation(libs.androidx.lifecycle.runtime.compose)
         }
+        androidMain.dependencies {
+            // ShareCardCapture (share/): FileProvider + ContextCompat for the Android save/share path,
+            // activity-compose for the gallery-write permission launcher.
+            implementation(libs.androidx.core.ktx)
+            implementation(libs.androidx.activity.compose)
+        }
     }
 }
 

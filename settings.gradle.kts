@@ -24,9 +24,12 @@ dependencyResolutionManagement {
 rootProject.name = "rhaydus-foundation"
 
 include(":ktlint-rules")
+include(":detekt-rules")
 include(":catalog")
 include(":toad")
-include(":core-ui")
+include(":core-common")
+include(":core-platform")
+include(":offline-sync")
 include(":designsystem-core")
 include(":designsystem-editorial")
 include(":designsystem-image")

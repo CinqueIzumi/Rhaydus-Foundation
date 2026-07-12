@@ -5,6 +5,21 @@ import com.pinterest.ktlint.rule.engine.core.api.ElementType.WHITE_SPACE
 import com.pinterest.ktlint.rule.engine.core.api.upsertWhitespaceAfterMe
 import com.pinterest.ktlint.rule.engine.core.api.upsertWhitespaceBeforeMe
 import org.jetbrains.kotlin.com.intellij.lang.ASTNode
+import org.jetbrains.kotlin.psi.KtFile
+
+private val TEST_SOURCE_SET = Regex("/src/[^/]*[Tt]est[^/]*/")
+
+/** Full path of the file this node belongs to (e.g. `.../src/commonTest/kotlin/FooTest.kt`), or "" if unavailable. */
+internal fun ASTNode.containingFilePath(): String {
+    val file = psi?.containingFile ?: return ""
+    return (file as? KtFile)?.virtualFilePath ?: file.name
+}
+
+/** The simple file name (e.g. `FooUseCase.kt`). */
+internal fun ASTNode.fileName(): String = containingFilePath().substringAfterLast('/')
+
+/** True when the node's file lives in a test source set (`src/<...test...>/`). */
+internal fun ASTNode.isInTestSource(): Boolean = TEST_SOURCE_SET.containsMatchIn(containingFilePath())
 
 /** Number of line breaks contained in this node's text (0 for a same-line whitespace). */
 internal fun ASTNode.newlineCount(): Int = text.count { it == '\n' }

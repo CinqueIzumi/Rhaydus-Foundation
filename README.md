@@ -4,7 +4,7 @@
 
 **A shared backbone for Kotlin Multiplatform apps — published libraries, build tooling, conventions, and the Claude Code assets that teach an AI assistant how to use them.**
 
-![Version](https://img.shields.io/badge/version-0.2.0-1f6feb)
+![Version](https://img.shields.io/badge/version-0.3.0-1f6feb)
 ![License](https://img.shields.io/badge/license-MIT-2da44e)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?logo=kotlin&logoColor=white)
 ![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Desktop-0a7ea4)
@@ -29,17 +29,20 @@ It ships three things most "shared module" repos don't bother to keep together:
 
 ## What's inside
 
-### Published libraries (`nl.rhaydus:*`, version `0.2.0`)
+### Published libraries (`nl.rhaydus:*`, version `0.3.0`)
 
 | Module | Coordinate | What it gives you |
 |---|---|---|
 | **TOAD runtime** | `nl.rhaydus:toad` | The home-grown MVI-style presentation framework: `ToadScreenModel`, `UiState`/`UiAction`/`UiEvent`, `Collector`, `ActionScope`. |
-| **Core UI seams** | `nl.rhaydus:core-ui` | Non-visual seams: `AppDispatchers`, date/time/number formatting. |
+| **Core common** | `nl.rhaydus:core-common` | Non-visual shared primitives: `AppDispatchers`, the `AppLog` logging facade, `runCatchingCancellable` / `runCatchingLogged`, date/time/number formatting. |
+| **Core platform** | `nl.rhaydus:core-platform` | Platform-capability seams (depends on core-common): `SecureStorage` and `NetworkAvailabilityProvider`, each with Android / iOS / desktop implementations. |
+| **Offline sync** | `nl.rhaydus:offline-sync` | Offline optimistic-write queue skeleton (depends on core-platform): `WriteQueue` / `PendingWriteStore`, `OfflineWriteDrainer`, `PendingWrite`, `ReplayOutcome`, `DrainPolicy` - the app supplies the persistence seam. |
 | **Design system — core** | `nl.rhaydus:designsystem-core` | The **design-agnostic** Compose skeleton: theme scaffold, layout primitives (window-size classes, two-pane, content-width caps), modifiers, motion + reduced-motion seam, haptics, the button family. |
 | **Design system — editorial** | `nl.rhaydus:designsystem-editorial` | **Opt-in** editorial design language: shared type-role contract + components (section header, hero stat, drop cap, search field, pull-to-refresh eyebrow). |
 | **Design system — image** | `nl.rhaydus:designsystem-image` | **Opt-in** async images on Coil: plain, placeholder, and shimmer variants. |
 | **Version catalog** | `nl.rhaydus:catalog` | The shared third-party version set, consumable as a Gradle version catalog. |
-| **ktlint rules** | `nl.rhaydus:ktlint-rules` | 10 custom layout rules (one-per-line arg wrapping, trailing commas, blank-line rules, sibling-composable spacing, and more) with auto-fix. |
+| **ktlint rules** | `nl.rhaydus:ktlint-rules` | 14 custom rules: layout (one-per-line arg wrapping, trailing commas, blank-line rules, sibling-composable spacing, boolean `.not()`) with auto-fix, plus gating checks (one-type-per-file, no fully-qualified references, project-import order, no inline mockk stubs, no bare `runCatching` in use cases, and a raw-logging ban that routes `println` / `Log.*` through the `AppLog` facade). |
+| **detekt rules** | `nl.rhaydus:detekt-rules` | Custom detekt ruleset (a type-resolved crash-safety rule for unguarded `Flow.first()` / `single()`) plus the shared detekt baseline config every app builds on. |
 
 ### Tooling
 
@@ -54,7 +57,8 @@ graph LR
   image["designsystem-image<br/><i>async images</i>"] --> core
   image -. brings .-> coil["Coil"]
   toad["toad<br/><i>presentation runtime</i>"]
-  coreui["core-ui<br/><i>non-visual seams</i>"]
+  offline["offline-sync<br/><i>optimistic write queue</i>"] --> platform["core-platform<br/><i>platform seams</i>"]
+  platform --> common["core-common<br/><i>non-visual primitives</i>"]
 ```
 
 An app that wants a different look depends on `designsystem-core` alone and never pulls the editorial language or Coil — the opinionated layers are opt-in by design.
@@ -68,10 +72,10 @@ An app that wants a different look depends on `designsystem-core` alone and neve
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("nl.rhaydus:toad:0.2.0")
-    implementation("nl.rhaydus:designsystem-core:0.2.0")
-    implementation("nl.rhaydus:designsystem-editorial:0.2.0") // opt-in
-    implementation("nl.rhaydus:designsystem-image:0.2.0")     // opt-in (pulls Coil)
+    implementation("nl.rhaydus:toad:0.3.0")
+    implementation("nl.rhaydus:designsystem-core:0.3.0")
+    implementation("nl.rhaydus:designsystem-editorial:0.3.0") // opt-in
+    implementation("nl.rhaydus:designsystem-image:0.3.0")     // opt-in (pulls Coil)
 }
 ```
 
@@ -84,7 +88,7 @@ Artifacts publish to **Maven Central** under the `nl.rhaydus` group (verified by
 // settings.gradle.kts
 dependencyResolutionManagement {
     versionCatalogs {
-        create("rhaydus") { from("nl.rhaydus:catalog:0.2.0") }
+        create("rhaydus") { from("nl.rhaydus:catalog:0.3.0") }
     }
 }
 ```
@@ -130,7 +134,7 @@ Every agent reads [`CAPABILITIES.md`](docs/CAPABILITIES.md) first — so it reus
 
 ## Versioning
 
-One version covers the whole release: `foundation.version` in `gradle.properties` drives all seven published artifacts, and a `verifyPluginVersion` build gate **locks the Claude plugin's version to it** (the build fails if they drift). Bump them together; a tagged push (`v*`) publishes to Maven Central via CI.
+One version covers the whole release: `foundation.version` in `gradle.properties` drives all ten published artifacts, and a `verifyPluginVersion` build gate **locks the Claude plugin's version to it** (the build fails if they drift). Bump them together; a tagged push (`v*`) publishes to Maven Central via CI.
 
 ---
 
