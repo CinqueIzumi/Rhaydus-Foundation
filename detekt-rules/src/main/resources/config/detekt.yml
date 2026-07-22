@@ -15,10 +15,50 @@ config:
 rhaydus:
   UnguardedFlowTerminalRead:
     active: true
+    # The rule guards PRODUCTION crash-safety: an unguarded `Flow.first()` on a stream that completes
+    # empty throws where a user can see it. In a test, that same call is the assertion - `first()`
+    # failing loudly when nothing is emitted is precisely what the test is for, and the remedy the rule
+    # advises (`firstOrNull()` + a default) would make a non-emitting flow silently assert against the
+    # default instead. So the rule is excluded from test sources, matching detekt's own policy for the
+    # rules whose advice does not transfer to test code.
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
 
 # Note: detekt's `formatting` ruleset (the ktlint wrapper) is deliberately NOT on the classpath - the
 # mechanizable layout rules are owned by nl.rhaydus:ktlint-rules. So there is no `formatting:` block here;
 # do not add the detekt-formatting plugin alongside this config.
+
+# ---------------------------------------------------------------------------------------------------
+# Test-source excludes: repairing a STALE GLOB LIST, not relaxing a rule.
+#
+# detekt already ships an opinion that fifteen of its rules do not apply to test code, expressed as an
+# `excludes` list on each: backticked test names are idiomatic (`FunctionNaming`), `!!` on a fixture is
+# fine (`UnsafeCallOnNullableType`), a bare `throw` as a stub is fine, and so on. That list hardcodes
+# source-set names - '**/test/**', '**/jvmTest/**', '**/androidUnitTest/**', ... - and detekt 1.23.8
+# predates AGP 9's KMP source sets, so it has never heard of `androidHostTest`. A KMP project whose unit
+# tests live there therefore gets every one of those rules fired at its test code, contrary to detekt's
+# own intent. (Measured on Softcover: 3,144 `FunctionNaming` findings, every one a backticked test name.)
+#
+# Each list below is detekt's own default verbatim, plus '**/androidHostTest/**'. Overriding `excludes`
+# REPLACES rather than merges, so the original globs have to be restated - do not trim them.
+#
+# Revisit when detekt ships a version whose defaults know the AGP 9 KMP source-set names; these blocks
+# can then be deleted wholesale rather than maintained.
+# ---------------------------------------------------------------------------------------------------
+comments:
+  KDocReferencesNonPublicProperty:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+  UndocumentedPublicClass:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+  UndocumentedPublicFunction:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+  UndocumentedPublicProperty:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+
+performance:
+  ForEachOnRange:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+  SpreadOperator:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
 
 # ---------------------------------------------------------------------------------------------------
 # Type-resolution calibration.
@@ -32,6 +72,10 @@ rhaydus:
 # REVISIT when detekt 2.x (K2-based frontend) is adopted: re-enable both and re-triage.
 # ---------------------------------------------------------------------------------------------------
 potential-bugs:
+  LateinitUsage:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+  UnsafeCallOnNullableType:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
   UnreachableCode:
     # The 1.9 frontend types an elvis whose right side is `throw` / `return` as `Nothing` and marks
     # everything after it unreachable - i.e. it flags the entire body of any function using the
@@ -54,6 +98,14 @@ coroutines:
     # the modifier was removed. A rule that is right one time in three cannot gate a build.
     active: false
 
+exceptions:
+  InstanceOfCheckForException:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+  ThrowingExceptionsWithoutMessageOrCause:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+  TooGenericExceptionCaught:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+
 complexity:
   LongMethod:
     ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
@@ -61,6 +113,9 @@ complexity:
     ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
   TooManyFunctions:
     ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+  StringLiteralDuplication:
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
   LongParameterList:
     # TOAD *ScreenModel / *Dependencies inject many use cases via Koin; a parameter object is not
     # idiomatic for constructor DI, so the constructor threshold is generous.
@@ -74,6 +129,7 @@ naming:
   FunctionNaming:
     # @Composable functions are PascalCase by convention.
     ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
   TopLevelPropertyNaming:
     ignoreAnnotated: ['Composable', 'Preview', 'StandardPreview']
   PackageNaming:
@@ -84,6 +140,7 @@ style:
   MagicNumber:
     # Compose dp/sp/alpha/weight literals saturate this rule with noise.
     active: false
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidHostTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/*.kts']
   ReturnCount:
     max: 8
     excludeGuardClauses: true
