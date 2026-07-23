@@ -4,7 +4,7 @@
 
 **A shared backbone for Kotlin Multiplatform apps — published libraries, build tooling, conventions, and the Claude Code assets that teach an AI assistant how to use them.**
 
-![Version](https://img.shields.io/badge/version-0.3.0-1f6feb)
+![Version](https://img.shields.io/badge/version-0.3.1-1f6feb)
 ![License](https://img.shields.io/badge/license-MIT-2da44e)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?logo=kotlin&logoColor=white)
 ![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Desktop-0a7ea4)
@@ -29,7 +29,7 @@ It ships three things most "shared module" repos don't bother to keep together:
 
 ## What's inside
 
-### Published libraries (`nl.rhaydus:*`, version `0.3.0`)
+### Published libraries (`nl.rhaydus:*`, version `0.3.1`)
 
 | Module | Coordinate | What it gives you |
 |---|---|---|
@@ -72,10 +72,10 @@ An app that wants a different look depends on `designsystem-core` alone and neve
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("nl.rhaydus:toad:0.3.0")
-    implementation("nl.rhaydus:designsystem-core:0.3.0")
-    implementation("nl.rhaydus:designsystem-editorial:0.3.0") // opt-in
-    implementation("nl.rhaydus:designsystem-image:0.3.0")     // opt-in (pulls Coil)
+    implementation("nl.rhaydus:toad:0.3.1")
+    implementation("nl.rhaydus:designsystem-core:0.3.1")
+    implementation("nl.rhaydus:designsystem-editorial:0.3.1") // opt-in
+    implementation("nl.rhaydus:designsystem-image:0.3.1")     // opt-in (pulls Coil)
 }
 ```
 
@@ -88,7 +88,7 @@ Artifacts publish to **Maven Central** under the `nl.rhaydus` group (verified by
 // settings.gradle.kts
 dependencyResolutionManagement {
     versionCatalogs {
-        create("rhaydus") { from("nl.rhaydus:catalog:0.3.0") }
+        create("rhaydus") { from("nl.rhaydus:catalog:0.3.1") }
     }
 }
 ```
