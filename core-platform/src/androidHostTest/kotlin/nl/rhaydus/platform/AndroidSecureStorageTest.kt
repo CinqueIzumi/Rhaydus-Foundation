@@ -100,7 +100,10 @@ class AndroidSecureStorageTest {
         fun `returns the round-tripped value after write then read`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
-            storage.write("my-key", "my-value")
+            storage.write(
+                "my-key",
+                "my-value",
+            )
 
             // ----- Act -----
             val result = storage.read("my-key")
@@ -159,7 +162,10 @@ class AndroidSecureStorageTest {
             )
 
             // ----- Act -----
-            storage.write("my-key", "my-value")
+            storage.write(
+                "my-key",
+                "my-value",
+            )
 
             // ----- Assert -----
             storageFile.exists() shouldBe true
@@ -175,7 +181,10 @@ class AndroidSecureStorageTest {
             )
 
             // ----- Act -----
-            storage.write("api_key", "my-value")
+            storage.write(
+                "api_key",
+                "my-value",
+            )
 
             // ----- Assert -----
             storageFile.exists() shouldBe true
@@ -185,10 +194,16 @@ class AndroidSecureStorageTest {
         fun `writing one key does not disturb a value already stored under another key`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
-            storage.write("key-a", "value-a")
+            storage.write(
+                "key-a",
+                "value-a",
+            )
 
             // ----- Act -----
-            storage.write("key-b", "value-b")
+            storage.write(
+                "key-b",
+                "value-b",
+            )
 
             // ----- Assert -----
             storage.read("key-a") shouldBe "value-a"
@@ -202,7 +217,10 @@ class AndroidSecureStorageTest {
         fun `removes the file from disk after delete`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
-            storage.write("key-to-delete", "value")
+            storage.write(
+                "key-to-delete",
+                "value",
+            )
             val storageFile = File(
                 tempDir,
                 "secure_key_45_to_45_delete.enc",
@@ -219,7 +237,10 @@ class AndroidSecureStorageTest {
         fun `read returns null for a key after it has been deleted`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
-            storage.write("key-to-delete", "value")
+            storage.write(
+                "key-to-delete",
+                "value",
+            )
             storage.delete("key-to-delete")
 
             // ----- Act -----
@@ -233,8 +254,14 @@ class AndroidSecureStorageTest {
         fun `deleting one key does not disturb a value stored under another key`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
-            storage.write("key-a", "value-a")
-            storage.write("key-b", "value-b")
+            storage.write(
+                "key-a",
+                "value-a",
+            )
+            storage.write(
+                "key-b",
+                "value-b",
+            )
 
             // ----- Act -----
             storage.delete("key-a")

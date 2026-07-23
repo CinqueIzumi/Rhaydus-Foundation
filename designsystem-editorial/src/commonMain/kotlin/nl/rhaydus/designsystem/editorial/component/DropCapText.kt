@@ -21,8 +21,10 @@ private const val DEFAULT_DROP_CAP_LINES = 3
  * Renders body prose with a drop-cap wrapping the first [dropCapLines] lines. The first letter of [text]
  * (skipping leading whitespace and punctuation) is rendered in [dropCapColor] at a size proportional to
  * `bodyStyle.lineHeight`, with the remaining text reflowing to its right for the first [dropCapLines]
- * lines and resuming at full width below. Pass [dropCapFontFamily] to set the cap in a display/accent
- * face; it defaults to the body's family. Falls back to a plain `Text` when the body has no letters.
+ * lines and resuming at full width below. Body line spacing stays uniform across that seam: the cap's own
+ * metrics only ever grow the component's total height, never the gap between the indented and full-width
+ * runs. Pass [dropCapFontFamily] to set the cap in a display/accent face; it defaults to the body's family.
+ * Falls back to a plain `Text` when the body has no letters.
  */
 @Composable
 fun DropCapText(
@@ -155,12 +157,12 @@ fun DropCapText(
             )
         }
 
-        val topRowHeight = maxOf(
-            capHeight,
-            firstPlaceable.height,
-        )
+        val bodyHeight = firstPlaceable.height + (secondPlaceable?.height ?: 0)
 
-        val totalHeight = topRowHeight + (secondPlaceable?.height ?: 0)
+        val totalHeight = maxOf(
+            capHeight,
+            bodyHeight,
+        )
 
         layout(width = totalWidth, height = totalHeight) {
             capPlaceable.placeRelative(
@@ -173,7 +175,7 @@ fun DropCapText(
             )
             secondPlaceable?.placeRelative(
                 x = 0,
-                y = topRowHeight,
+                y = firstPlaceable.height,
             )
         }
     }
