@@ -4,7 +4,7 @@
 
 **A shared backbone for Kotlin Multiplatform apps — published libraries, build tooling, conventions, and the Claude Code assets that teach an AI assistant how to use them.**
 
-![Version](https://img.shields.io/badge/version-0.3.1-1f6feb)
+![Version](https://img.shields.io/badge/version-0.3.2-1f6feb)
 ![License](https://img.shields.io/badge/license-MIT-2da44e)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?logo=kotlin&logoColor=white)
 ![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Desktop-0a7ea4)
@@ -29,7 +29,7 @@ It ships three things most "shared module" repos don't bother to keep together:
 
 ## What's inside
 
-### Published libraries (`nl.rhaydus:*`, version `0.3.1`)
+### Published libraries (`nl.rhaydus:*`, version `0.3.2`)
 
 | Module | Coordinate | What it gives you |
 |---|---|---|
@@ -67,51 +67,74 @@ An app that wants a different look depends on `designsystem-core` alone and neve
 
 ## Quick start
 
-### 1. Add a library
+### 1. Add the submodule and `includeBuild`
+
+```bash
+git submodule add https://github.com/CinqueIzumi/rhaydus-foundation.git foundation
+git -C foundation checkout v0.3.2
+```
+
+```kotlin
+// settings.gradle.kts
+includeBuild("foundation")
+```
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("nl.rhaydus:toad:0.3.1")
-    implementation("nl.rhaydus:designsystem-core:0.3.1")
-    implementation("nl.rhaydus:designsystem-editorial:0.3.1") // opt-in
-    implementation("nl.rhaydus:designsystem-image:0.3.1")     // opt-in (pulls Coil)
+    implementation("nl.rhaydus:toad")
+    implementation("nl.rhaydus:designsystem-core")
+    implementation("nl.rhaydus:designsystem-editorial") // opt-in
+    implementation("nl.rhaydus:designsystem-image")     // opt-in (pulls Coil)
 }
 ```
 
-Artifacts publish to **Maven Central** under the `nl.rhaydus` group (verified by DNS, no server) — consumers need **no credentials**, just `mavenCentral()`.
+Gradle substitutes the `nl.rhaydus:*` coordinates for the submodule source, so the catalog entries carry no version. The app builds on the same AGP and Kotlin versions as the pinned foundation. CI checkouts that run Gradle set `submodules: true`, and clones use `--recurse-submodules`. The artifacts are also published to Maven Central.
 
 <details>
-<summary><b>Optional: consume the shared version catalog</b></summary>
+<summary><b>Optional: shared version catalog and convention plugins</b></summary>
 
 ```kotlin
 // settings.gradle.kts
+pluginManagement {
+    includeBuild("foundation/build-logic")
+}
+
 dependencyResolutionManagement {
     versionCatalogs {
-        create("rhaydus") { from("nl.rhaydus:catalog:0.3.1") }
+        create("rhaydus") { from(files("foundation/gradle/libs.versions.toml")) }
     }
 }
 ```
 App-only libraries (Apollo, Room, etc.) stay in your app's own catalog.
 </details>
 
-### 2. Develop against the foundation source (inner loop)
+### 2. Develop against the foundation source
 
-While iterating on the foundation *and* an app together, skip the publish cycle entirely:
+Edit `foundation/` on a branch; the app builds the change directly, with no publish cycle and no version bump. Commit in the foundation first, then record the new pointer in the app with `git add foundation`. A foundation version change moves the pointer: fetch in `foundation/`, check out the new tag, `git add foundation`, commit.
 
-```properties
-# <app>/local.properties
-foundation.local=true
+### 3. Load the Claude Code plugin
+
+Add this to the project's `.claude/settings.json`, or run `rhaydus-adopt`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "rhaydus": { "source": { "source": "directory", "path": "./foundation" } }
+  },
+  "enabledPlugins": { "rhaydus-kotlin@rhaydus": true }
+}
 ```
 
-The app's `settings.gradle.kts` reads that flag and `includeBuild("../rhaydus-foundation")`; Gradle substitutes the published coordinates for local source automatically — no version bumps, instant cross-repo edits. Flip it back to return to the pinned release.
+Each machine then registers it once, from the project root:
 
-### 3. Install the Claude Code plugin
+```bash
+claude plugin marketplace add ./foundation --scope project
+claude plugin install rhaydus-kotlin@rhaydus --scope project
+```
 
-```
-/plugin marketplace add CinqueIzumi/rhaydus-foundation
-/plugin install rhaydus-kotlin@rhaydus
-```
+The first command writes an absolute path into `.claude/settings.json`; set it back to `./foundation`
+before committing. The plugin loads in place from the pinned submodule; edits apply after `/reload-plugins`.
 
 ---
 
@@ -121,7 +144,7 @@ The `rhaydus-kotlin` plugin makes a consuming app's AI assistant fluent in the f
 
 | Agent / asset | Role |
 |---|---|
-| **`rhaydus-adopt`** | Onboards a project: wires the catalog, convention plugins, and `includeBuild`; writes a managed routing block into the app's `CLAUDE.md`; flags prerequisite migrations. |
+| **`rhaydus-adopt`** | Onboards a project: adds the submodule and `includeBuild`, wires the catalog and convention plugins, loads the plugin from the project's settings; writes a managed routing block into the app's `CLAUDE.md`; flags prerequisite migrations. |
 | **`rhaydus-logic`** | Builds feature **logic** — the TOAD state/action contract, ScreenModel, use cases, data. |
 | **`rhaydus-ui`** | Builds feature **UI** — the stateless Compose render, from the foundation design system **and** the app's own brand doc. |
 | **`code-reviewer` / `unit-test-writer`** | Review and tests, tuned to the conventions. |

@@ -15,13 +15,17 @@ rather than a memorized snapshot.
 
 ## How a project consumes it
 
-- **Default:** depend on published coordinates from `mavenCentral()` (group `nl.rhaydus`), pinned to a
-  version. No credentials.
-- **Inner loop:** set `foundation.local=true` in `local.properties`; `settings.gradle.kts` then
-  `includeBuild("../rhaydus-foundation")` and Gradle substitutes the published coordinates for local
-  source - no version bumps, instant cross-repo edits.
-- **Catalog:** the shared version catalog publishes as `nl.rhaydus:catalog`; consume it with
-  `from("nl.rhaydus:catalog:<v>")`. App-only libraries stay in the app's own catalog.
+- **Default:** a git submodule at `foundation/`, pinned on a `v*` tag, built through an unconditional
+  `includeBuild("foundation")`. The `nl.rhaydus:*` catalog entries are version-less substitution
+  coordinates. The app builds on the same AGP and Kotlin versions as the pinned foundation. Artifacts are
+  also published to Maven Central.
+- **Editing:** change `foundation/` on a branch; the app builds the edit directly, with no version bump.
+- **Catalog and convention plugins:** `from(files("foundation/gradle/libs.versions.toml"))` for the shared
+  catalog, `includeBuild("foundation/build-logic")` in `pluginManagement` for the `rhaydus.*` plugins.
+  App-only libraries stay in the app's own catalog.
+- **Plugin and docs:** the `rhaydus-kotlin` plugin loads from the project's `.claude/settings.json` through a
+  local-directory marketplace at `./foundation`; docs are read from `foundation/docs/` at the pinned commit.
+  `rhaydus-adopt` wires all of it.
 
 ## Published modules
 
@@ -63,7 +67,7 @@ core-common, toad      (standalone)
 ```
 
 Adding a foundation dependency: declare the coordinate (or its catalog alias) in the module's
-`build.gradle.kts`. With `foundation.local=true` it substitutes to local source automatically. The
+`build.gradle.kts`. The `includeBuild("foundation")` substitutes it to the submodule source automatically. The
 editorial and image modules are **opt-in**: a project that wants neither the editorial look nor remote
 images depends only on `designsystem-core`.
 
