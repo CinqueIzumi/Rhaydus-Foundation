@@ -5,8 +5,8 @@
 # `version-catalog` artifact and consumed by both apps via `from("nl.rhaydus:catalog:<v>")`.
 
 [versions]
-agp = "9.0.0"
-kotlin = "2.3.21"
+agp = "9.3.3"
+kotlin = "2.4.21"
 ktlint = "1.7.1"
 coroutines = "1.10.2"
 kotlinxDatetime = "0.7.1"
@@ -27,8 +27,8 @@ coil = "3.2.0"
 voyager = "1.1.0-beta02"
 koinVersion = "3.5.3"
 koinComposeMultiplatform = "1.1.2"
-ksp = "2.3.9"
-dependencyAnalysis = "3.14.1"
+ksp = "2.3.12"
+dependencyAnalysis = "3.19.2"
 # KSafe backs the desktop (JVM) SecureStorage actual: it custodies the encryption key in the OS
 # secret store (macOS Keychain / Windows DPAPI / Linux Secret Service).
 ksafe = "2.1.2"

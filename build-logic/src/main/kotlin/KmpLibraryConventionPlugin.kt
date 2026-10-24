@@ -3,7 +3,10 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.testing.Test
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -106,8 +109,12 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             }
         }
 
+        // Host tests mock JDK statics (MockK inline instrumentation), which breaks on the newest JDKs,
+        // so they run on a pinned launcher regardless of the JDK that launches Gradle.
+        val javaToolchains = extensions.getByType<JavaToolchainService>()
         tasks.withType<Test> {
             useJUnitPlatform()
+            javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(17)) })
         }
 
         Unit

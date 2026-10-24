@@ -45,7 +45,10 @@ class ModuleGraphConventionPlugin : Plugin<Project> {
                     val fromTier = extension.tierOf(module.path) ?: return@forEach
                     val allowed = extension.allowedTargetTiers[fromTier].orEmpty()
 
-                    module.configurations.forEach { configuration ->
+                    module.configurations.forEach forEachConfiguration@{ configuration ->
+                        // The Kotlin plugin aggregates every project into its SwiftPM lock-file classpath.
+                        if (configuration.name.startsWith("swiftPMDependencies")) return@forEachConfiguration
+
                         configuration.dependencies
                             .filterIsInstance<ProjectDependency>()
                             .forEach forEachDependency@{ dependency ->
