@@ -101,7 +101,7 @@ class InlineFullyQualifiedReferenceRuleTest {
         fun `clean for a generated nl_rhaydus fragment type left fully-qualified`() {
             // ----- Arrange -----
             val code = """
-                val x: nl.rhaydus.softcover.fragment.BookListFragment? = null
+                val x: nl.rhaydus.sample.fragment.BookListFragment? = null
             """.trimIndent()
 
             // ----- Act & Assert -----

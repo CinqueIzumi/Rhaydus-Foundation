@@ -36,7 +36,7 @@ rhaydus:
 # source-set names - '**/test/**', '**/jvmTest/**', '**/androidUnitTest/**', ... - and detekt 1.23.8
 # predates AGP 9's KMP source sets, so it has never heard of `androidHostTest`. A KMP project whose unit
 # tests live there therefore gets every one of those rules fired at its test code, contrary to detekt's
-# own intent. (Measured on Softcover: 3,144 `FunctionNaming` findings, every one a backticked test name.)
+# own intent. (Measured on one consuming app: 3,144 `FunctionNaming` findings, every one a backticked test name.)
 #
 # Each list below is detekt's own default verbatim, plus '**/androidHostTest/**'. Overriding `excludes`
 # REPLACES rather than merges, so the original globs have to be restated - do not trim them.
