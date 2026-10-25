@@ -19,6 +19,7 @@ Shared Claude Code assets for Kotlin/Compose/TOAD apps built on the `nl.rhaydus`
 | Hook | large-read guard | `PreToolUse` on `Read`: refuses an unbounded read of a long file in the main conversation. |
 | Hook | doc guard | `PreToolUse` on `Edit` / `Write` / `Bash`: enforces doc budgets, their ratchet and the citation rules in [`docs/doc-hygiene.md`](../../../docs/doc-hygiene.md). Off without config. |
 | Hook | context budget | `UserPromptSubmit`: once the transcript passes the budget, suggests closing the step with `/handoff`. |
+| Templates | `templates/rules/*.md`, `templates/agent-briefs.md` | Rule skeletons (`architecture`, `compose-ui`, `kotlin-style`, `build-wiring`, `tests`, `docs`, `foundation`) and the brief skeleton that `rhaydus-adopt` writes into a project. |
 | Script | `scripts/token-usage.py` | Per-session and per-agent token usage from the Claude Code transcripts. |
 
 ## Project config

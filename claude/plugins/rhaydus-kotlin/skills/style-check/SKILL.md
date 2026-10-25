@@ -9,12 +9,18 @@ defines; not every project has every gate.
 
 Steps:
 
-1. Use the Bash tool to auto-fix mechanizable layout/lint issues. Run the formatters the project
-   actually has — try `./gradlew ktlintFormat` (the shared `nl.rhaydus:ktlint-rules` ruleset) and, if
-   the project defines it, `./gradlew lintFix`. Skip a task that does not exist rather than failing.
-   This may modify files.
-2. Run the verification gate: `./gradlew check`. This typically covers lint, unit tests, and
-   `ktlintCheck`; in a multiplatform project it also compiles every target (iOS Kotlin/Native compiles
+`./gradlew` calls are rewritten by the plugin hook to a quiet wrapper that prints a short summary and the path
+of the full log. Read the summary and grep that log for detail; never re-run verbose.
+
+The commands come from the `Full gate / auto-fix` row of the `## Agent parameters` table in the `CLAUDE.md`
+managed block. When the row is absent or `-`, fall back to the discovery below.
+
+1. Use the Bash tool to auto-fix mechanizable layout/lint issues with the auto-fix tasks from the table. Absent
+   that, run the formatters the project actually has — try `./gradlew ktlintFormat` (the shared
+   `nl.rhaydus:ktlint-rules` ruleset) and, if the project defines it, `./gradlew lintFix`. Skip a task that
+   does not exist rather than failing. This may modify files.
+2. Run the verification gate from the table. Absent that, run `./gradlew check`. This typically covers lint,
+   unit tests, and `ktlintCheck`; in a multiplatform project it also compiles every target (iOS Kotlin/Native compiles
    only on macOS). If the project defines extra gates — e.g. `buildHealth` (dependency analysis),
    `styleCheck` (type-resolved detekt), `checkModuleGraph` — run those too. Discover them with
    `./gradlew tasks --group=verification` if unsure.

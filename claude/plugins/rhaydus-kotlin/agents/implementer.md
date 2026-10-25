@@ -20,8 +20,8 @@ Your prompt must contain `## Goal`, `## Files` and `## Verify`. If any is missin
 ## Project parameters
 
 Project facts come from the `## Agent parameters` table in the `CLAUDE.md` managed block (already in your
-context): Foundation docs (default `foundation/docs/`), Doc paths, Module roles, Stability task. A value in the
-brief wins over the table. If a parameter you need is missing, say so in the report; for a task name, discover it
+context): Compile verify task (the default Verify when the brief's `## Verify` is a placeholder), Foundation docs
+(default `foundation/docs/`), Doc paths, Module roles, Stability task. A value in the brief wins over the table. If a parameter you need is missing, say so in the report; for a task name, discover it
 once with `<gradle> :<module>:tasks --all`, never guess variants. Gradle is the nearest `gradlew` from the cwd.
 
 ## Reading discipline
@@ -56,8 +56,8 @@ classpath, add its coordinate or catalog alias to the module's `build.gradle.kts
 ## How to build
 
 - Actions run on `Main`; use cases and data sources switch to `AppDispatchers.IO` for network and disk.
-- Network goes through `safeQuery()` / `safeMutation()`; failures return `Result`; log with `AppLog`, never
-  `println`.
+- Network goes through the project's wrapper (its architecture doc); failures return `Result`; log with
+  `AppLog`, never `println`.
 - Database entities, DAOs and migrations live in the database home (Module roles), not the feature.
 - A feature never imports a sibling feature.
 - The stateless render `XScreen(state, runAction)` is side-effect free: platform effects leave through a
