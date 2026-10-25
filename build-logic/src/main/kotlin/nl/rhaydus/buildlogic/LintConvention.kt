@@ -1,3 +1,5 @@
+package nl.rhaydus.buildlogic
+
 import com.android.build.api.dsl.Lint
 import org.gradle.api.Project
 

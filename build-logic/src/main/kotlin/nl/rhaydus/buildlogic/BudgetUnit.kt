@@ -1,0 +1,6 @@
+package nl.rhaydus.buildlogic
+
+internal enum class BudgetUnit(val suffix: String) {
+    BYTES(" B"),
+    LINES(" L"),
+}

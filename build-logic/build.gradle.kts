@@ -12,6 +12,15 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.compose.compiler.gradlePlugin)
     compileOnly(libs.compose.multiplatform.gradlePlugin)
+
+    testImplementation(libs.junit.api)
+    testImplementation(libs.kotest)
+    testRuntimeOnly(libs.junit.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 // Module-shape conventions shared across the apps built on this foundation. App-specific tech (Room,
@@ -21,23 +30,27 @@ gradlePlugin {
     plugins {
         register("androidLibrary") {
             id = "rhaydus.android.library"
-            implementationClass = "AndroidLibraryConventionPlugin"
+            implementationClass = "nl.rhaydus.buildlogic.AndroidLibraryConventionPlugin"
         }
         register("kmpLibrary") {
             id = "rhaydus.kmp.library"
-            implementationClass = "KmpLibraryConventionPlugin"
+            implementationClass = "nl.rhaydus.buildlogic.KmpLibraryConventionPlugin"
         }
         register("androidCompose") {
             id = "rhaydus.android.compose"
-            implementationClass = "AndroidComposeConventionPlugin"
+            implementationClass = "nl.rhaydus.buildlogic.AndroidComposeConventionPlugin"
         }
         register("kmpCompose") {
             id = "rhaydus.kmp.compose"
-            implementationClass = "KmpComposeConventionPlugin"
+            implementationClass = "nl.rhaydus.buildlogic.KmpComposeConventionPlugin"
+        }
+        register("docBudgets") {
+            id = "rhaydus.doc-budgets"
+            implementationClass = "nl.rhaydus.buildlogic.DocBudgetsConventionPlugin"
         }
         register("moduleGraph") {
             id = "rhaydus.module-graph"
-            implementationClass = "ModuleGraphConventionPlugin"
+            implementationClass = "nl.rhaydus.buildlogic.ModuleGraphConventionPlugin"
         }
     }
 }

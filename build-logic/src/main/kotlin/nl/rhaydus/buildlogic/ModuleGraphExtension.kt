@@ -1,3 +1,5 @@
+package nl.rhaydus.buildlogic
+
 /**
  * Configuration for the `rhaydus.module-graph` gate ([ModuleGraphConventionPlugin]). Each consuming build
  * fills these in with its own module layout; the enforcement mechanism (the `checkModuleGraph` task) is

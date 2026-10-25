@@ -1,3 +1,5 @@
+package nl.rhaydus.buildlogic
+
 import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin

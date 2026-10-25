@@ -1,3 +1,5 @@
+package nl.rhaydus.buildlogic
+
 import org.gradle.api.Project
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.artifacts.VersionCatalog

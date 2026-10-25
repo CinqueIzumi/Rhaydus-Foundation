@@ -1,7 +1,7 @@
 {
   "name": "rhaydus-kotlin",
   "displayName": "rhaydus Kotlin toolkit",
-  "description": "Shared Claude Code assets for the nl.rhaydus Kotlin/Compose/TOAD apps: the rhaydus-adopt onboarding agent and the generic implementer / reviewer / test-writer agents, a style-check skill, and a docs-first exploration hook.",
+  "description": "Shared Claude Code assets for the nl.rhaydus Kotlin/Compose/TOAD apps: the rhaydus-adopt onboarding agent and the generic implementer / reviewer / test-writer agents, style-check and handoff skills, and hooks for agent briefs, quiet and guarded Gradle runs, large reads, doc budgets and the context budget.",
   "version": "0.3.2",
   "author": {
     "name": "Cinque"
