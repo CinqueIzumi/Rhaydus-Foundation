@@ -97,7 +97,12 @@ class DocBudgetRulesTest {
         @Test
         fun `keeps a single star inside one path segment`() {
             // ----- Arrange -----
-            val rule = BudgetRule("docs/*.md", "1B", 1, BudgetUnit.BYTES)
+            val rule = BudgetRule(
+                "docs/*.md",
+                "1B",
+                1,
+                BudgetUnit.BYTES,
+            )
 
             // ----- Act -----
             val flat = rule.matches("docs/a.md")
@@ -111,7 +116,12 @@ class DocBudgetRulesTest {
         @Test
         fun `lets a double star cross path segments`() {
             // ----- Arrange -----
-            val rule = BudgetRule("docs/**/*.md", "1B", 1, BudgetUnit.BYTES)
+            val rule = BudgetRule(
+                "docs/**/*.md",
+                "1B",
+                1,
+                BudgetUnit.BYTES,
+            )
 
             // ----- Act -----
             val nested = rule.matches("docs/sub/deeper/a.md")
@@ -123,7 +133,12 @@ class DocBudgetRulesTest {
         @Test
         fun `treats a dot as a literal character`() {
             // ----- Arrange -----
-            val rule = BudgetRule("docs/a.md", "1B", 1, BudgetUnit.BYTES)
+            val rule = BudgetRule(
+                "docs/a.md",
+                "1B",
+                1,
+                BudgetUnit.BYTES,
+            )
 
             // ----- Act -----
             val lookalike = rule.matches("docs/aXmd")

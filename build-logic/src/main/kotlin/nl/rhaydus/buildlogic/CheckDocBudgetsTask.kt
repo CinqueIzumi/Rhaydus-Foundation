@@ -76,12 +76,31 @@ abstract class CheckDocBudgetsTask : DefaultTask() {
         val violations = mutableListOf<String>()
 
         if (budgets != null) {
-            val mergeBase = resolveMergeBase(root, defaultBranch.get())
-            checkFileBudgets(root, budgets, mergeBase, violations)
-            checkNowSection(root, budgets, mergeBase, violations)
+            val mergeBase = resolveMergeBase(
+                root,
+                defaultBranch.get(),
+            )
+            checkFileBudgets(
+                root,
+                budgets,
+                mergeBase,
+                violations,
+            )
+            checkNowSection(
+                root,
+                budgets,
+                mergeBase,
+                violations,
+            )
         }
-        checkMarkdownCitations(root, violations)
-        checkConfigComments(root, violations)
+        checkMarkdownCitations(
+            root,
+            violations,
+        )
+        checkConfigComments(
+            root,
+            violations,
+        )
 
         if (violations.isNotEmpty()) {
             throw GradleException(
@@ -101,18 +120,28 @@ abstract class CheckDocBudgetsTask : DefaultTask() {
         markdownFiles.files.forEach { file ->
             val relativePath = file.relativeTo(root).invariantSeparatorsPath
             val rule = budgets.rules.firstOrNull { it.matches(relativePath) } ?: return@forEach
-            val currentSize = sizeOf(file.readBytes(), rule.unit)
+            val currentSize = sizeOf(
+                file.readBytes(),
+                rule.unit,
+            )
             if (currentSize <= rule.limit) return@forEach
 
             val limit = "limit ${rule.limit}${rule.unit.suffix}"
-            val baseBytes = gitShow(root, mergeBase, relativePath)
+            val baseBytes = gitShow(
+                root,
+                mergeBase,
+                relativePath,
+            )
             if (baseBytes == null) {
                 violations += "$relativePath: new file over budget (${rule.glob} ${rule.token}) - " +
                     "$currentSize${rule.unit.suffix} ($limit)"
                 return@forEach
             }
 
-            val baseSize = sizeOf(baseBytes, rule.unit)
+            val baseSize = sizeOf(
+                baseBytes,
+                rule.unit,
+            )
             if (currentSize > baseSize) {
                 violations += "$relativePath: over budget and grew since merge-base (${rule.glob} ${rule.token}) - " +
                     "$baseSize${rule.unit.suffix} -> $currentSize${rule.unit.suffix} ($limit)"
@@ -135,7 +164,11 @@ abstract class CheckDocBudgetsTask : DefaultTask() {
             val currentNow = lineCountOf(extractNowSection(file.readText()))
             if (currentNow <= nowLimit) return@forEach
 
-            val baseBytes = gitShow(root, mergeBase, relativePath)
+            val baseBytes = gitShow(
+                root,
+                mergeBase,
+                relativePath,
+            )
             val baseNow = baseBytes?.let { lineCountOf(extractNowSection(it.toString(Charsets.UTF_8))) } ?: 0
             if (baseBytes == null || currentNow > baseNow) {
                 violations += "$relativePath ## Now section: over budget (## Now ${nowLimit}L) - " +
@@ -156,7 +189,10 @@ abstract class CheckDocBudgetsTask : DefaultTask() {
 
         markdownFiles.files.forEach { file ->
             val relativePath = file.relativeTo(root).invariantSeparatorsPath
-            if (isListed(relativePath, permanent).not()) return@forEach
+            if (isListed(
+                relativePath,
+                permanent,
+            ).not()) return@forEach
 
             file.readText().lineSequence().forEachIndexed { index, line ->
                 val at = "$relativePath:${index + 1}"
@@ -243,7 +279,12 @@ abstract class CheckDocBudgetsTask : DefaultTask() {
         branch: String,
     ): String =
         listOf("origin/$branch", branch).firstNotNullOfOrNull { ref ->
-            runGit(root, "merge-base", "HEAD", ref)?.toString(Charsets.UTF_8)?.trim()
+            runGit(
+                root,
+                "merge-base",
+                "HEAD",
+                ref,
+            )?.toString(Charsets.UTF_8)?.trim()
         } ?: throw GradleException(
             "checkDocBudgets: cannot resolve a git merge-base against origin/$branch or $branch - " +
                 "the checkout needs full history (fetch-depth: 0).",
@@ -253,7 +294,11 @@ abstract class CheckDocBudgetsTask : DefaultTask() {
         root: File,
         ref: String,
         relativePath: String,
-    ): ByteArray? = runGit(root, "show", "$ref:$relativePath")
+    ): ByteArray? = runGit(
+        root,
+        "show",
+        "$ref:$relativePath",
+    )
 
     private companion object {
         const val PLAN_HINT = "plans are deleted when they finish; cite nothing from the working docs. " +

@@ -17,7 +17,10 @@ private fun globToRegex(glob: String): Regex {
     var index = 0
     while (index < glob.length) {
         when {
-            glob.startsWith("**", index) -> {
+            glob.startsWith(
+                "**",
+                index,
+            ) -> {
                 pattern.append(".*")
                 index += 2
             }

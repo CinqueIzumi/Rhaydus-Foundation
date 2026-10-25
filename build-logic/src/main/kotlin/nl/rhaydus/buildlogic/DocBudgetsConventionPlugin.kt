@@ -12,7 +12,10 @@ import org.gradle.kotlin.dsl.register
  */
 class DocBudgetsConventionPlugin : Plugin<Project> {
     override fun apply(target: Project): Unit = with(target) {
-        val extension = extensions.create("docBudgets", DocBudgetsExtension::class.java)
+        val extension = extensions.create(
+            "docBudgets",
+            DocBudgetsExtension::class.java,
+        )
         extension.configFile.convention(layout.projectDirectory.file(DEFAULT_CONFIG_PATH))
         extension.defaultBranch.convention("main")
 
@@ -40,7 +43,12 @@ class DocBudgetsConventionPlugin : Plugin<Project> {
             )
             configFiles.from(
                 fileTree(layout.projectDirectory) {
-                    include("config/**", "**/*.yml", "**/*.yaml", "**/*.kts")
+                    include(
+                        "config/**",
+                        "**/*.yml",
+                        "**/*.yaml",
+                        "**/*.kts",
+                    )
                     exclude(excluded)
                 },
             )

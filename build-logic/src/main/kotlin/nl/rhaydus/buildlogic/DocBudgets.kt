@@ -20,11 +20,19 @@ internal data class DocBudgets(
                     else -> {
                         val fields = line.split(WHITESPACE)
                         val (limit, unit) = parseLimit(fields.last())
-                        rules += BudgetRule(fields.first(), fields.last(), limit, unit)
+                        rules += BudgetRule(
+                            fields.first(),
+                            fields.last(),
+                            limit,
+                            unit,
+                        )
                     }
                 }
             }
-            return DocBudgets(rules, nowLimit)
+            return DocBudgets(
+                rules,
+                nowLimit,
+            )
         }
 
         private val WHITESPACE = Regex("\\s+")

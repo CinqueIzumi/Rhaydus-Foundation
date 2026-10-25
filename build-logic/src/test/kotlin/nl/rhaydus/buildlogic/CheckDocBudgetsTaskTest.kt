@@ -36,15 +36,38 @@ class CheckDocBudgetsTaskTest {
     }
 
     private fun initRepo(branch: String = "main") {
-        git("init", "-b", branch)
-        git("config", "user.email", "test@example.com")
-        git("config", "user.name", "Test")
-        git("config", "commit.gpgsign", "false")
+        git(
+            "init",
+            "-b",
+            branch,
+        )
+        git(
+            "config",
+            "user.email",
+            "test@example.com",
+        )
+        git(
+            "config",
+            "user.name",
+            "Test",
+        )
+        git(
+            "config",
+            "commit.gpgsign",
+            "false",
+        )
     }
 
     private fun commitAll() {
-        git("add", "-A")
-        git("commit", "-m", "baseline")
+        git(
+            "add",
+            "-A",
+        )
+        git(
+            "commit",
+            "-m",
+            "baseline",
+        )
     }
 
     private fun write(
@@ -57,8 +80,16 @@ class CheckDocBudgetsTaskTest {
 
     private fun repoWith(vararg files: Pair<String, String>) {
         initRepo()
-        write(".gitkeep", "")
-        files.forEach { (path, content) -> write(path, content) }
+        write(
+            ".gitkeep",
+            "",
+        )
+        files.forEach { (path, content) ->
+            write(
+                path,
+                content,
+            )
+        }
         commitAll()
     }
 
@@ -70,9 +101,18 @@ class CheckDocBudgetsTaskTest {
         permanentDocs: List<String> = listOf("docs/reference/", ".claude/agent-memory/"),
     ) {
         val project = ProjectBuilder.builder().withProjectDir(repoRoot).build()
-        val task = project.tasks.create("checkDocBudgets", CheckDocBudgetsTask::class.java)
-        if (budgets != null) task.budgetsFile.set(write("docs/doc-budgets.txt", budgets))
-        if (active != null) task.activeFile.set(write("docs/working/ACTIVE.md", active))
+        val task = project.tasks.create(
+            "checkDocBudgets",
+            CheckDocBudgetsTask::class.java,
+        )
+        if (budgets != null) task.budgetsFile.set(write(
+            "docs/doc-budgets.txt",
+            budgets,
+        ),)
+        if (active != null) task.activeFile.set(write(
+            "docs/working/ACTIVE.md",
+            active,
+        ),)
         task.workingDocs.set(listOf("docs/working/"))
         task.permanentDocs.set(permanentDocs)
         task.decisionPattern.set(DocGuardConfig.DEFAULT_DECISION_PATTERN)
@@ -90,11 +130,17 @@ class CheckDocBudgetsTaskTest {
         fun `fails a new file over its byte budget`() {
             // ----- Arrange -----
             repoWith()
-            write("fixture/new.md", "12345678901")
+            write(
+                "fixture/new.md",
+                "12345678901",
+            )
 
             // ----- Act & Assert -----
             val exception = shouldThrow<GradleException> {
-                runCheck(budgets = "fixture/new.md 10B", markdown = listOf("fixture/new.md"))
+                runCheck(
+                    budgets = "fixture/new.md 10B",
+                    markdown = listOf("fixture/new.md"),
+                )
             }
             exception.message shouldContain "new file over budget"
         }
@@ -106,7 +152,10 @@ class CheckDocBudgetsTaskTest {
 
             // ----- Act & Assert -----
             shouldNotThrowAny {
-                runCheck(budgets = "fixture/kb.md 1KB", markdown = listOf("fixture/kb.md"))
+                runCheck(
+                    budgets = "fixture/kb.md 1KB",
+                    markdown = listOf("fixture/kb.md"),
+                )
             }
         }
 
@@ -117,7 +166,10 @@ class CheckDocBudgetsTaskTest {
 
             // ----- Act & Assert -----
             shouldNotThrowAny {
-                runCheck(budgets = "fixture/lines.md 3L", markdown = listOf("fixture/lines.md"))
+                runCheck(
+                    budgets = "fixture/lines.md 3L",
+                    markdown = listOf("fixture/lines.md"),
+                )
             }
         }
 
@@ -125,11 +177,17 @@ class CheckDocBudgetsTaskTest {
         fun `fails a file one line over its line budget`() {
             // ----- Arrange -----
             repoWith()
-            write("fixture/lines.md", "one\ntwo\nthree\nfour\n")
+            write(
+                "fixture/lines.md",
+                "one\ntwo\nthree\nfour\n",
+            )
 
             // ----- Act & Assert -----
             val exception = shouldThrow<GradleException> {
-                runCheck(budgets = "fixture/lines.md 3L", markdown = listOf("fixture/lines.md"))
+                runCheck(
+                    budgets = "fixture/lines.md 3L",
+                    markdown = listOf("fixture/lines.md"),
+                )
             }
             exception.message shouldContain "fixture/lines.md"
         }
@@ -138,12 +196,18 @@ class CheckDocBudgetsTaskTest {
         fun `applies the double-star rule rather than the single-star rule to a nested path`() {
             // ----- Arrange -----
             repoWith()
-            write("docs/reference/sub/deep.md", "x".repeat(25))
+            write(
+                "docs/reference/sub/deep.md",
+                "x".repeat(25),
+            )
             val budgets = "docs/reference/*.md 100B\ndocs/reference/**/*.md 20B"
 
             // ----- Act & Assert -----
             val exception = shouldThrow<GradleException> {
-                runCheck(budgets = budgets, markdown = listOf("docs/reference/sub/deep.md"))
+                runCheck(
+                    budgets = budgets,
+                    markdown = listOf("docs/reference/sub/deep.md"),
+                )
             }
             exception.message shouldContain "docs/reference/sub/deep.md"
         }
@@ -152,12 +216,18 @@ class CheckDocBudgetsTaskTest {
         fun `applies the first matching rule when several globs match`() {
             // ----- Arrange -----
             repoWith()
-            write("fixture/special/exact.md", "1234567890")
+            write(
+                "fixture/special/exact.md",
+                "1234567890",
+            )
             val budgets = "fixture/special/exact.md 8B\nfixture/special/*.md 1000B"
 
             // ----- Act & Assert -----
             val exception = shouldThrow<GradleException> {
-                runCheck(budgets = budgets, markdown = listOf("fixture/special/exact.md"))
+                runCheck(
+                    budgets = budgets,
+                    markdown = listOf("fixture/special/exact.md"),
+                )
             }
             exception.message shouldContain "fixture/special/exact.md"
         }
@@ -166,11 +236,17 @@ class CheckDocBudgetsTaskTest {
         fun `passes a file no rule matches`() {
             // ----- Arrange -----
             repoWith()
-            write("fixture/other.md", "x".repeat(5000))
+            write(
+                "fixture/other.md",
+                "x".repeat(5000),
+            )
 
             // ----- Act & Assert -----
             shouldNotThrowAny {
-                runCheck(budgets = "fixture/tiny.md 10B", markdown = listOf("fixture/other.md"))
+                runCheck(
+                    budgets = "fixture/tiny.md 10B",
+                    markdown = listOf("fixture/other.md"),
+                )
             }
         }
 
@@ -181,7 +257,10 @@ class CheckDocBudgetsTaskTest {
 
             // ----- Act & Assert -----
             shouldNotThrowAny {
-                runCheck(budgets = null, markdown = listOf("fixture/big.md"))
+                runCheck(
+                    budgets = null,
+                    markdown = listOf("fixture/big.md"),
+                )
             }
         }
     }
@@ -195,7 +274,10 @@ class CheckDocBudgetsTaskTest {
 
             // ----- Act & Assert -----
             shouldNotThrowAny {
-                runCheck(budgets = "fixture/tiny.md 10B", markdown = listOf("fixture/tiny.md"))
+                runCheck(
+                    budgets = "fixture/tiny.md 10B",
+                    markdown = listOf("fixture/tiny.md"),
+                )
             }
         }
 
@@ -203,11 +285,17 @@ class CheckDocBudgetsTaskTest {
         fun `passes a file over budget that shrank since the merge-base`() {
             // ----- Arrange -----
             repoWith("fixture/tiny.md" to "12345678901234")
-            write("fixture/tiny.md", "123456789012")
+            write(
+                "fixture/tiny.md",
+                "123456789012",
+            )
 
             // ----- Act & Assert -----
             shouldNotThrowAny {
-                runCheck(budgets = "fixture/tiny.md 10B", markdown = listOf("fixture/tiny.md"))
+                runCheck(
+                    budgets = "fixture/tiny.md 10B",
+                    markdown = listOf("fixture/tiny.md"),
+                )
             }
         }
 
@@ -215,11 +303,17 @@ class CheckDocBudgetsTaskTest {
         fun `fails a file over budget that grew since the merge-base`() {
             // ----- Arrange -----
             repoWith("fixture/tiny.md" to "12345678901234")
-            write("fixture/tiny.md", "1234567890123456789")
+            write(
+                "fixture/tiny.md",
+                "1234567890123456789",
+            )
 
             // ----- Act & Assert -----
             val exception = shouldThrow<GradleException> {
-                runCheck(budgets = "fixture/tiny.md 10B", markdown = listOf("fixture/tiny.md"))
+                runCheck(
+                    budgets = "fixture/tiny.md 10B",
+                    markdown = listOf("fixture/tiny.md"),
+                )
             }
             exception.message shouldContain "grew since merge-base"
         }
@@ -228,11 +322,17 @@ class CheckDocBudgetsTaskTest {
         fun `measures growth in lines for a line budget`() {
             // ----- Arrange -----
             repoWith("fixture/lines.md" to "1\n2\n3\n4\n")
-            write("fixture/lines.md", "1\n2\n3\n4\n5\n")
+            write(
+                "fixture/lines.md",
+                "1\n2\n3\n4\n5\n",
+            )
 
             // ----- Act & Assert -----
             val exception = shouldThrow<GradleException> {
-                runCheck(budgets = "fixture/lines.md 3L", markdown = listOf("fixture/lines.md"))
+                runCheck(
+                    budgets = "fixture/lines.md 3L",
+                    markdown = listOf("fixture/lines.md"),
+                )
             }
             exception.message shouldContain "4 L -> 5 L"
         }
@@ -241,12 +341,18 @@ class CheckDocBudgetsTaskTest {
         fun `fails when no merge-base can be resolved`() {
             // ----- Arrange -----
             initRepo(branch = "trunk")
-            write("fixture/tiny.md", "x")
+            write(
+                "fixture/tiny.md",
+                "x",
+            )
             commitAll()
 
             // ----- Act & Assert -----
             val exception = shouldThrow<GradleException> {
-                runCheck(budgets = "fixture/tiny.md 10B", markdown = listOf("fixture/tiny.md"))
+                runCheck(
+                    budgets = "fixture/tiny.md 10B",
+                    markdown = listOf("fixture/tiny.md"),
+                )
             }
             exception.message shouldContain "cannot resolve a git merge-base"
         }
@@ -260,11 +366,17 @@ class CheckDocBudgetsTaskTest {
         fun `fails when the Now section grows past its budget`() {
             // ----- Arrange -----
             repoWith(tracker to "# Tracker\n\n## Now\n- a\n\n## Later\n- z\n")
-            write(tracker, "# Tracker\n\n## Now\n- a\n- b\n- c\n\n## Later\n- z\n")
+            write(
+                tracker,
+                "# Tracker\n\n## Now\n- a\n- b\n- c\n\n## Later\n- z\n",
+            )
 
             // ----- Act & Assert -----
             val exception = shouldThrow<GradleException> {
-                runCheck(budgets = "## Now 3L", active = "$tracker\n")
+                runCheck(
+                    budgets = "## Now 3L",
+                    active = "$tracker\n",
+                )
             }
             exception.message shouldContain "$tracker ## Now section"
         }
@@ -276,7 +388,10 @@ class CheckDocBudgetsTaskTest {
 
             // ----- Act & Assert -----
             shouldNotThrowAny {
-                runCheck(budgets = "## Now 3L", active = "$tracker\n")
+                runCheck(
+                    budgets = "## Now 3L",
+                    active = "$tracker\n",
+                )
             }
         }
 
@@ -284,11 +399,17 @@ class CheckDocBudgetsTaskTest {
         fun `ignores growth outside the Now section`() {
             // ----- Arrange -----
             repoWith(tracker to "# Tracker\n\n## Now\n- a\n\n## Later\n- z\n")
-            write(tracker, "# Tracker\n\n## Now\n- a\n\n## Later\n- z\n- y\n- x\n- w\n- v\n")
+            write(
+                tracker,
+                "# Tracker\n\n## Now\n- a\n\n## Later\n- z\n- y\n- x\n- w\n- v\n",
+            )
 
             // ----- Act & Assert -----
             shouldNotThrowAny {
-                runCheck(budgets = "## Now 3L", active = "$tracker\n")
+                runCheck(
+                    budgets = "## Now 3L",
+                    active = "$tracker\n",
+                )
             }
         }
 
@@ -296,11 +417,17 @@ class CheckDocBudgetsTaskTest {
         fun `fails a new tracker whose Now section is over budget`() {
             // ----- Arrange -----
             repoWith()
-            write(tracker, "## Now\n- a\n- b\n- c\n- d\n")
+            write(
+                tracker,
+                "## Now\n- a\n- b\n- c\n- d\n",
+            )
 
             // ----- Act & Assert -----
             val exception = shouldThrow<GradleException> {
-                runCheck(budgets = "## Now 3L", active = "$tracker\n")
+                runCheck(
+                    budgets = "## Now 3L",
+                    active = "$tracker\n",
+                )
             }
             exception.message shouldContain "$tracker ## Now section"
         }
@@ -410,7 +537,10 @@ class CheckDocBudgetsTaskTest {
 
             // ----- Act & Assert -----
             shouldNotThrowAny {
-                runCheck(markdown = listOf("docs/reference/foo.md"), permanentDocs = emptyList())
+                runCheck(
+                    markdown = listOf("docs/reference/foo.md"),
+                    permanentDocs = emptyList(),
+                )
             }
         }
 
