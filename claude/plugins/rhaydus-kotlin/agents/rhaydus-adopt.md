@@ -1,6 +1,6 @@
 ---
 name: "rhaydus-adopt"
-description: "Use this agent to onboard a project onto the nl.rhaydus foundation, or to refresh that wiring after adding/removing a foundation module. It wires the foundation git submodule and its includeBuild, the shared catalog and convention plugins; makes the foundation docs reachable; loads the rhaydus-kotlin plugin from the project; and writes a managed Rhaydus block into the project's CLAUDE.md that routes feature work to the rhaydus-logic / rhaydus-ui agents.\\n\\nExamples:\\n\\n- user: \"Set this app up to use the rhaydus foundation\"\\n  assistant: \"I'll use the rhaydus-adopt agent to add the foundation submodule, wire the includeBuild, and write the CLAUDE.md routing block.\"\\n\\n- user: \"We just added designsystem-image — update the Claude setup\"\\n  assistant: \"I'll use the rhaydus-adopt agent to refresh the managed CLAUDE.md block from the project's actual dependencies.\""
+description: "Use this agent to onboard a project onto the nl.rhaydus foundation, or to refresh that wiring after adding/removing a foundation module. It wires the foundation git submodule and its includeBuild, the shared catalog and convention plugins; makes the foundation docs reachable; loads the rhaydus-kotlin plugin from the project; and writes a managed Rhaydus block into the project's CLAUDE.md that routes feature work to the implementer / reviewer / test-writer agents.\\n\\nExamples:\\n\\n- user: \"Set this app up to use the rhaydus foundation\"\\n  assistant: \"I'll use the rhaydus-adopt agent to add the foundation submodule, wire the includeBuild, and write the CLAUDE.md routing block.\"\\n\\n- user: \"We just added designsystem-image - update the Claude setup\"\\n  assistant: \"I'll use the rhaydus-adopt agent to refresh the managed CLAUDE.md block from the project's actual dependencies.\""
 model: sonnet
 color: orange
 memory: project
@@ -58,10 +58,8 @@ This project consumes the nl.rhaydus foundation as the git submodule `foundation
 **This app's design system (brand):** <path to the app's DESIGN_SYSTEM.md / design-system.md>
 
 **How to develop here:**
-- New feature / screen **logic** (state, actions, use cases, data) → **rhaydus-logic** agent.
-- New feature / screen **UI** (Compose render, design system) → **rhaydus-ui** agent (it reads both the foundation design system and this app's design doc above).
-- A logic-only or UI-only change uses just that one agent; a full new screen goes logic → UI (rhaydus-logic emits the state/action contract, then rhaydus-ui renders it).
-- Review → **code-reviewer**. Tests → **unit-test-writer**. Style gates → the **style-check** skill.
+- Implementation (logic, UI or a full screen) → **implementer** agent, one per vertical slice (it reads both the foundation design system and this app's design doc above).
+- Review → **reviewer**. Tests → **test-writer**. Style gates → the **style-check** skill.
 - Reuse-first: check the capabilities index before hand-rolling a component, modifier, or util.
 - A foundation version change moves the submodule pointer: fetch in `foundation/`, check out the new tag, `git add foundation`, commit.
 
@@ -69,7 +67,7 @@ _Re-run `rhaydus-adopt` after changing any `nl.rhaydus` dependency or the founda
 <!-- rhaydus:end -->
 ```
 
-Fill every `<...>`. Record the **foundation docs path** and the **local design-system path** (that is how `rhaydus-ui` finds the brand theme). Replace only the content between the markers; leave the rest of `CLAUDE.md` untouched. If the markers are absent, append the block.
+Fill every `<...>`. Record the **foundation docs path** and the **local design-system path** (that is how the `implementer` finds the brand theme). Replace only the content between the markers; leave the rest of `CLAUDE.md` untouched. If the markers are absent, append the block.
 
 ## Verify and report
 

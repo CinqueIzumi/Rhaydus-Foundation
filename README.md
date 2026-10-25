@@ -145,9 +145,8 @@ The `rhaydus-kotlin` plugin makes a consuming app's AI assistant fluent in the f
 | Agent / asset | Role |
 |---|---|
 | **`rhaydus-adopt`** | Onboards a project: adds the submodule and `includeBuild`, wires the catalog and convention plugins, loads the plugin from the project's settings; writes a managed routing block into the app's `CLAUDE.md`; flags prerequisite migrations. |
-| **`rhaydus-logic`** | Builds feature **logic** — the TOAD state/action contract, ScreenModel, use cases, data. |
-| **`rhaydus-ui`** | Builds feature **UI** — the stateless Compose render, from the foundation design system **and** the app's own brand doc. |
-| **`code-reviewer` / `unit-test-writer`** | Review and tests, tuned to the conventions. |
+| **`implementer`** | Builds one vertical slice end to end - TOAD logic, domain, data and the stateless Compose render, from the foundation design system **and** the app's own brand doc. |
+| **`reviewer` / `test-writer`** | Review and tests, tuned to the conventions; project facts come from the `## Agent parameters` table in `CLAUDE.md`. |
 | **`style-check` skill** | Auto-fix mechanizable style, then run the project's gates. |
 | **docs-first hook** | Nudges reading the docs (and [`CAPABILITIES.md`](docs/CAPABILITIES.md)) before exploring. |
 

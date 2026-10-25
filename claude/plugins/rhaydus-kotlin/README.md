@@ -7,20 +7,19 @@ Shared Claude Code assets for Kotlin/Compose/TOAD apps built on the `nl.rhaydus`
 | Component | Name | Notes |
 |---|---|---|
 | Subagent | `rhaydus-adopt` | Onboards a project: adds the foundation submodule and its `includeBuild`, wires the catalog / convention plugins, loads this plugin from the project's settings, writes the managed routing block into the project's `CLAUDE.md`. |
-| Subagent | `rhaydus-logic` | Builds feature **logic**: the TOAD state/action contract, ScreenModel, Collectors, use cases, domain, data. Owns `UiState`/`UiAction`/`UiEvent` and hands the UI off via a contract spec. |
-| Subagent | `rhaydus-ui` | Builds feature **UI**: the stateless Compose render, reusing the foundation design system **and** the project's own brand/editorial design doc. Consumes the TOAD contract; never invents state/actions. |
-| Subagent | `code-reviewer` | Correctness / style / architecture review. Builds project-scoped agent-memory. |
-| Subagent | `unit-test-writer` | Edge-case-first tests; knows the TOAD layering (Actions/Collectors, use cases, data sources). |
+| Subagent | `implementer` | Builds one vertical slice: TOAD logic, domain, data, mapper and the stateless Compose render, reusing the foundation design system **and** the project's own brand doc. Needs a brief with `## Goal` / `## Files` / `## Verify`. |
+| Subagent | `reviewer` | Correctness / security / architecture review of a `## Scope`, one review per stage. Builds project-scoped agent-memory. |
+| Subagent | `test-writer` | Triage-first, edge-case-aware tests; knows the TOAD layering (Actions/Collectors, use cases, data sources). Needs `## Files` / `## Verify`. |
 | Skill | `style-check` | Auto-fix mechanizable style, then run the project's verification gates. Adapts to whatever gates exist. |
 | Hook | docs-first reminder | `PreToolUse` on `Agent`: once per session, nudges to read the project's docs before fanning out Explore/general-purpose agents. |
 
 ## Development model
 
-The three `rhaydus-*` agents are specialists you route substantial work to (not every one-line edit):
+The agents are specialists you route substantial work to (not every one-line edit):
 
 - **`rhaydus-adopt`** runs once at onboarding (and when the foundation tag or deps change). It writes a managed block into the project's `CLAUDE.md` recording the consumed modules, the doc locations, the app's own design-system path, and the routing rules below.
-- A **new feature** splits along TOAD's seam: **`rhaydus-logic`** builds everything behind `runAction` and defines the `UiState`/`UiAction`/`UiEvent` contract; that contract is handed to **`rhaydus-ui`**, which builds the stateless Compose render. The orchestrating assistant drives the handoff — the logic agent returns a UI spec, it does not spawn the UI agent itself.
-- Every agent reads **`CAPABILITIES.md`** first, so it reuses what the foundation already ships and stays correct for the version a project is pinned to.
+- A **feature** goes to one **`implementer`** per vertical slice: logic, data and the stateless render together. When a slice stops at the TOAD seam, it returns a `## Contract` section (state, actions, events) for a later slice to bind to; the orchestrating assistant drives the handoff.
+- Agents grep **`CAPABILITIES.md`** for a concept before hand-rolling it, so they reuse what the foundation already ships for the version a project is pinned to.
 
 ## Install
 

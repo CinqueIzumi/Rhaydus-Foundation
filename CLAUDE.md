@@ -44,8 +44,8 @@ Claude plugin's `plugin.json` version is **locked** to it by the `verifyPluginVe
 
 ## Delegate
 
-- After a substantial Kotlin change, run the **`code-reviewer`** agent before reporting the work done.
-- **Never write unit tests inline — delegate to the `unit-test-writer` agent.**
+- After a substantial Kotlin change, run the **`reviewer`** agent before reporting the work done.
+- **Never write unit tests inline - delegate to the `test-writer` agent.**
 
 ## Commits
 

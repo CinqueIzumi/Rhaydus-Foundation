@@ -11,7 +11,7 @@ rather than a memorized snapshot.
 > not a style nit.
 
 > **Maintenance rule.** Adding, removing, or renaming a published module / component / public API updates
-> this file in the same change (the `code-reviewer` enforces it, alongside the per-doc maintenance rules).
+> this file in the same change (the `reviewer` enforces it, alongside the per-doc maintenance rules).
 
 ## How a project consumes it
 
@@ -76,7 +76,7 @@ images depends only on `designsystem-core`.
 - **Convention plugins** (`build-logic`, applied by id): `rhaydus.android.library`, `rhaydus.kmp.library`, `rhaydus.android.compose`, `rhaydus.kmp.compose`. The KMP library convention also declares the `mobileMain` / `mobileTest` (Android+iOS shared, desktop branches to `jvmMain`) seam and the shared Android lint policy (`warningsAsErrors` + the root `lint.xml`, with version-freshness checks held `informational`).
 - **Build gates** (`build-logic` + root): `rhaydus.module-graph` (a root-applied convention plugin — the `checkModuleGraph` task fails on any `project(...)` edge breaking the tier DAG configured via `moduleGraph { }`, plus an `api`-visibility allowlist); the `com.autonomousapps.dependency-analysis` policy (fail on unused deps / wrong api-vs-implementation, with the convention bundle excluded; each module's `projectHealth` runs in its `check`, aggregated by `buildHealth`). Both gates wire into every module's `check`.
 - **ktlint-rules** (`nl.rhaydus:ktlint-rules`): auto-fixes + gates the mechanizable layout rules (multi-arg one-per-line wrapping, trailing commas, blank-line rules, region flushing, sibling-composable spacing, boolean `.not()`) and bans raw logging (`no-raw-logging`: no `println` / `android.util.Log.*` — use the `AppLog` facade). `ktlintFormat` fixes, `ktlintCheck` gates.
-- **Claude plugin** (`rhaydus-kotlin`): the `rhaydus-adopt` / `rhaydus-logic` / `rhaydus-ui` agents, the `code-reviewer` / `unit-test-writer` agents, the `style-check` skill, and the docs-first hook.
+- **Claude plugin** (`rhaydus-kotlin`): the `rhaydus-adopt` agent, the generic `implementer` / `reviewer` / `test-writer` agents, the `style-check` skill, and the docs-first hook.
 
 ## Which doc governs what
 
