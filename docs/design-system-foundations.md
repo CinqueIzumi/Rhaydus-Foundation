@@ -1,373 +1,325 @@
 # Design System Foundations
 
-The shared, brand-agnostic skeleton for `nl.rhaydus` apps (Jetpack Compose, Material 3 Expressive, the
-home-grown TOAD presentation architecture). This document captures only the structure that is genuinely
-reusable across apps: the typography plumbing, the color-role model, the Material 3 Expressive setup, the
-layout primitives, the component and TOAD conventions, and the maintenance rule.
+Brand-agnostic skeleton for `nl.rhaydus` apps (Jetpack Compose, Material 3 Expressive, TOAD). Brand identity
+(palette, fonts, tone, motion choreography, illustrations, concrete component catalog) lives in each app's own
+`design-system.md` (or `DESIGN_SYSTEM.md`). "Each app decides" means that doc records the decision.
 
-It is deliberately empty of brand identity. Each app keeps its own `design-system.md` (or
-`DESIGN_SYSTEM.md`) that names its palette, fonts, tone, motion choreography, illustrations, and concrete
-component catalog. When a rule below says "each app decides," that decision belongs in the app's own doc,
-not here.
-
-> **Maintenance rule.** Any change that introduces, retires, or alters a foundation, component, or pattern
-> in this shared skeleton must update this file in the same change. If the doc and the code disagree, the
-> code is wrong, the doc is wrong, or both, and none of those is acceptable to merge. The same rule binds
-> each app's own design-system doc for its brand-specific surfaces.
+> **Maintenance rule.** A change that introduces, retires, or alters a foundation, component, or pattern in
+> this skeleton updates this file in the same change. Doc and code never disagree at merge. The same rule
+> binds each app's own design-system doc for its brand-specific surfaces.
 
 ## 1. Theme setup (Material 3 Expressive)
 
-The theme is built on **Material 3 Expressive**, not the stable Material 3 baseline.
-
-- The root theme composable wraps content in **`MaterialExpressiveTheme`** (opt-in via
-  `@OptIn(ExperimentalMaterial3ExpressiveApi::class)`), passing a `colorScheme`, a `typography`, and
-  `motionScheme = MotionScheme.expressive()`. Screens consume the expressive motion scheme rather than
-  hand-authoring durations or easings.
-- The Compose BOM ships a stable `material3`, but the Expressive components and APIs (the expressive theme
-  entry point, the expressive motion scheme, the floating/expressive widgets) live in an **alpha
-  `androidx.compose.material3:material3` artifact that is pinned in `libs.versions.toml` to override the
-  BOM's version**. The pin carries a one-line comment explaining why (Expressive components). When the BOM
-  catches up, the override is removed. Treat the pin as load-bearing, not stray.
-- **Dynamic color (Android 12+ Material You) is wired through the theme but off by default.** The theme
-  composable takes a `dynamicColor: Boolean = false` parameter. Each app's canonical scheme is the design;
-  dynamic color is an opt-in personalization, never the default look.
-- Light and dark `ColorScheme`s are full `lightColorScheme(...)` / `darkColorScheme(...)` declarations
-  mapping every Material slot to a named token. The token *values* (hex) are brand-specific and live in the
-  app.
+- The root theme composable wraps content in **`MaterialExpressiveTheme`**
+  (`@OptIn(ExperimentalMaterial3ExpressiveApi::class)`), passing a `colorScheme`, a `typography`, and
+  `motionScheme = MotionScheme.expressive()`. Screens consume the expressive motion scheme; no hand-authored
+  durations or easings.
+- The Expressive APIs (expressive theme entry point, expressive motion scheme, floating/expressive widgets)
+  come from an **alpha `androidx.compose.material3:material3` pinned in `libs.versions.toml` over the BOM's
+  version**. The pin carries a one-line comment (Expressive components) and is load-bearing. Remove it once
+  the BOM catches up.
+- **Dynamic color (Android 12+ Material You) is wired but off by default**: the theme composable takes
+  `dynamicColor: Boolean = false`. The app's canonical scheme is the default look; dynamic color is opt-in
+  only.
+- Light and dark schemes are full `lightColorScheme(...)` / `darkColorScheme(...)` declarations mapping every
+  Material slot to a named token. Token values (hex) live in the app.
 
 ## 2. Typography plumbing
 
-Two parallel type scales coexist, and both are reachable from `MaterialTheme`.
+Two type scales, both reachable from `MaterialTheme`:
 
-- **Material typography.** A standard display/headline/title/body/label scale that off-the-shelf Material 3
-  components consume implicitly, passed as the `typography` argument to the expressive theme. Do not
-  override it for component internals.
-- **App-specific typography scale.** A project-defined `@Immutable data class` of named `TextStyle` roles,
-  used for any text a *screen itself* composes (as opposed to text rendered inside a stock Material
-  component). It is exposed through the standard CompositionLocal-plus-extension pattern:
-  - An internal `staticCompositionLocalOf { DefaultXTypography }` holds the default instance.
-  - A `MaterialTheme.<x>Typography` extension property (`@Composable @ReadOnlyComposable`) reads `.current`,
-    so call sites reach the scale the same way they reach `MaterialTheme.typography` or
-    `MaterialTheme.colorScheme`.
-  - The root theme composable provides the local via
+- **Material typography.** The standard display/headline/title/body/label scale, passed as `typography` to
+  the expressive theme and consumed by stock Material components. Do not override it for component internals.
+- **App-specific typography scale.** An `@Immutable data class` of named `TextStyle` roles for text a screen
+  composes itself (not text inside a stock Material component). Exposed as:
+  - An internal `staticCompositionLocalOf { DefaultXTypography }` holding the default instance.
+  - A `MaterialTheme.<x>Typography` extension property (`@Composable @ReadOnlyComposable`) reading `.current`.
+  - The root theme provides it via
     `CompositionLocalProvider(LocalXTypography provides DefaultXTypography) { MaterialExpressiveTheme(...) }`.
-- **Font families are isolated in one file.** Each family resolves through a single named `FontFamily`
-  declaration (e.g. a reading face and an accent face). Whether those resolve to system generic families
-  (`SansSerif`, `Monospace`, zero font assets, works offline) or to bundled/multiplatform font resources is
-  an **app-level choice documented in the app's own doc**. The structural rule is the isolation: swapping
-  the pairing later changes only those declarations and nothing else in the system moves.
-- **No ad-hoc `TextStyle` at a call site.** Pick the closest app-scale or Material role and `.copy(...)`
-  only when a documented exception requires it. Case transforms (e.g. `.uppercase()` on an all-caps label)
-  are applied at the call site, not baked into the style.
-- **Shared editorial role contract (opt-in layer).** Editorial components need a shared type vocabulary,
-  which a design-agnostic core cannot define. It therefore lives in the **opt-in `designsystem-editorial`
-  module**, not in core: a small fixed `EditorialTypography` role set (eyebrow, pageTitle, headline, title,
-  body, statLarge / statHero, ...), provided by an app via `EditorialTheme(editorialTypography = ...)` (nested inside
-  `RhaydusTheme`) and read by editorial components through `MaterialTheme.editorialTypography`. That module
-  owns the role *names*; the role *values* stay a brand decision (`buildEditorialTypography(typography)` is a
-  neutral starting point to `.copy(...)`, or build from scratch). An app that does not use editorial
-  components never depends on the module, and the neutral core neither defines nor requires it.
+- **Font families are isolated in one file**: one named `FontFamily` declaration per family (e.g. a reading
+  face and an accent face). System generic families (`SansSerif`, `Monospace`) versus bundled/multiplatform
+  font resources is an **app-level choice documented in the app's own doc**. Swapping the pairing changes
+  only those declarations.
+- **No ad-hoc `TextStyle` at a call site.** Pick the closest app-scale or Material role; `.copy(...)` only
+  for a documented exception. Case transforms (e.g. `.uppercase()`) are applied at the call site, not baked
+  into the style.
+- **Shared editorial role contract (opt-in layer).** The **opt-in `designsystem-editorial` module** (not
+  core) owns a fixed `EditorialTypography` role set (eyebrow, pageTitle, headline, title, body, statLarge /
+  statHero, ...). An app provides it via `EditorialTheme(editorialTypography = ...)` nested inside
+  `RhaydusTheme`; editorial components read `MaterialTheme.editorialTypography`. The module owns the role
+  *names*; role *values* are a brand decision (`buildEditorialTypography(typography)` is a neutral starting
+  point to `.copy(...)`, or build from scratch). An app without editorial components does not depend on the
+  module; core neither defines nor requires it.
 
-The *set of role names*, their sizes/weights, and which family each role uses are brand decisions and belong
-in the app's own typography table. This doc only fixes the plumbing.
+Role names, sizes/weights, and each role's family belong in the app's own typography table.
 
 ## 3. Color roles
 
-Color is sourced from the app's Material 3 Expressive scheme. The reusable structure is the **mapping of
-semantic roles onto Material slots**, not any palette.
+Semantic roles map onto Material 3 Expressive slots; the palette is app-side.
 
-- **Primary.** The single accent. Used for text/chrome emphasis (section marks, active toggle/filter
-  states, progress indicators, the filled primary button). It is also, by deliberate convention, the
-  surface fill of **at most one hero/stat card per scrollable region**. Inside such a card content is
-  `onPrimary`, demoted text drops to `onPrimary` at low alpha, and any call to action steps down a tier
-  (tonal/elevated) so it does not vanish into the fill. **Beyond that one hero, primary is not a background
-  color**; ordinary cards, rows, and grouped regions use the page background or a `surfaceContainer*` shade.
+- **Primary.** The single accent: text/chrome emphasis (section marks, active toggle/filter states, progress
+  indicators, the filled primary button). It is also the surface fill of **at most one hero/stat card per
+  scrollable region**. Inside that card content is `onPrimary`, demoted text is `onPrimary` at low alpha, and
+  any call to action steps down a tier (tonal/elevated). **Otherwise primary is never a background**;
+  ordinary cards, rows, and grouped regions use the page background or a `surfaceContainer*` shade.
 - **on-surface / on-background.** Default readable copy.
 - **on-surface-variant.** Demoted copy: metadata, captions, secondary lines, inactive labels.
 - **surface / background.** The plain page canvas.
-- **surfaceContainer, -High, -Highest.** Elevated tiles, cards, grouped sections. Step the container shade
-  *up* to express grouping or focus. **Elevation is tonal, not shadowed**; there are no drop-shadow cards in
-  the system (an app may carve a narrow brand exception, e.g. a physical-object motif, and must document it
-  in its own doc).
-- **surfaceContainerLowest.** Reserved for modal sheets and overlays sitting *above* the page.
-- **outline / outlineVariant.** Hairline dividers and the rare bordered control. Prefer whitespace and a
-  tone change to a dense rule.
-- **secondaryContainer / onSecondaryContainer.** The selected state of pill chips and similar facet
-  toggles; the idle state sits on `surfaceContainerHigh / onSurface`.
+- **surfaceContainer, -High, -Highest.** Elevated tiles, cards, grouped sections. Step the shade *up* for
+  grouping or focus. **Elevation is tonal**; no drop-shadow cards (an app may carve a narrow brand exception,
+  e.g. a physical-object motif, documented in its own doc).
+- **surfaceContainerLowest.** Reserved for modal sheets and overlays above the page.
+- **outline / outlineVariant.** Hairline dividers and the rare bordered control. Prefer whitespace and a tone
+  change over a rule.
+- **secondaryContainer / onSecondaryContainer.** Selected state of pill chips and similar facet toggles; idle
+  state is `surfaceContainerHigh / onSurface`.
 - **inversePrimary.** Small attention markers on chrome (notification dots).
 - **error / onError.** Destructive and validation states only.
 
-Roles that sit **outside** the Material scheme (a fixed brand accent that must read identically in light and
-dark, an app-specific redaction treatment, syntax tinting, and so on) are app-specific extensions and belong
-in the app's own doc, never here.
+Roles outside the Material scheme (a fixed brand accent identical in light and dark, a redaction treatment,
+syntax tinting, ...) are app extensions documented in the app's own doc, never here.
 
 ## 4. Shape, elevation, and the accent bar
 
 - **Corners.** Small radii on cards/tiles, medium on buttons (Material defaults via the expressive theme),
-  fully-rounded (`RoundedCornerShape(percent = 50)`) for pill chips and active toggle states. Exact radii
-  are app-tunable.
-- **Elevation is tonal** (see section 3): step the container shade rather than adding pixels of elevation.
-- **Accent bar.** A short primary-colored bar leads a section label, in **two sizes picked by the label
-  role**: a larger "section" bar that sits in the page gutter ahead of a full-size label-plus-headline pair,
-  and a smaller inline hairline for a compact label living *inside* a card or hero. The two are never mixed:
-  a full label gets the section bar, a compact label gets the hairline or no bar. The exact dimensions are
-  an app choice; the two-tier structure is shared.
+  fully rounded (`RoundedCornerShape(percent = 50)`) for pill chips and active toggle states. Exact radii are
+  app-tunable.
+- **Elevation is tonal** (section 3): step the container shade, never add elevation.
+- **Accent bar.** A short primary-colored bar leads a section label, in **two sizes picked by label role**: a
+  larger section bar in the page gutter ahead of a full-size label-plus-headline pair, and a smaller inline
+  hairline for a compact label inside a card or hero. Never mixed: a full label gets the section bar, a
+  compact label gets the hairline or no bar. Dimensions are an app choice.
 
 ## 5. Layout primitives
 
 ### 5.1 Spacing scale
 
-Spacing is rhythmic, drawn from a small recurring set of dp steps rather than computed: tight inline gaps,
-within-component padding, the page horizontal gutter, gaps between blocks inside a region, and gaps between
-major page sections, each step roughly double the last. The page gutter is a single value held consistent
-for a whole page. Sections always breathe; two adjacent section headers without a generous gap between them
-is a layout bug. The concrete values are app-tunable but follow this doubling rhythm.
+- Spacing comes from a small fixed set of dp steps, each roughly double the last: tight inline gaps,
+  within-component padding, the page horizontal gutter, gaps between blocks in a region, gaps between major
+  sections. Values are app-tunable within this doubling rhythm.
+- One gutter value per page.
+- Two adjacent section headers without a generous gap between them is a layout bug.
 
 ### 5.2 Page scaffold and bottom-bar padding
 
-A page is, top to bottom: an optional top app bar, scrolling content with a consistent horizontal gutter,
-and bottom navigation when on a tab root. **The bottom of scrolling content reserves whatever trailing
-padding the bottom bar demands** so the last item is never occluded.
+A page is, top to bottom: optional top app bar, scrolling content with a consistent horizontal gutter, bottom
+navigation on a tab root. **Scrolling content reserves the trailing padding the bottom bar demands**; the last
+item is never occluded.
 
-This is wired through a CompositionLocal, not passed by hand down every screen:
-
-- A `LocalBottomBarPadding` CompositionLocal (default `0.dp`) carries that trailing padding.
-- `BottomBarScaffold(bottomBar, placement, barSpacing, content)` is the shipped host: the app hands it the
-  brand-styled bar as a slot, and it **provides** the padding through
-  `CompositionLocalProvider(LocalBottomBarPadding provides ...)`. No per-app host boilerplate.
-- **`placement` decides the layout and the arithmetic.** With `BottomBarPlacement.OVERLAY` the bar draws
-  *over* content, so layout reserves nothing and the host measures the bar's laid-out footprint and provides
-  `footprint + barSpacing`. With `BottomBarPlacement.DOCKED` the bar is hosted in a Material `Scaffold`,
-  whose `innerPadding` already reserves it, so the host provides `barSpacing` alone — the breathing gap.
-- **One contract, so screens never branch.** Whatever the placement, the value that reaches content answers
-  exactly one question: *how much trailing padding do I reserve?* An app with a runtime docked/floating
-  preference flips `placement` and nothing else moves — no screen, and no read-side helper, second-guesses
-  the host. A read side that branches on the app's own bar-style enum will get the *other* shells wrong.
-- **Measure once - never re-add the inset.** In the overlay placement the host measures the *laid-out* bar
-  (its `onSizeChanged` sits outside the bar's `windowInsetsPadding`), so the `navigationBars` inset the bar
-  reserves is already baked into the measured height and counted exactly once. Recomputing and re-adding
-  `WindowInsets.navigationBars` on top of a measured height double-counts it.
-- Screens read it through a `rememberBottomBarPadding()` helper and apply it as trailing content padding.
-- A companion `BottomNavigationSpacer()` helper emits a `Spacer` sized to the bottom navigation-bar inset
-  for screens that need the raw inset.
-
-Any bottom-anchored chrome that overlays content is a bottom bar for this purpose — a persistent player or
-session strip on a layout that has no tab bar is hosted the same way (`OVERLAY`, `barSpacing = 0.dp`).
-
-The **rendered bar and the tab host stay app-side** (they name concrete features and brand chrome; section
-8): the foundation ships the reusable pieces the shell leans on - `BottomBarScaffold`, the window-size
-primitives (§5.7), `TwoPaneScaffold` (§5.8), and the cross-tab pulse (§7) - and the app composes them into
-its own adaptive nav shell.
-
-**Root tabs prefer an in-page title over a chrome title.** On a root tab, the screen's identity renders
-*inside* the scroll (an in-page `pageTitle`-style role), so it shares the editorial scale with the section
-headers below. Reach for a Material top-bar title only on sub-screens pushed into the stack, where back
-navigation or trailing actions are needed.
+- `LocalBottomBarPadding` (default `0.dp`) carries that padding; never pass it by hand.
+- `BottomBarScaffold(bottomBar, placement, barSpacing, content)` is the host: the app passes its brand bar as
+  a slot, and the host **provides** the padding via `CompositionLocalProvider(LocalBottomBarPadding provides
+  ...)`. No per-app host boilerplate.
+- **`placement`:** `BottomBarPlacement.OVERLAY` draws the bar over content; layout reserves nothing and the
+  host provides the bar's measured footprint + `barSpacing`. `BottomBarPlacement.DOCKED` hosts the bar in a
+  Material `Scaffold` whose `innerPadding` reserves it; the host provides `barSpacing` alone.
+- **Screens never branch.** The provided value always means the trailing padding to reserve. A runtime
+  docked/floating preference flips only `placement`. No screen or read-side helper branches on the app's
+  bar-style enum.
+- **Never re-add the inset.** In `OVERLAY` the host's `onSizeChanged` sits outside the bar's
+  `windowInsetsPadding`, so the measured height already includes the `navigationBars` inset. Never add
+  `WindowInsets.navigationBars` on top of it.
+- Screens read it through `rememberBottomBarPadding()` and apply it as trailing content padding.
+- `BottomNavigationSpacer()` emits a `Spacer` sized to the bottom navigation-bar inset, for screens that need
+  the raw inset.
+- Any bottom-anchored chrome overlaying content counts as a bottom bar: a persistent player or session strip
+  on a layout without a tab bar uses `OVERLAY`, `barSpacing = 0.dp`.
+- The **rendered bar and tab host stay app-side** (section 8). The foundation ships `BottomBarScaffold`, the
+  window-size primitives (§5.7), `TwoPaneScaffold` (§5.8), and the cross-tab pulse (§7); the app composes its
+  adaptive nav shell from them.
+- **Root tabs use an in-page title**, rendered inside the scroll in a `pageTitle`-style role. A Material
+  top-bar title is only for sub-screens pushed into the stack that need back navigation or trailing actions.
 
 ### 5.3 Section rhythm
 
-The canonical way to introduce any region: an optional accent bar, a short label (the orienting
-eyebrow/kicker), a human-readable headline, then the body (a list, a carousel/grid, or a single block), then
-a generous gap before the next section. `EditorialSectionHeader` (in `designsystem-editorial`) is the shared
-implementation of the accent-bar + eyebrow + headline + optional-description opener.
+Every region opens with: optional accent bar, short label (eyebrow/kicker), human-readable headline, then the
+body (a list, a carousel/grid, or a single block), then a generous gap before the next section.
+`EditorialSectionHeader` (`designsystem-editorial`) implements the accent-bar + eyebrow + headline +
+optional-description opener.
 
 ### 5.4 Hero region
 
-A hero opens a screen with one dominant element. Hero regions sit on the page surface, not on a container;
-they are part of the page, not a tile within it. The single primary-filled stat card (section 3) is the one
-exception that carries a fill.
+A hero opens a screen with one dominant element and sits on the page surface, not on a container. The single
+primary-filled stat card (section 3) is the only hero with a fill.
 
 ### 5.5 Cards and rows / reserved-row rule
 
-Collections render as cards (fixed-size in a horizontal carousel) or rows (the same anatomy laid
-horizontally). **Cards reserve the height of every optional row they may show, so the list never reflows as
-data streams in.** Horizontal carousels paint no explicit overflow affordance: the rightmost card clipped
-against the gutter is itself the "there is more" cue, never an edge fade, chevron, or page indicator.
+- Collections render as cards (fixed-size in a horizontal carousel) or rows (same anatomy laid horizontally).
+- **Cards reserve the height of every optional row they may show; the list never reflows as data streams in.**
+- Horizontal carousels paint no overflow affordance (no edge fade, chevron, or page indicator); the rightmost
+  card clipped against the gutter is the cue.
 
 ### 5.6 Modal sheets
 
-Modal bottom sheets open fully expanded on `surfaceContainerLowest`. The first element inside is always the
-canonical section header (accent bar, label, headline, optional description), followed by the sheet body.
-Sheets handle their own dismissal and never need a custom close button. **No exemptions:** every modal sheet
-opens with this header. A stock Material `titleLarge`/`bodyMedium` sheet header reads as system chrome and is
-a regression. If a sheet's content is so transient that this header feels theatrical, it should be a
-`Dialog`, not a sheet.
+- Modal bottom sheets open fully expanded on `surfaceContainerLowest`.
+- The first element is always the canonical section header (accent bar, label, headline, optional
+  description), then the body. **No exemptions**: a stock Material `titleLarge`/`bodyMedium` sheet header is a
+  regression.
+- Sheets handle their own dismissal; no custom close button.
+- Content too transient for this header is a `Dialog`, not a sheet.
 
 ### 5.7 Window size and breakpoints
 
-The app adapts to the **measured size of the surface it renders into**, never to a hardcoded device
-type. The breakpoints live in exactly one place so no screen invents its own threshold:
+Adapt to the **measured size of the rendering surface**, never a hardcoded device type. Breakpoints live in
+one place; no screen defines its own threshold.
 
-- `rememberWindowSizeClass()` reads the window size and buckets its width into a `WindowWidthClass`:
-  **`COMPACT` (`< 600dp`)**, **`MEDIUM` (`600-840dp`)**, **`EXPANDED` (`>= 840dp`)**. The two bounds
-  (`COMPACT_MAX_WIDTH`, `MEDIUM_MAX_WIDTH`) are constants on `WindowSizeClass`; `widthClassFor(...)` is
-  the single function that applies them, so layout code and tests bucket identically.
-- **Branch on `widthClass`, not on raw dp.** Reach for the measured `widthDp` / `heightDp` only for the
-  rare continuous decision (a hero whose height tracks the viewport).
-- The class recomputes whenever the container size changes, so it tracks desktop window resizes and
-  foldable posture changes for free. The breakpoint values are tunable per app, but the three-bucket
-  structure and the single-source rule are shared.
+- `rememberWindowSizeClass()` buckets the window width into a `WindowWidthClass`: **`COMPACT` (`< 600dp`)**,
+  **`MEDIUM` (`600-840dp`)**, **`EXPANDED` (`>= 840dp`)**. The bounds (`COMPACT_MAX_WIDTH`,
+  `MEDIUM_MAX_WIDTH`) are constants on `WindowSizeClass`; `widthClassFor(...)` is the single function applying
+  them, used by layout code and tests alike.
+- **Branch on `widthClass`, not raw dp.** Use `widthDp` / `heightDp` only for a continuous decision (e.g. a
+  hero height tracking the viewport).
+- The class recomputes on container size changes (desktop window resizes, foldable posture changes).
+  Breakpoint values are app-tunable; the three buckets and the single source are fixed.
 
 ### 5.8 Adaptive content width and the two-pane split
 
-A list surface that is a single full-width column on a phone should not stretch a single column across a
-desktop window. Two shared moves cover this:
+A list surface never stretches a single column across a desktop window.
 
-- **`TwoPaneScaffold`** is a pure-layout fixed-leading / flexible-trailing split: a fixed-width `list`
-  pane beside a flexible `detail` pane with a divider. It knows nothing about navigation or screen
-  models. Passing a `null` `detail` **collapses to a single pane** with no divider, and `list` stays the
-  first child either way, so toggling `detail` between a value and `null` preserves the list subtree's
-  state (and any `movableContentOf` it hosts) instead of tearing it down.
-- The canonical wiring: on **`EXPANDED`** a list-detail screen shows both panes side by side; on
-  **`COMPACT` / `MEDIUM`** the detail is pushed as a full screen by ordinary navigation. The list pane
-  picks its own column width budget; an app caps overall content width rather than letting text lines run
-  the full monitor.
-- `Modifier.cappedContentWidth(max)` centers a scrolling content column and caps its width; the two
-  sanctioned caps live on `ContentMaxWidth` (`Reading` for single-column copy/forms, `Pane` for a
-  list/grid spread). Pick the role rather than inventing a per-screen number, and leave full-bleed media
-  (covers, hero backdrops) outside the capped column.
+- **`TwoPaneScaffold`** is a pure-layout split: a fixed-width `list` pane beside a flexible `detail` pane with
+  a divider, with no knowledge of navigation or screen models. A `null` `detail` **collapses to a single
+  pane** without divider. `list` is always the first child, so toggling `detail` preserves the list subtree's
+  state (and any `movableContentOf` it hosts).
+- Wiring: on **`EXPANDED`** a list-detail screen shows both panes; on **`COMPACT` / `MEDIUM`** the detail is
+  pushed as a full screen by ordinary navigation. The list pane picks its own column width; the app caps
+  overall content width.
+- `Modifier.cappedContentWidth(max)` centers a scrolling content column and caps its width. Caps come from
+  `ContentMaxWidth` (`Reading` for single-column copy/forms, `Pane` for a list/grid spread), never a
+  per-screen number. Full-bleed media (covers, hero backdrops) stays outside the capped column.
 
 ### 5.9 Adaptive modal sheet (sheet to panel)
 
-A bottom sheet welded to the bottom edge under a tall scrim reads as a phone layout on a desktop window.
-**`AdaptiveModalSheet`** resolves a modal to the window width: a `ModalBottomSheet` on `COMPACT` /
-`MEDIUM`, and a centered, bordered, large-radius panel (a `Dialog`) on `EXPANDED`.
+**`AdaptiveModalSheet`** resolves a modal by window width: a `ModalBottomSheet` on `COMPACT` / `MEDIUM`, a
+centered, bordered, large-radius panel (a `Dialog`) on `EXPANDED`.
 
-- Its `content` slot is **identical to `ModalBottomSheet`'s** (a `ColumnScope` body owning its own
-  padding and scroll), so a call site swaps one for the other without touching the body.
-- Both forms open on `surfaceContainerLowest` and lead with the canonical section header (5.6); neither
-  carries a close button.
-- A body that needs an in-content dismiss (e.g. an "are you sure?" choice) calls `LocalModalSheetDismiss`
-  rather than driving sheet state itself, so it closes correctly in both forms (the sheet animates down;
-  the panel closes immediately). A body that needs to adjust its density to the surface it landed in
-  reads `LocalModalSheetForm` (`SHEET` vs `PANEL`) instead of re-deriving the width class.
+- Its `content` slot is **identical to `ModalBottomSheet`'s** (a `ColumnScope` body owning its padding and
+  scroll); call sites swap one for the other without touching the body.
+- Both forms open on `surfaceContainerLowest`, lead with the canonical section header (5.6), and carry no
+  close button.
+- An in-content dismiss (e.g. an "are you sure?" choice) calls `LocalModalSheetDismiss`, never drives sheet
+  state (the sheet animates down; the panel closes immediately).
+- A body adjusting density to its surface reads `LocalModalSheetForm` (`SHEET` vs `PANEL`), never re-derives
+  the width class.
 
 ## 6. Iconography
 
-- Material **outline** icons, consistent stroke weight across the app. Never mix filled and outlined icon
-  families on the same surface (an app may sanction a single filled glyph as a deliberate state pair, e.g. an
-  active toggle, and must document it).
+- Material **outline** icons, consistent stroke weight. Never mix filled and outlined families on one surface
+  (an app may sanction a single filled glyph as a deliberate state pair, e.g. an active toggle, and documents
+  it).
 - Icon-only controls always carry a content description.
-- Icon size scales with the control's size token; an icon embedded in body type sits on the type baseline at
-  a size proportional to the surrounding text.
+- Icon size scales with the control's size token; an icon in body type sits on the baseline at a size
+  proportional to the text.
 
-How icons are addressed (raw Material `Icons`, or a typed in-house icon/illustration catalog backed by
-multiplatform resources) is an app-level decision and belongs in the app's own doc.
+How icons are addressed (raw Material `Icons`, or a typed in-house icon/illustration catalog on multiplatform
+resources) is an app decision in the app's own doc.
 
 ## 7. Motion (structure)
 
-- Use the Material **expressive motion scheme** (wired into the theme, section 1); do not hand-author
-  durations or easings unless animating a custom property the scheme cannot express.
+- Use the Material **expressive motion scheme** (section 1); hand-author durations or easings only for a
+  custom property the scheme cannot express.
 - **Press feedback on ripple-less surfaces.** Tappable cards and ripple-less surfaces scale to about 0.97
-  while pressed and ease back on release, riding an `InteractionSource` so the scale lines up with the
-  platform's pressed-state ticks. Press scale is the *only* indication on a ripple-less surface: never strip
-  a card's ripple without adding the scale. Material buttons keep their ripple and pressed-shape morph and do
-  not stack scale on top.
+  while pressed and ease back on release, driven by an `InteractionSource`. Press scale is the *only*
+  indication there: never strip a card's ripple without adding the scale. Material buttons keep their ripple
+  and pressed-shape morph and add no scale.
 - **Wavy progress.** Progress and indeterminate waits use the wavy/expressive progress indicator; flat bars
-  are chrome only and never carry semantic progress. (Pull-to-refresh is the common documented exception,
-  since the wavy circle fights the pull arc; an app names its own exception.)
-- **User-triggered list mutations animate; ambient changes do not.** Only user-driven add/remove animates
-  (removal fades and neighbors close the gap); initial load, background refresh, and pagination tail jump in
-  without animation. `rememberLazyItemMutationAnimator(keys)` + `Modifier.mutationAnimated(scope, animator,
-  key)` provide this: they snapshot the first non-empty key set as the un-animated baseline and animate only
-  what appears afterward (with a brief accent-bar pulse on the inserted item). The animator distinguishes
-  only *first snapshot* from *appeared later*, not *user-driven* from *ambient* - so apply it to surfaces
-  whose changes are user-driven; a background refetch or pagination of a list it wraps will animate too.
-- **Staggered entry is a one-shot welcome moment**, played only by items composed during the initial
-  screen-entry window, never an animate-on-scroll effect. `rememberStaggeredEntryCoordinator(key)` +
-  `Modifier.staggeredEntry(coordinator, index)` provide it; "first entry" is tracked per key for the
-  process lifetime, so a return visit to the same screen renders statically.
-- **Cross-tab nav pulse.** When an event lands on a tab other than the current one (a book added from the
-  Reading tab landing on the Library shelf), that tab's icon briefly pulses. `NavPulse` (§nav) is a keyed,
-  instance-owned signal - the app fires `navPulse.pulse(key)` from wherever the event originates (safe outside
-  composition) and the nav chrome reads `rememberPulseScale(navPulse, key)` to scale the icon. The concrete
-  key (which tab, what event) stays app-side; the foundation ships only the mechanism.
-- **All motion is suppressed under reduced motion** (system animations disabled): the reduced path is an
-  instant, un-animated swap. This gate is mandatory for every animation.
+  are chrome only, never semantic progress. Pull-to-refresh is the common documented exception; an app names
+  its own exception.
+- **User-triggered list mutations animate; ambient changes do not.** User-driven add/remove animates (removal
+  fades, neighbors close the gap); initial load, background refresh, and pagination tail appear without
+  animation. `rememberLazyItemMutationAnimator(keys)` + `Modifier.mutationAnimated(scope, animator, key)`
+  snapshot the first non-empty key set as the un-animated baseline and animate only later appearances (with a
+  brief accent-bar pulse on the inserted item). The animator does not distinguish user-driven from ambient:
+  apply it only to surfaces whose changes are user-driven; a background refetch or pagination of a wrapped
+  list animates too.
+- **Staggered entry is one-shot**: played only by items composed during the initial screen-entry window,
+  never on scroll. `rememberStaggeredEntryCoordinator(key)` + `Modifier.staggeredEntry(coordinator, index)`
+  provide it; first entry is tracked per key for the process lifetime, so a return visit renders statically.
+- **Cross-tab nav pulse.** An event landing on a tab other than the current one briefly pulses that tab's
+  icon. `NavPulse` is a keyed, instance-owned signal: the app fires `navPulse.pulse(key)` where the event
+  originates (safe outside composition) and the nav chrome scales the icon with
+  `rememberPulseScale(navPulse, key)`. The concrete key (which tab, what event) stays app-side.
+- **All motion is suppressed under reduced motion** (system animations disabled): an instant, un-animated
+  swap. Mandatory for every animation.
 
-The *choreography* of commits (haptic textures, celebration bursts, shared-element morphs, shake-on-error,
-and so on) is brand-specific and belongs in each app's own doc.
+Commit choreography (haptic textures, celebration bursts, shared-element morphs, shake-on-error, ...) belongs
+in each app's own doc.
 
 ## 8. Component API conventions
 
-A short, shared shape for how components are written; the concrete catalog (what each app actually ships)
-lives in the app's own doc. The design-agnostic primitives that every app shares (layout, modifiers, the
-button family) live in `designsystem-core`; the opt-in editorial language lives in `designsystem-editorial`
-(`EditorialSectionHeader`, `HeroStatNumberField` + `EditorialSuffix`, `DropCapText`, `EditorialSearchField`,
-`PullToRefreshEyebrow` - all reading the shared editorial type roles, section 2). Async images live in the
-opt-in `designsystem-image` module (it brings Coil): `RhaydusImage` (plain), `RhaydusPlaceholderImage` (a
-caller-supplied placeholder slot while loading), and `RhaydusShimmerImage` (the placeholder is a shimmer).
-The network fetcher stays an app choice, configured on the app's Coil `ImageLoader`.
+The concrete catalog lives in the app's own doc.
 
-- **Exporting a composable as an image is a shared seam.** `ShareCardCapture` (`share/`, in `designsystem-core`)
-  captures a composable to a PNG and saves or shares it: wrap the card in `CapturableShareCard(capture) { … }`
-  (the app's card design is the `@Composable` slot), then call `saveToGallery` / `saveToCache` / `share` on the
-  `rememberShareCardCapture(config)` instance. The platform fiddliness is handled inside the seam — Android
-  MediaStore/scoped-storage save + a `FileProvider` share `Intent`, desktop native save dialog + clipboard copy,
-  iOS `UIActivityViewController` — while the brand-specific bits (file-name prefix, gallery album, the Android
-  `FileProvider` authority the app must declare in its manifest) come in through `ShareCardCaptureConfig`. It is
-  self-contained (kotlinx `Dispatchers`, no Koin), so failures surface through the `SaveOutcome` / `ShareOutcome`
-  return types rather than a logger. `GalleryWritePermissionRequester` gates the legacy Android write permission
-  (API ≤ 28); it reports granted immediately elsewhere.
+- `designsystem-core`: design-agnostic primitives (layout, modifiers, the button family).
+- `designsystem-editorial` (opt-in): `EditorialSectionHeader`, `HeroStatNumberField` + `EditorialSuffix`,
+  `DropCapText`, `EditorialSearchField`, `PullToRefreshEyebrow`, all reading the editorial type roles
+  (section 2).
+- `designsystem-image` (opt-in, brings Coil): `RhaydusImage` (plain), `RhaydusPlaceholderImage` (a
+  caller-supplied placeholder slot while loading), `RhaydusShimmerImage` (shimmer placeholder). The network
+  fetcher is an app choice on the app's Coil `ImageLoader`.
 
+- **Exporting a composable as an image.** `ShareCardCapture` (`share/`, `designsystem-core`) captures a
+  composable to a PNG and saves or shares it: wrap the card in `CapturableShareCard(capture) { … }` (the
+  card design is the `@Composable` slot), then call `saveToGallery` / `saveToCache` / `share` on the
+  `rememberShareCardCapture(config)` instance. Platform handling is inside the seam (Android
+  MediaStore/scoped-storage save + `FileProvider` share `Intent`; desktop native save dialog + clipboard copy;
+  iOS `UIActivityViewController`). Brand-specific inputs (file-name prefix, gallery album, the Android
+  `FileProvider` authority the app declares in its manifest) come through `ShareCardCaptureConfig`. It is
+  self-contained (kotlinx `Dispatchers`, no Koin); failures surface through the `SaveOutcome` /
+  `ShareOutcome` return types, not a logger. `GalleryWritePermissionRequester` gates the legacy Android write
+  permission (API ≤ 28) and reports granted immediately elsewhere.
 - **The button family is shared.** `RhaydusButton`, `RhaydusToggleButton`, `RhaydusIconToggleButton`, and
-  `RhaydusSplitButton` (in `designsystem-core`) are the canonical buttons, parameterized by the `ButtonSize`
-  / `ButtonStyle` / `ToggleButtonStyle` / `IconToggleButtonStyle` / `SplitButtonStyle` enums and taking icons
-  as `RhaydusIconResource`. Reach for these rather than calling Material `Button` directly; the filled style
-  carries the press-scale feedback (section 7). They use Material typography, so they carry no editorial
-  dependency.
-- **Shared interactive widgets stay brand-agnostic via params, not brand values.** `StarRatingInput`
-  (`component/`) is a half-star tap/drag-scrub rating control; its star glyph is a `RhaydusIconResource` and
-  its filled/empty tints are colour params (defaulting to Material roles), so no brand token leaks in.
-  `ExpandableFlowRow` (`layout/`) is a `FlowRow` that collapses to N lines behind a replaceable "show more"
-  affordance; how much a tap reveals is the caller's `FlowRowExpansion` — `Progressive` meters the tail out
-  a few lines at a time, `Full` opens the whole set at once — and `collapsible = true` adds a matching
-  "show less" back to the collapsed height (required in practice for a `Full` reveal over an unbounded set,
-  which would otherwise displace everything below it permanently). `InlineErrorState` (`component/`) is the standard in-content
-  load/submit-failure surface — a message in the Material `error` role above a `RhaydusButton` retry — with
-  its retry label and text style as params (the app supplies its own copy and editorial role); it is the
-  render side of the TOAD error-slot convention (`toad-architecture.md`). Reach for these before hand-rolling
-  a rating row, a collapsing chip/tag set, or an error-and-retry block.
-- **Reusable building blocks live in `core/presentation/widget/` (or the app's design-system module);
-  theming lives in `core/presentation/theme/`.** Shell-tier components that enumerate concrete app tabs
-  (bottom navigation, the tab host) live at the shell/orchestration tier, not in generic `core`, because they
-  name concrete features; the reusable pieces they lean on (icon toggles, color roles, `BottomBarScaffold`
-  and its padding contract §5.2, the `NavPulse` cross-tab pulse §7) stay in `core`.
+  `RhaydusSplitButton` (`designsystem-core`) are the canonical buttons, parameterized by the `ButtonSize` /
+  `ButtonStyle` / `ToggleButtonStyle` / `IconToggleButtonStyle` / `SplitButtonStyle` enums, with icons as
+  `RhaydusIconResource`. Use them, not Material `Button` directly. The filled style carries press-scale
+  feedback (section 7). They use Material typography (no editorial dependency).
+- **Shared interactive widgets take params, never brand values.**
+  - `StarRatingInput` (`component/`): half-star tap/drag-scrub rating; star glyph is a `RhaydusIconResource`,
+    filled/empty tints are color params defaulting to Material roles.
+  - `ExpandableFlowRow` (`layout/`): a `FlowRow` collapsed to N lines behind a replaceable "show more"
+    affordance. The caller's `FlowRowExpansion` sets the reveal: `Progressive` adds a few lines per tap,
+    `Full` opens the whole set. `collapsible = true` adds a matching "show less" back to the collapsed
+    height; required for a `Full` reveal over an unbounded set.
+  - `InlineErrorState` (`component/`): the in-content load/submit-failure surface, a message in the Material
+    `error` role above a `RhaydusButton` retry, with retry label and text style as params (app copy and
+    editorial role). It renders the TOAD error slot (`toad-architecture.md`).
+  - Use these before hand-rolling a rating row, a collapsing chip/tag set, or an error-and-retry block.
+- **Reusable building blocks live in `core/presentation/widget/` (or the app's design-system module); theming
+  lives in `core/presentation/theme/`.** Components that name concrete features (bottom navigation and the
+  tab host, which enumerate app tabs) live at the shell/orchestration tier, not generic `core`; the pieces
+  they use (icon toggles, color roles, `BottomBarScaffold` and its padding contract §5.2, the `NavPulse`
+  cross-tab pulse §7) stay in `core`.
 - **One declaration per file**, named after the declaration. One action per file in TOAD features (section 9).
-- **Slot APIs over flags where the content varies.** A pill chip takes an optional `onClick` (interactive
-  when present, a read-only tag when omitted) rather than a boolean mode. Components prefer the canonical
-  shared primitive over a hand-rolled `Surface`-and-`Text`.
-- **Visibility is deliberate.** Reserve `public` for the cross-module surface (domain contracts, use cases,
-  `*Screen`/`*Tab`, the aggregated `*Module`, shared design-system components). Everything else is
-  module-private. For a screen, only `override fun Content()` and the stateless `XScreen(state, runAction)`
-  render function are public; every sub-component composable is `private`.
+- **Slot APIs over flags where content varies.** A pill chip takes an optional `onClick` (interactive when
+  present, read-only tag when omitted), not a boolean mode. Use the canonical shared primitive over a
+  hand-rolled `Surface`-and-`Text`.
+- **Visibility.** `public` only for the cross-module surface (domain contracts, use cases, `*Screen`/`*Tab`,
+  the aggregated `*Module`, shared design-system components); everything else is module-private. For a
+  screen, only `override fun Content()` and the stateless `XScreen(state, runAction)` render function are
+  public; every sub-component composable is `private`.
 - **Compose formatting** (enforced by the style gates): a blank line between sibling composables in any
-  layout scope (including `Spacer`); any call with two or more arguments breaks one-argument-per-line with a
+  layout scope (including `Spacer`); a call with two or more arguments breaks one-argument-per-line with a
   trailing comma; single-argument forms stay inline; property/parameter annotations go on their own line
   above the declaration.
-- **Preview convention.** The stateless `XScreen(state, runAction)` render function is public specifically so
-  `@Preview` can drive it without a screen model. Previews drive the stateless render function, never the
-  `Content()` entry point.
+- **Previews** drive the public stateless `XScreen(state, runAction)` render function without a screen model,
+  never the `Content()` entry point.
 
 ## 9. TOAD to Compose glue
 
-TOAD (the presentation architecture; see [`toad-architecture.md`](toad-architecture.md)) connects to Compose
-at exactly one seam.
+TOAD ([`toad-architecture.md`](toad-architecture.md)) connects to Compose at exactly one seam.
 
-- A screen is a Voyager `Screen` object. In `Content()` it obtains its screen model via
+- A screen is a Voyager `Screen` object. `Content()` obtains its screen model via
   `koinScreenModel<XScreenModel>()`, collects state with `collectAsState()`, and hands `state` plus
   `screenModel::runAction` to a **stateless** `XScreen(state, runAction)` render function. The render
   function and every sub-component are otherwise side-effect-free.
-- **The screen model exposes exactly one public entry point, `runAction(action)`.** UI never touches the
-  dispatcher, repositories, or the action scope directly; it only dispatches actions.
+- **The screen model's only public entry point is `runAction(action)`.** UI never touches the dispatcher,
+  repositories, or the action scope; it only dispatches actions.
 - **`UiState` is rendered; `LocalVariables` is not.** Transient state actions need between dispatches
-  (in-flight ids, scratch values) lives in `LocalVariables` so it does not trigger recomposition.
-- **One-off effects go through `UiEvent`, collected once at the screen's top level.** Off-app handoffs (open
-  a URL, share, launch the browser) dispatch a `UiEvent` that the top-level `Content()` collects and hands to
-  the platform handler there. **Never call a `LocalUriHandler`, share sheet, or other platform handler from
-  inside a leaf composable**; the handoff always leaves through the screen's top, never a leaf.
-- Collectors push external state (a repository `StateFlow`) into the same action scope from the side, so
-  external changes flow into the UI without a user action.
+  (in-flight ids, scratch values) lives in `LocalVariables` and triggers no recomposition.
+- **One-off effects go through `UiEvent`, collected once at the screen's top level.** Off-app handoffs (open a
+  URL, share, launch the browser) dispatch a `UiEvent` that the top-level `Content()` collects and hands to
+  the platform handler. **Never call a `LocalUriHandler`, share sheet, or other platform handler from a leaf
+  composable.**
+- Collectors push external state (a repository `StateFlow`) into the same action scope, so external changes
+  reach the UI without a user action.
 
 ## 10. Decision rules (shared core)
 
@@ -375,75 +327,61 @@ Walk this before reaching for novelty. Brand-specific rules extend this list in 
 
 - **Need a primary action?** Filled button. One per region.
 - **Need to introduce a region?** The section header (accent bar, label, headline).
-- **Need to mark a region as elevated relative to its neighbor?** Step the container shade. Do not add a
-  shadow.
-- **Need a divider?** First try a vertical gap or a tone change. Reach for a hairline only when neither will
-  do.
+- **Need to mark a region as elevated relative to its neighbor?** Step the container shade. No shadow.
+- **Need a divider?** First try a vertical gap or a tone change; a hairline only when neither works.
 - **Need a custom font weight, size, or family?** Pick a different role from the app or Material scale. Never
   inline a `TextStyle`.
 - **Need to show progress?** The wavy/expressive progress indicator (bar and number move as one), except the
   documented pull-to-refresh exception.
 - **Need a modal interaction?** Bottom sheet first (with its canonical header), full screen second, dialog
   only for an unavoidable blocking moment.
-- **Need an off-app handoff?** Dispatch a `UiEvent` collected at the screen top, never call the platform
+- **Need an off-app handoff?** Dispatch a `UiEvent` collected at the screen top; never call the platform
   handler from a leaf.
-- **Need to adapt to window width?** `rememberWindowSizeClass()` and branch on `widthClass` (5.7); never
-  read a raw dp threshold at the call site.
-- **Need a modal that should not read as a phone sheet on a wide window?** `AdaptiveModalSheet` (5.9), not
-  a bare `ModalBottomSheet`.
-- **Building a desktop (jvm) layout?** Reach for the section 11 affordances before hand-rolling pointer or
-  keyboard behaviour.
+- **Need to adapt to window width?** `rememberWindowSizeClass()` and branch on `widthClass` (5.7); never read
+  a raw dp threshold at the call site.
+- **Need a modal that should not read as a phone sheet on a wide window?** `AdaptiveModalSheet` (5.9), not a
+  bare `ModalBottomSheet`.
+- **Building a desktop (jvm) layout?** Use the section 11 affordances before hand-rolling pointer or keyboard
+  behaviour.
 
 ## 11. Desktop affordances (pointer and keyboard)
 
-Compose Multiplatform runs the same shared composables on a desktop (jvm) window, where a pointer and a
-physical keyboard exist. These affordances make a shared surface feel native there while staying inert on
-touch, so a shared composable can carry them unconditionally. The desktop-only ones live in `jvmMain`; the
-`commonMain` modifiers below (`pointerHandCursor`, `hoverHighlight`, `platformModifierClick`) no-op on touch.
+Desktop-only affordances live in `jvmMain`. The `commonMain` modifiers (`pointerHandCursor`, `hoverHighlight`,
+`platformModifierClick`) are inert on touch; shared composables apply them unconditionally.
 
-- **Hand cursor.** `Modifier.pointerHandCursor()` shows the platform "clickable" hand cursor while the
-  pointer hovers a clickable surface that lacks an obvious built-in cursor affordance. A no-op on touch
-  (no pointer device), so it is safe to apply in shared layouts.
-- **Hover highlight.** `Modifier.hoverHighlight(interactionSource)` paints a subtle translucent wash while
-  the pointer hovers, cross-fading in and out. It is the hover sibling of `pressScale` (7); pair it with a
-  `clickable` / `hoverable` that **shares the same `InteractionSource`**. Inert on touch, and suppressed
-  under reduced motion like every other animation.
-- **Tooltip.** `DesktopTooltip(text) { control }` wraps a pointer-only control in a hover tooltip on
-  desktop and is a pure pass-through on touch (no extra layout node). Reach for it on **every icon-only
-  desktop control**: under a pointer, an icon that carries only a `contentDescription` is a dead end, and
-  the hover state otherwise promises information no label delivers. The `contentDescription` stays as the
-  accessibility label; `text` is the human-readable hover label.
+- **Hand cursor.** `Modifier.pointerHandCursor()` shows the platform hand cursor while the pointer hovers a
+  clickable surface lacking a built-in cursor affordance. No-op on touch.
+- **Hover highlight.** `Modifier.hoverHighlight(interactionSource)` paints a subtle translucent wash on hover,
+  cross-fading in and out; the hover sibling of `pressScale` (7). Pair it with a `clickable` / `hoverable`
+  that **shares the same `InteractionSource`**. Inert on touch; suppressed under reduced motion.
+- **Tooltip.** `DesktopTooltip(text) { control }` wraps a pointer-only control in a hover tooltip on desktop
+  and is a pure pass-through on touch (no extra layout node). Use it on **every icon-only desktop control**.
+  `contentDescription` stays the accessibility label; `text` is the hover label.
 - **Back strip.** `DesktopBackStrip(...)` is the static leading-gutter back button a pushed desktop screen
-  carries instead of a scroll-collapsing top bar. The app supplies its own arrow glyph (wrapped in
-  `RhaydusIconResource`); no icon asset is baked into the shared module.
+  carries instead of a scroll-collapsing top bar. The app supplies its arrow glyph (as `RhaydusIconResource`);
+  the shared module bakes in no icon asset.
 - **Scrollbar.** `DesktopVerticalScrollbar(state)` overlays a persistent, themed vertical scrollbar on the
-  trailing edge of a scrolling region — mouse-driven desktop scrolling has no fling indicator, so the bar
-  is how a desktop user reads and grabs their position in a long list. It takes a `LazyGridState`,
-  `LazyListState`, or `ScrollState` (prefer the `ScrollState` overload when items vary wildly in height, so
-  the thumb reflects the exact extent instead of a lazy estimate). The thumb is keyed to
-  `MaterialTheme.colorScheme.onSurface` so it stays visible on dark surfaces where Compose Desktop's
-  near-black default disappears. jvm-only (touch has no scrollbar; the fling + edge-glow is the affordance).
+  trailing edge of a scrolling region. It takes a `LazyGridState`, `LazyListState`, or `ScrollState`; use the
+  `ScrollState` overload when items vary widely in height (exact extent instead of a lazy estimate). The thumb
+  uses `MaterialTheme.colorScheme.onSurface`. jvm-only.
 - **Esc dismisses in-app overlays.** `Modifier.dismissOnEscape(enabled) { onDismiss() }` closes an in-app
-  surface that sits over the page (a full-screen viewer, a transient selection mode) on the Esc key. It is
-  only for surfaces that are **not** a `Dialog` / `Popup`: a `Dialog` (including `AdaptiveModalSheet`'s
-  expanded panel) already maps `dismissOnBackPress` to Esc. It runs in the key **preview** phase so Esc is
-  caught even when a descendant text field holds focus, and it never grabs focus while disabled, so it can
-  gate on a transient mode without disturbing normal focus.
-- **Selection on desktop.** Where touch enters a multi-select mode by long-press, desktop also honors the
-  pointer idioms (right-click to open the selection, modifier-click to extend it). The concrete gestures
-  are an app decision; the rule is that a desktop layout does not leave long-press as the only entry.
-- **Modifier-click selection.** `Modifier.platformModifierClick(onCtrlClick, onShiftClick)` is the concrete
-  modifier-click gesture for the rule above: on desktop a primary click with **Ctrl/Cmd** held toggles this
-  item's selection and with **Shift** held range-selects to it. It intercepts in the pointer **Initial**
-  phase and consumes the press only when a modifier is held, so a plain click still reaches the surface's
-  own inner `combinedClickable` (no double-fire); Shift wins when both are held. It lives in `commonMain`
-  and is a pure pass-through on touch, so a shared cell can wire it unconditionally.
+  surface over the page (a full-screen viewer, a transient selection mode) on Esc. Only for surfaces that are
+  **not** a `Dialog` / `Popup`; a `Dialog` (including `AdaptiveModalSheet`'s expanded panel) already maps
+  `dismissOnBackPress` to Esc. It runs in the key **preview** phase (catches Esc while a descendant text field
+  holds focus) and never grabs focus while disabled, so it can gate on a transient mode.
+- **Selection on desktop.** Where touch enters multi-select by long-press, desktop also honors pointer idioms
+  (right-click to open the selection, modifier-click to extend it). Long-press is never the only entry on
+  desktop; the concrete gestures are an app decision.
+- **Modifier-click selection.** `Modifier.platformModifierClick(onCtrlClick, onShiftClick)`: on desktop a
+  primary click with **Ctrl/Cmd** toggles this item's selection and with **Shift** range-selects to it; Shift
+  wins when both are held. It intercepts in the pointer **Initial** phase and consumes the press only when a
+  modifier is held, so a plain click still reaches the surface's own `combinedClickable` (no double-fire).
+  `commonMain`, pure pass-through on touch.
 - **Right-click menu.** `DesktopContextMenu(items) { content }` wraps a surface in a desktop secondary-click
-  menu (the pointer counterpart to a touch long-press) and is a pure pass-through on touch and for an empty
-  `items` list, so a shared composable can wrap unconditionally and populate items only where a menu applies.
+  menu (the pointer counterpart to long-press). Pure pass-through on touch and for an empty `items` list;
+  wrap unconditionally and populate items only where a menu applies.
 
-**Tap-to-dismiss scrims use `detectTapGestures`, not `clickable`.** A full-screen scrim that dismisses an
-overlay on tap must take its tap through `Modifier.pointerInput { detectTapGestures { ... } }`. `clickable`
-also binds keyboard activation (Space / Enter) and makes the node focusable and semantically a button, so a
-scrim built with `clickable` becomes a focus stop that swallows Space / Enter on desktop. `detectTapGestures`
-is pointer-only and carries none of that, which is exactly what a scrim wants.
+**Tap-to-dismiss scrims use `detectTapGestures`, not `clickable`.** A full-screen scrim dismissing an overlay
+on tap takes its tap through `Modifier.pointerInput { detectTapGestures { ... } }`. `clickable` binds Space /
+Enter and makes the node a focusable semantic button, turning the scrim into a desktop focus stop;
+`detectTapGestures` is pointer-only.

@@ -1,36 +1,30 @@
 # Code Style Guide
 
-This is the canonical, app-agnostic code-style guide for `nl.rhaydus` Kotlin/Compose projects.
-All such projects follow the [official Kotlin code style](https://kotlinlang.org/docs/coding-conventions.html)
-as declared in `gradle.properties` (`kotlin.code.style=official`). Conventions specific to the
-TOAD presentation architecture live alongside this guide in the project's architecture docs; this
-guide covers everything else.
+- Canonical, app-agnostic code style for `nl.rhaydus` Kotlin/Compose projects.
+- Projects follow the [official Kotlin code style](https://kotlinlang.org/docs/coding-conventions.html)
+  (`kotlin.code.style=official` in `gradle.properties`).
+- TOAD presentation conventions live in the architecture docs; this guide covers everything else.
 
 ## Tooling
 
-Mechanizable style is enforced by the shared custom ktlint ruleset published as
-`nl.rhaydus:ktlint-rules` (package `nl.rhaydus.ktlint`). Run it via `./gradlew ktlintFormat` to
-auto-fix, and `./gradlew ktlintCheck` to verify. The ruleset gates the uniformly-internal
-visibility categories and other mechanical rules described below - including the formerly advisory
-checks now promoted to blocking rules: one-type-per-file, no inline fully-qualified references,
-project-import order, no inline mockk stubs, and no bare `runCatching` in a `*UseCase*`. It also bans
-raw logging (`no-raw-logging`): use the `AppLog` facade (`nl.rhaydus:core-common`) — never `println`
-or `android.util.Log.*`. It is deliberately conservative: the remaining cases (cross-module mappers,
-shared components, anything subtler) are caught in review.
+- `nl.rhaydus:ktlint-rules` (package `nl.rhaydus.ktlint`) enforces mechanizable style.
+  `./gradlew ktlintFormat` auto-fixes; `./gradlew ktlintCheck` verifies.
+- The ktlint ruleset gates: the uniformly-internal visibility categories, one-type-per-file, no inline
+  fully-qualified references, project-import order, no inline mockk stubs, no bare `runCatching` in a
+  `*UseCase*`, and `no-raw-logging` (use the `AppLog` facade from `nl.rhaydus:core-common`, never `println`
+  or `android.util.Log.*`). Cases it does not gate (cross-module mappers, shared components, anything
+  subtler) are caught in review.
+- `nl.rhaydus:detekt-rules` (`./gradlew detektCheck`, plus the shared `config/detekt.yml` baseline) adds the
+  type-resolution checks, notably `UnguardedFlowTerminalRead`: it flags an unguarded `Flow` `first()` /
+  `single()` and does not flag the `Collection` operators of the same name.
+  - `first` on a hot flow (`SharedFlow` / `StateFlow`) is exempt, so `isOnline.first { it }` is a legal
+    `awaitOnline()`. `single()` stays flagged on hot flows.
+- detekt's `formatting` ruleset stays off; `ktlint-rules` owns layout rules.
 
-A second gate, the custom detekt ruleset `nl.rhaydus:detekt-rules` (`./gradlew detektCheck`, plus the
-shared `config/detekt.yml` baseline), adds the crash-safety checks that need type resolution - notably
-`UnguardedFlowTerminalRead`, which flags an unguarded terminal read of a `Flow` (`first()` / `single()`)
-without flagging the identically named `Collection` operators. `first` on a **hot** flow (`SharedFlow` /
-`StateFlow`) is exempt - such a flow never completes and never fails, so neither hazard exists, which is
-what makes `isOnline.first { it }` a legal `awaitOnline()`; `single()` stays flagged even there.
-detekt's `formatting` ruleset stays off: the mechanizable layout rules are owned by `ktlint-rules`.
-
-The rule only fires under type resolution (`detektAndroidMain` / `detektJvmMain` / `detektMain`) and is
-silently **inert** on a syntactic run - a consuming app that wires the ruleset without switching to those
-tasks gates nothing. The shared baseline also switches off `UnreachableCode`, `IgnoredReturnValue`, and
-`RedundantSuspendModifier`: detekt 1.23 embeds a Kotlin 1.9 frontend, and on a Kotlin 2.x codebase those
-three report only false positives (see the config's own comments).
+- The detekt rules fire only under type resolution (`detektAndroidMain` / `detektJvmMain` / `detektMain`)
+  and are inert on a syntactic run. A consuming app must run those tasks.
+- The shared baseline disables `UnreachableCode`, `IgnoredReturnValue` and `RedundantSuspendModifier`
+  (false positives from detekt 1.23's Kotlin 1.9 frontend on Kotlin 2.x; see the config's comments).
 
 ## Naming Conventions
 
@@ -67,35 +61,28 @@ Files are named in **PascalCase**, matching their primary class.
 
 ## Project Structure
 
-- Every feature follows the `data` / `domain` / `presentation` layer split. See the project's
-  architecture docs for the full directory layout.
-- A data source interface and its implementation live in the **same file**, named after the
-  interface (e.g. `RemoteDataSource.kt` contains both `RemoteDataSource` and
-  `RemoteDataSourceImpl`). Do not split them into separate files.
-- Each feature has its own Koin DI module in a `di/` subdirectory, keeping dependency declarations
-  close to the code they serve.
+- Every feature follows the `data` / `domain` / `presentation` layer split (directory layout in the
+  architecture docs).
+- A data source interface and its implementation live in the **same file**, named after the interface
+  (`RemoteDataSource.kt` holds `RemoteDataSource` and `RemoteDataSourceImpl`). Never split them.
+- Each feature has its own Koin DI module in a `di/` subdirectory.
 
 ## One declaration per file
 
-- **One data class per file**, named after the class. This applies to models, DTOs, snapshots,
-  small result holders, wrappers, everything. Never declare a `data class` locally inside a
-  function, method, or `init` block, and never colocate multiple unrelated `data class`
-  declarations in a shared file. A single-caller data class still gets its own file next to that
-  caller.
-- **One enum per file**, named after the enum. Attach labels, icons, colors, and other display data
-  as constructor properties on the enum (`status.label`) rather than re-deriving them in a `when` /
-  `if` at each call site. This prevents drift when a new entry is added.
-- **One action per file** - `<Name>Action.kt` holds only the `sealed interface`; each concrete
-  `data object`/`data class` action lives in its own file implementing it and carries the `Action`
-  suffix. Concrete events likewise carry the `Event` suffix; the same per-suffix rule applies
-  across the naming table above (`*UiState`, `*UseCase`, `*Dependencies`, etc.).
+- **One data class per file**, named after the class: models, DTOs, snapshots, result holders,
+  wrappers, everything. A single-caller data class gets its own file next to that caller.
+  - Never declare a `data class` locally inside a function, method or `init` block.
+  - Never colocate multiple unrelated `data class` declarations in one file.
+- **One enum per file**, named after the enum. Labels, icons, colors and other display data are
+  constructor properties on the enum (`status.label`), never re-derived in a `when` / `if` at call sites.
+- **One action per file.** `<Name>Action.kt` holds only the `sealed interface`; each concrete
+  `data object` / `data class` action lives in its own file and carries the `Action` suffix. Concrete
+  events carry the `Event` suffix; the same per-suffix rule applies across the naming table
+  (`*UiState`, `*UseCase`, `*Dependencies`, etc.).
 - **Exception - sealed hierarchy variants.** The `data class` / `data object` variants of a
-  `sealed interface` / `sealed class` MAY be co-located inside the sealed type's own file (named
-  after the sealed type), for cohesion and the `SealedType.Variant` namespacing at call sites.
-  Splitting the variants one-per-file (each variant a top-level subtype in its own file) is equally
-  acceptable. Both keep exhaustive `when` support, since a sealed type's permitted subtypes can live
-  in separate files of the same package. Pick whichever reads better for the hierarchy; do **not**
-  treat a co-located sealed-variant `data class` as a violation of the one-data-class-per-file rule.
+  `sealed interface` / `sealed class` MAY be co-located in the sealed type's own file (named after the
+  sealed type), or split one-per-file as top-level subtypes in the same package. Either is fine; pick
+  what reads better. A co-located sealed variant is not a one-data-class-per-file violation.
 
 ```kotlin
 // Good - label lives on the enum.
@@ -136,29 +123,20 @@ data class HoursMinutesSeconds(...)
 
 ## Comments
 
-**The default is no comment.** Code is kept self-documenting through descriptive names and small,
-obvious functions; a comment is the exception that has to justify its own existence, not a habit. Before
-writing one, try to make the code say it instead (a clearer name, an extracted function, a named
-constant). Most comments that get written are noise and should simply be deleted.
-
-A comment earns its place only when the code genuinely cannot carry the meaning on its own:
-
-- a **non-obvious edge case** (e.g. why a value must be created on every recomposition, a first-frame
-  guard, an off-by-one boundary),
-- a **workaround or gotcha** (why the non-obvious API was chosen over the obvious one, a framework
-  footgun, a deliberate `runCatching` swallow),
-- a **rationale that is not derivable from the code** (why a magic constant has exactly this value, a
-  spec or design requirement the code satisfies).
-
-**Never narrate.** A comment that restates what the next line plainly does ("opens the sheet", "loops
-over items", "the back button") adds nothing and must not be written. If a comment only describes
-*what* the code does rather than *why*, delete it.
-
-**KDoc is documentation, not narration.** A `/** ... */` doc comment on the public, cross-module surface
-of a shared module (the published API: components, modifiers, contracts) is expected and welcome -- it is
-the consumer's documentation, not an inline aside. It should describe the contract and the *why*, never
-walk through the implementation. Private members lean on their names; give a private member KDoc only
-when it clears the same bar as any other comment above.
+- **Default: no comment.** First try to make the code say it (a clearer name, an extracted function, a
+  named constant). Delete comments that fail the bar below.
+- A comment is allowed only for:
+  - a **non-obvious edge case** (a value that must be created on every recomposition, a first-frame
+    guard, an off-by-one boundary),
+  - a **workaround or gotcha** (why the non-obvious API was chosen, a framework footgun, a deliberate
+    `runCatching` swallow),
+  - a **reason the code cannot show** (why a magic constant has this value, a spec or design
+    requirement the code satisfies).
+- **Never narrate.** Never write a comment that restates what the code does ("opens the sheet", "loops
+  over items", "the back button").
+- **KDoc** (`/** ... */`) is expected on the public, cross-module surface of a shared module (components,
+  modifiers, contracts). It describes the contract and the why, never the implementation. A private
+  member gets KDoc only when it meets the comment bar above.
 
 ## Code Organization Within Files
 
@@ -171,15 +149,14 @@ when it clears the same bar as any other comment above.
 - `// region` and `// endregion` lines sit flush against the code they wrap. Do **not** add a blank
   line directly before or after them.
 - Separate logical sections with blank lines.
-- Region comments are for production code only; in test files, `@Nested inner class` grouping
-  replaces them (see *Test Class Organization*).
+- Region comments are for production code only; test files use `@Nested inner class` grouping instead
+  (see *Test Class Organization*).
 
 ## Boolean Negation
 
-Never use the `!` prefix operator for boolean negation - always use `.not()`. This applies to all
-booleans: local variables, properties, function call results, and complex expressions. The rule does
-not apply to the non-null assertion operator `!!`, which stays as-is where needed (though it should
-be rare).
+- Never use the `!` prefix operator for boolean negation; use `.not()`. Applies to all booleans: locals,
+  properties, call results and complex expressions.
+- The non-null assertion `!!` is outside this rule.
 
 ```kotlin
 // Good
@@ -195,12 +172,11 @@ if (!state.hasFocus) { ... }
 
 ## If / Else
 
-- A single-line `if` / `else` expression (one where the whole statement fits on one line) may omit
-  braces: `val x = if (a) b else c`.
-- As soon as the `if` / `else` breaks across multiple lines, whether because the condition, a branch
-  body, or the combined length exceeds one line, **every branch must use an explicit `{ ... }`
-  block**. Never mix a braced branch with a brace-less branch, and never span a brace-less branch
-  across multiple lines.
+- A single-line `if` / `else` expression (the whole statement fits on one line) may omit braces:
+  `val x = if (a) b else c`.
+- Once the `if` / `else` spans multiple lines (condition, a branch body, or total length), **every branch
+  uses an explicit `{ ... }` block**. Never mix braced and brace-less branches; never span a brace-less
+  branch across lines.
 
 ```kotlin
 // Good - single line, no braces needed.
@@ -220,13 +196,11 @@ val message = if (progress.isOnTrack) "You're on track."
 
 ## Visibility
 
-The build is a fully split multi-module graph, so every module is its own compilation unit. **A
-top-level declaration that is referenced only within its own module must be `internal`** (or
-`private`), never public-by-default. Public is reserved for the deliberate cross-module surface.
-Making something `public` is a decision to export it; if no other module imports it, that decision
-is wrong.
+- **A top-level declaration referenced only within its own module is `internal`** (or `private`), never
+  public-by-default. Public is only for a deliberate cross-module surface; a public declaration no other
+  module imports is wrong.
 
-**Default to `internal` for these (module-internal by nature):**
+**Default to `internal`:**
 
 - **TOAD plumbing** in a feature's `presentation/`: `*ScreenModel`, the sealed `*Action` and every
   subclass, `*UiState`, the `*Event` type and its subclasses, `*Dependencies`, `*LocalVariables`,
@@ -236,9 +210,9 @@ is wrong.
   DataStore serializers/entities, and `*Mapper` functions/classes used only within their own module.
 - **Module-private helpers**: top-level helper functions, extension functions, and `@Composable`
   helper components not referenced from another module.
-- **The app shell** (the `Application`, `appModule`, version-provider impl, on which nothing depends)
-  and **navigation-host internals** (the navigator impl, root/bottom-bar screens, cross-feature
-  use-case impls bound to a domain contract).
+- **The app shell** (the `Application`, `appModule`, version-provider impl) and **navigation-host
+  internals** (the navigator impl, root/bottom-bar screens, cross-feature use-case impls bound to a
+  domain contract).
 
 **Stays `public` (the cross-module surface):**
 
@@ -252,34 +226,32 @@ is wrong.
 - A mapper or other helper genuinely called from another module (confirm with a cross-module
   reference before keeping it public).
 
-**Cascade rule.** A `public` member that exposes a now-`internal` type must itself become `internal`
-(e.g. a `Screen(state: FooUiState, …)` member composable whose `FooUiState` is internal). The
-compiler enforces this; fix it at the member, do not re-widen the type.
+**Cascade rule.** A `public` member that exposes an `internal` type becomes `internal` itself (e.g. a
+`Screen(state: FooUiState, …)` member composable whose `FooUiState` is internal). Fix it at the member;
+never re-widen the type.
 
-This is partly **tool-enforced**: the `nl.rhaydus.ktlint` visibility-modifier rule (run by
-`ktlintCheck` / `check`) gates the uniformly-internal categories above (the `*Action` / `*Event` /
-`*UiState` / `*LocalVariables` / `*ScreenModel` / `*Dependencies` / `flows` / `*Impl` suffixes in
-their packages). The remaining cases (cross-module mappers, shared components, anything subtler) are
-caught in review.
+- The `nl.rhaydus.ktlint` visibility-modifier rule (`ktlintCheck` / `check`) gates the
+  uniformly-internal categories (the `*Action` / `*Event` / `*UiState` / `*LocalVariables` /
+  `*ScreenModel` / `*Dependencies` / `flows` / `*Impl` suffixes in their packages). Other cases are
+  caught in review.
 
-> Single-module projects: if a project has not yet split into modules, use `private` for genuinely
-> local helpers and keep the public surface intentional. Adopt internal-by-default for the
-> categories above the moment the project splits into modules.
+> Single-module projects: use `private` for local helpers and keep the public surface intentional.
+> Adopt internal-by-default for the categories above once the project splits into modules.
 
 ## Compose
 
-- Screens follow the project's presentation architecture (Voyager `Screen` objects, or top-level
-  `@Composable` functions, per the project). For Voyager screens the core `XScreen(state, runAction)`
-  render function is `public` (so `@Preview` can drive it) and every sub-component composable is
-  `private`. See the project's TOAD/architecture docs.
+- Screens follow the project's presentation architecture (Voyager `Screen` objects or top-level
+  `@Composable` functions). For Voyager screens the core `XScreen(state, runAction)` render function is
+  `public` (for `@Preview`) and every sub-component composable is `private`. See the TOAD/architecture
+  docs.
 - Reusable UI components live in the shared design-system / presentation component package; custom
   modifiers in the modifier package; theming in the theme package.
 - **Blank line between sibling composables.** Inside any layout scope (`Column`, `Row`, `Box`, etc.),
   leave a blank line between each child composable call, including `Spacer`. Never stack two
-  composable calls back-to-back without a blank line between them.
-- **Multi-argument composables break across lines.** Any composable invocation (or any function
-  call, see *Argument and Property Layout*) that takes two or more arguments must put each argument
-  on its own line with a trailing comma, even for short calls like
+  composable calls back-to-back.
+- **Multi-argument composables break across lines.** Any composable invocation (or any function call,
+  see *Argument and Property Layout*) with two or more arguments puts each argument on its own line
+  with a trailing comma, even short calls like
   `Text(text = ":", modifier = Modifier.padding(horizontal = 4.dp))`. Single-argument composables
   stay inline.
 
@@ -309,33 +281,25 @@ Row(...) {
 
 ## Argument and Property Layout
 
-Whenever a function declaration, function call, constructor invocation, or **object/data-class
-instantiation** passes **more than one** argument or property, every argument/property must sit on
-its own line. Single-argument forms stay inline.
-
 - One-argument calls and declarations stay on a single line.
-- As soon as a **second** argument or property is added, all of them break onto their own lines: the
-  opening `(` stays on the same line as the name, the closing `)` sits on its own line, each argument
-  is followed by a comma, and the **last argument also has a trailing comma**.
-- This applies equally to:
-  - function declarations (including abstract/member signatures inside `interface` and
-    `abstract class` bodies - each parameter on its own line with a trailing comma, even when there
-    is no body),
+- With **two or more** arguments or properties, each sits on its own line: the opening `(` stays on the
+  name's line, the closing `)` sits on its own line, and every argument, **including the last**, has a
+  trailing comma.
+- This applies to:
+  - function declarations (including abstract/member signatures in `interface` and `abstract class`
+    bodies, even without a body),
   - function call sites,
   - constructor invocations,
-  - class, `sealed class`, and `sealed interface` declarations: both the primary constructor
-    parameter list and the superclass/supertype invocation (`: Parent(arg1, arg2)`) must break onto
-    one argument per line as soon as there are two or more,
+  - class, `sealed class` and `sealed interface` declarations: both the primary constructor parameter
+    list and the supertype invocation (`: Parent(arg1, arg2)`),
   - data-class instantiations,
   - `apply { ... }` / `copy(...)` invocations on data classes,
   - any other parenthesised parameter list with two or more entries.
-- A trailing lambda (Kotlin's `fn(arg) { ... }` form) is **not** counted as an argument for this
-  rule. `runTest(dispatcher) { ... }` stays on one line because it has a single value argument plus a
-  trailing lambda.
-
-**Property/parameter annotations go on their own line**, above the declaration, never inline. When a
-class's properties carry such annotations, separate **every** property in that list with a blank line
-(each is now a multi-line construct), including any unannotated ones mixed in.
+- A trailing lambda (`fn(arg) { ... }`) does not count as an argument: `runTest(dispatcher) { ... }`
+  stays on one line.
+- **Property/parameter annotations go on their own line** above the declaration, never inline. When a
+  class's properties carry such annotations, separate **every** property in that list with a blank
+  line, including unannotated ones mixed in.
 
 ```kotlin
 // Single argument - inline.
@@ -406,27 +370,26 @@ data class DeviceCodeResponse(
 
 ## Code Block Whitespace
 
-**Core principle: every multi-line construct acts as a *paragraph* - it gets a blank line before and
-after it.**
+Every multi-line construct is a paragraph: a blank line before and after it.
 
 ### Opening and closing braces
 
 - **No blank line after an opening `{`.** Exception: sealed class / sealed interface bodies have a
   blank line after `{`.
 - **No blank line before a closing `}`.**
-- Leave a blank line immediately **after the closing `}`** of a code block (unless it is the very
-  last line of its enclosing block).
+- A blank line follows the closing `}` of a code block, unless it is the last line of its enclosing
+  block.
 
 ### Paragraph rule for multi-line constructs
 
 Every multi-line construct (code block, multi-line call, multi-line assignment, `when` / `if`
 expression) gets a blank line before and after it. This includes:
 
-- `val`/`var` assignments where the right-hand side spans multiple lines (e.g. `if/else`, `when`,
+- `val`/`var` assignments where the right-hand side spans multiple lines (`if/else`, `when`,
   multi-line lambda, multi-line constructor/function call).
-- A single-line `val` followed by a multi-line `val` needs a blank line between them.
-- mockk's `coEvery { ... }` / `every { ... }` stubs are never one-liners. Always open the block onto
-  its own line and leave a blank line after each stub's closing `}`.
+- A single-line `val` followed by a multi-line `val` has a blank line between them.
+- mockk's `coEvery { ... }` / `every { ... }` stubs are never one-liners: open the block onto its own
+  line and leave a blank line after each stub's closing `}`.
 
 ### Consecutive single-line statements
 
@@ -440,17 +403,14 @@ expression) gets a blank line before and after it. This includes:
 - Blank line **between** each guard clause.
 - Blank line **after** the last guard clause before the main logic.
 - Every guard clause is its own paragraph.
-- This applies to **every** form of safeguard, including single-line ones that return a value
-  pre-emptively (e.g. `if (ids.isEmpty()) return emptyList()`, `val x = foo ?: return null`,
-  `val x = foo ?: return@map other`). Whether the guard exits with `return`, `return <value>`,
-  `return@label`, `throw`, or `continue`, a blank line always follows it before the next statement.
+- This applies to **every** safeguard, including single-line ones (`if (ids.isEmpty()) return emptyList()`,
+  `val x = foo ?: return null`, `val x = foo ?: return@map other`), whether it exits with `return`,
+  `return <value>`, `return@label`, `throw` or `continue`.
 
 ### `if` statements that consume an extracted variable
 
-- When an `if` statement references a `val`/`var` declared on the line directly above it, leave a
-  blank line **between** the assignment and the `if`. The extraction is its own paragraph; the `if`
-  that consumes it begins a new one. This applies to both single-line and multi-line `if` bodies, and
-  whether the `if` is a guard clause or branching logic.
+- An `if` that references a `val`/`var` declared on the line directly above it has a blank line between
+  the assignment and the `if`. Applies to single-line and multi-line `if` bodies, guard or branching.
 
 ### Between declarations
 
@@ -458,8 +418,7 @@ expression) gets a blank line before and after it. This includes:
 - **Interface members**: always one blank line between method signatures.
 - **Sealed class variants**: always one blank line between variants.
 - **Data class properties**: no blank lines between properties. DTO properties annotated with
-  `@SerialName` / `@SerializedName` (or similar): blank line between each property - each is a 2-line
-  construct.
+  `@SerialName` / `@SerializedName` (or similar): blank line between each property.
 - **Enum entries**: no blank lines between entries. One blank line before `companion object`.
 - **Property groups in classes**: no blank lines within a logical group; one blank line between
   different groups.
@@ -498,8 +457,6 @@ class Example {
 
 ## Import Ordering
 
-Follow this order:
-
 1. Android / AndroidX imports
 2. Third-party libraries (Kotlin stdlib, Coroutines, Ktor, Koin, Compose, etc.)
 3. Project-specific imports (`nl.rhaydus.*`)
@@ -508,13 +465,11 @@ Remove unused imports.
 
 ### No fully-qualified references
 
-Never reference anything by its fully-qualified name inline - not types, not top-level functions, not
-enum entries, not object members. Always add an `import` and use the short name at the call/declaration
-site. This applies to production and test code, including parameter types, return types, generic
-arguments, receiver types on lambdas, `mockk()` type witnesses, and top-level function calls.
-
-**This is especially strict for project-own code** (anything under `nl.rhaydus.*`). Never inline a
-project-qualified reference just because it saves an import line - always add the import.
+- Never reference anything by its fully-qualified name inline: types, top-level functions, enum
+  entries, object members. Import it and use the short name.
+- Applies to production and test code, including parameter types, return types, generic arguments,
+  lambda receiver types, `mockk()` type witnesses and top-level function calls.
+- **Strictest for project-own code** (`nl.rhaydus.*`): always add the import.
 
 ```kotlin
 // Bad
@@ -535,23 +490,17 @@ additionalActions: @Composable RowScope.() -> Unit = {},
 
 ## Error Handling & Logging
 
-The error model is layered. In short:
-
-- **Data sources and repositories throw freely.** They never assume they can't crash and never
-  swallow a genuine failure into a sentinel return; if something goes wrong (network, IO, parsing),
-  the exception propagates. Repository-level `try`/`catch`/`runCatching` is reserved for *deliberate
-  business decisions* (e.g. falling back to a placeholder), never for hiding errors the caller should
-  see or for running failure-policy side effects.
-- **Every use case returns `Result<T>` and owns failure policy,** wrapping its repository call in the
-  cancellation-aware `runCatchingCancellable` from `nl.rhaydus:core-common` - a `runCatching` that rethrows
-  `CancellationException` so a cancelled coroutine never becomes a `Result.failure`. Never use bare
-  `runCatching` around a suspend call. Reactions to a failure that span operations belong here, not in
-  the repository. When the use case should also log the failure at the boundary, use `runCatchingLogged`
-  (same module) - `runCatchingCancellable` plus a single `AppLog.e`, so a failure is never silently
-  dropped; it logs through whatever tag the app passed to `AppLog.install(...)`.
+- **Data sources and repositories throw freely.** Never swallow a genuine failure (network, IO, parsing)
+  into a sentinel return; let the exception propagate. Repository-level `try`/`catch`/`runCatching` is
+  only for a deliberate business decision (e.g. falling back to a placeholder), never to hide an error
+  the caller should see or to run failure-policy side effects.
+- **Every use case returns `Result<T>` and owns failure policy.** Wrap the repository call in
+  `runCatchingCancellable` (`nl.rhaydus:core-common`), which rethrows `CancellationException`. Never use
+  bare `runCatching` around a suspend call. Failure reactions spanning operations belong in the use case,
+  not the repository. To also log the failure, use `runCatchingLogged` (same module):
+  `runCatchingCancellable` plus one `AppLog.e`, using the tag passed to `AppLog.install(...)`.
 - **Screen-model actions unpack the `Result` with `.onSuccess { }` / `.onFailure { }`** and fold the
-  outcome into UI state. **Never use `.fold()`** - `.onSuccess`/`.onFailure` only. Actions therefore
-  carry no `try`/`catch` of their own; the use case already converted the throw into a `Result`.
+  outcome into UI state. **Never use `.fold()`.** Actions carry no `try`/`catch` of their own.
 
 ```kotlin
 // Use case - domain layer.
@@ -566,38 +515,30 @@ dependencies.startAuthorizationUseCase()
     .onFailure { scope.setState { it.copy(link = Disconnected(error = "Couldn't reach the server.")) } }
 ```
 
-Plain `try`/`catch` remains acceptable inside data/repository code where control flow needs it (retry
-loops, or rethrowing `CancellationException` before catching `Exception` so a deliberate recovery
-doesn't fire on cancellation).
-
+- Plain `try`/`catch` is allowed in data/repository code where control flow needs it: retry loops, or
+  rethrowing `CancellationException` before catching `Exception` so a recovery never fires on
+  cancellation.
 - Network calls use the project's shared HTTP client.
-- Use the project's logging facade for errors - never `println`. Prefer `Timber` where it is a
-  dependency; otherwise use `android.util.Log` with a per-class `TAG`. If `Timber` is added later,
-  prefer it.
+- Log errors through `AppLog` (`nl.rhaydus:core-common`), never `println` or `android.util.Log.*`.
 
 ## Dependencies
 
-- Dependency versions are managed centrally in `gradle/libs.versions.toml`. Reference them via the
-  version catalog (`libs.<alias>`) in `build.gradle.kts`. Never hard-code a version in a module build
-  file.
+- Dependency versions live in `gradle/libs.versions.toml`; reference them via the version catalog
+  (`libs.<alias>`) in `build.gradle.kts`. Never hard-code a version in a module build file.
 
 ## Test Class Organization
 
-Group all tests targeting a single function of the unit under test inside a JUnit 5
-`@Nested inner class`. This replaces the use of `// region` / `// endregion` blocks inside test files;
-region comments are for production code only.
-
+- Group all tests for one function of the unit under test in a JUnit 5 `@Nested inner class`. Test files
+  use no `// region` / `// endregion` blocks.
 - Each nested class targets exactly **one** function (or property) on the unit under test.
-- Name the nested class in **PascalCase**, matching the function name (e.g. `initializeItems` →
-  `inner class InitializeItems`). For property wiring tests, use the property name (e.g. `items` →
+- Name the nested class in **PascalCase** after the function (`initializeItems` →
+  `inner class InitializeItems`), or after the property for property wiring tests (`items` →
   `inner class Items`).
-- Annotate it with `@Nested` and declare it as `inner class` so it has access to the outer class's
-  mocks, `@BeforeEach` setup, and helper functions.
-- The outer test class holds shared mocks, the `@BeforeEach` setup, and any private helper functions.
-  Do **not** redeclare these inside the nested classes.
-- Every test must live inside a `@Nested inner class`; do not place `@Test` functions directly on the
-  outer class. If a function has only a single test case, that test still goes inside its own
-  `@Nested` block for consistency.
+- Annotate it with `@Nested` and declare it `inner class`.
+- The outer test class holds shared mocks, the `@BeforeEach` setup and private helper functions. Do
+  **not** redeclare these inside the nested classes.
+- Every test lives inside a `@Nested inner class`, even a function's only test; no `@Test` functions
+  directly on the outer class.
 
 ```kotlin
 class RepositoryImplTest {
@@ -640,8 +581,7 @@ class RepositoryImplTest {
 
 ## Unit Test Structure
 
-Unit tests follow the **Arrange-Act-Assert (AAA)** principle. Each test is visually divided into three
-sections using the following comment format:
+Unit tests follow **Arrange-Act-Assert (AAA)**, with three marked sections:
 
 ```kotlin
 @Test
@@ -662,14 +602,12 @@ fun `does the thing`() = runTest {
 }
 ```
 
-- Use `// ----- Arrange -----`, `// ----- Act -----`, and `// ----- Assert -----` exactly as shown -   five dashes on each side, capitalized section name in the middle.
-- Every unit test must contain all three markers, in order, even if a section only holds a single line.
-- Leave a blank line **before** each marker (except the very first marker, which directly follows the
-  function's opening `{`). The body of each section starts on the line directly under its marker - no
-  blank line between the marker and its first statement.
-- When the act and the assertion are the same expression - for example, asserting on a `Flow` inside a
-  Turbine `test { }` block, or wrapping a call in `shouldThrow { ... }` - collapse the two sections
-  into a single `// ----- Act & Assert -----` marker instead of repeating the call. Use this only when
-  there is no separable "act" step.
-- These AAA markers are **not** Kotlin region blocks (`// region` / `// endregion`); the no-blank-line
-  rule for actual region blocks does not apply to them.
+- Use `// ----- Arrange -----`, `// ----- Act -----` and `// ----- Assert -----` exactly as shown: five
+  dashes on each side, capitalized section name in the middle.
+- Every unit test contains all three markers, in order, even if a section holds a single line.
+- A blank line precedes each marker, except the first, which directly follows the function's opening
+  `{`. Each section's body starts on the line directly under its marker, with no blank line.
+- When act and assertion are the same expression with no separable act step (asserting on a `Flow` inside
+  a Turbine `test { }` block, or a call wrapped in `shouldThrow { ... }`), use a single
+  `// ----- Act & Assert -----` marker.
+- AAA markers are not region blocks; the region no-blank-line rule does not apply to them.
