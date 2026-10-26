@@ -27,8 +27,10 @@ import nl.rhaydus.designsystem.modifier.pressScale
 
 /**
  * The text button across all Material 3 Expressive [ButtonStyle]s and [ButtonSize]s, with an optional
- * leading [icon] (suppressed for [ButtonStyle.TEXT], which leads with its label). The filled style adds
- * the design system's press-scale feedback; the other styles keep their stock ripple and shape morph.
+ * leading [icon] (suppressed for [ButtonStyle.TEXT], which leads with its label). The icon's own
+ * content description is ignored because the label already names the button. The filled style adds
+ * the design system's press-scale feedback; the other styles keep their stock ripple and shape
+ * morph.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -50,7 +52,7 @@ fun RhaydusButton(
             if (icon != null && style != ButtonStyle.TEXT) {
                 Icon(
                     painter = icon.getIconPainter(),
-                    contentDescription = icon.contentDescription,
+                    contentDescription = null,
                     modifier = Modifier.size(size.iconSize),
                 )
 

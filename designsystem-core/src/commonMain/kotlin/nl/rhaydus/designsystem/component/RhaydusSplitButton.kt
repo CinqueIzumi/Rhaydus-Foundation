@@ -33,6 +33,8 @@ import nl.rhaydus.designsystem.model.SplitButtonStyle
  * A split button: a leading action button joined to a trailing toggle that opens a [dropDownItems]
  * dropdown (its chevron rotates while open). Both halves take a [SplitButtonStyle] independently. Set
  * [stretchToWidth] to stretch the leading button across the row with the trailing toggle pinned at the end.
+ * The [leadingIcon]'s own content description is ignored because the label names the button; the trailing
+ * toggle keeps its description.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -71,7 +73,7 @@ fun RhaydusSplitButton(
         leadingIcon?.let { icon ->
             Icon(
                 painter = icon.getIconPainter(),
-                contentDescription = icon.contentDescription,
+                contentDescription = null,
                 modifier = Modifier.size(size.iconSize),
             )
 

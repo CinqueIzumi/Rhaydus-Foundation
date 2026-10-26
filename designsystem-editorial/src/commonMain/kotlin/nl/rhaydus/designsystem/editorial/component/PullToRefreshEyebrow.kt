@@ -28,7 +28,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import nl.rhaydus.designsystem.editorial.editorialTypography
-import nl.rhaydus.designsystem.haptics.rememberHaptics
+import nl.rhaydus.designsystem.haptics.LocalHaptics
 
 /**
  * An editorial eyebrow that swaps its label to [refreshingText] while the user pulls (and during the
@@ -44,7 +44,7 @@ fun PullToRefreshEyebrow(
     refreshingText: String,
     modifier: Modifier = Modifier,
 ) {
-    val haptics = rememberHaptics()
+    val haptics = LocalHaptics.current
     val accent = MaterialTheme.colorScheme.primary
 
     LaunchedEffect(pullToRefreshState) {

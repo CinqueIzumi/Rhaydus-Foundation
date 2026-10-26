@@ -1,17 +1,7 @@
-// FlowRow's `overflow` parameter and `FlowRowOverflow` are deprecated in Compose ("FlowLayout overflow
-// is no longer maintained"), but the Compose team has shipped no stable replacement — the obvious
-// successor `ContextualFlowRow` is itself deprecated, and the official guidance is to keep using (or
-// vendor) the existing implementation until a real replacement lands. The line reveal here depends on
-// `FlowRowOverflow.expandIndicator` / `expandOrCollapseIndicator`, so the deprecation is suppressed
-// file-wide; revisit once Compose ships a maintained overflow API.
-@file:Suppress("DEPRECATION")
-
 package nl.rhaydus.designsystem.layout
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.FlowRowOverflow
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -21,7 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.layout.SubcomposeMeasureScope
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 
 /** Lines shown before any expansion, when a caller doesn't specify one. */
@@ -30,13 +27,25 @@ private const val DEFAULT_COLLAPSED_LINES = 2
 /** Default gap between wrapped items. */
 private val FlowGap = 8.dp
 
+private const val MORE_SLOT = "expandableFlowRow.more"
+
+private const val LESS_SLOT = "expandableFlowRow.less"
+
 /**
- * A [FlowRow] that wraps its items and, when they exceed [collapsedLines], collapses to that many
- * lines behind a trailing "show more" affordance — so a long set (e.g. a wrapping row of chips or
- * tags) never buries the content beneath it. How much one tap reveals is the caller's call
- * ([expansion]): [FlowRowExpansion.Progressive] meters the tail out a few lines at a time,
- * [FlowRowExpansion.Full] opens the whole set at once. Either way the affordance disappears once
- * everything is visible.
+ * A wrapping row that collapses to [collapsedLines] behind a trailing "show more" affordance, so a
+ * long set (e.g. chips or tags) never buries the content beneath it. How much one tap reveals is
+ * the caller's call ([expansion]): [FlowRowExpansion.Progressive] meters the tail out a few lines at
+ * a time, [FlowRowExpansion.Full] opens the whole set at once. Either way the affordance disappears
+ * once everything is visible.
+ *
+ * Composes the items it places, the first item that overflows, and the affordance slot:
+ * [itemContent] runs for indices in order and stops at the first item that doesn't fit, so a
+ * collapsed row costs its visible lines rather than [itemCount]. The last visible line keeps room
+ * for the affordance, so an item that would crowd it out moves behind the fold. Each [itemContent]
+ * call must emit one item. As a `SubcomposeLayout` it reports no intrinsic measurements.
+ *
+ * [key] gives each item a stable identity across recompositions, so an item that moves keeps its
+ * remembered state; it defaults to the index.
  *
  * [collapsible] gives the expanded state a matching "show less" back to [collapsedLines]. It is
  * off by default (a gradual reveal rarely needs a way back) but should be **on** for a
@@ -45,13 +54,13 @@ private val FlowGap = 8.dp
  *
  * Reach for this wherever a wrapping set of chips/tags can grow unbounded. Both affordances default
  * to a pill labelled [showMoreLabel] / [showLessLabel] and can be replaced wholesale via
- * [showMoreIndicator] / [showLessIndicator]. [content] is a plain slot (no `FlowRowScope` receiver)
- * so a call site needs no experimental opt-in.
+ * [showMoreIndicator] / [showLessIndicator].
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExpandableFlowRow(
+    itemCount: Int,
     modifier: Modifier = Modifier,
+    key: ((index: Int) -> Any)? = null,
     collapsedLines: Int = DEFAULT_COLLAPSED_LINES,
     expansion: FlowRowExpansion = FlowRowExpansion.Progressive(),
     collapsible: Boolean = false,
@@ -71,13 +80,10 @@ fun ExpandableFlowRow(
             onClick = onCollapse,
         )
     },
-    content: @Composable () -> Unit,
+    itemContent: @Composable (index: Int) -> Unit,
 ) {
     val maxLines = remember(collapsedLines) { mutableIntStateOf(collapsedLines) }
 
-    // Both callbacks are remembered rather than left to the compiler's lambda memoization:
-    // `expandOrCollapseIndicator` keys its own `remember` on the indicator lambdas, so a callback
-    // whose identity changed every recomposition would rebuild the overflow state each frame.
     val expand: () -> Unit = remember(expansion, maxLines) {
         {
             maxLines.intValue = when (expansion) {
@@ -89,27 +95,178 @@ fun ExpandableFlowRow(
 
     val collapse: () -> Unit = remember(collapsedLines, maxLines) { { maxLines.intValue = collapsedLines } }
 
-    FlowRow(
-        modifier = modifier,
-        horizontalArrangement = horizontalArrangement,
-        verticalArrangement = verticalArrangement,
-        maxLines = maxLines.intValue,
-        overflow = if (collapsible) {
-            FlowRowOverflow.expandOrCollapseIndicator(
-                expandIndicator = { showMoreIndicator(expand) },
-                collapseIndicator = { showLessIndicator(collapse) },
-                // Without this the collapse affordance renders whenever `maxLines >= 1` — i.e. on a
-                // set short enough to fit the collapsed height, which was never expanded and has
-                // nothing to collapse. Requiring one line beyond `collapsedLines` ties it to the
-                // only state that can reach it: a row the user actually expanded.
-                minRowsToShowCollapse = collapsedLines + 1,
+    SubcomposeLayout(modifier = modifier) { constraints ->
+        measureFlowRow(
+            spec = FlowRowSpec(
+                itemCount = itemCount,
+                key = key,
+                collapsedLines = collapsedLines,
+                collapsible = collapsible,
+                horizontalArrangement = horizontalArrangement,
+                verticalArrangement = verticalArrangement,
+                itemContent = itemContent,
+                moreIndicator = { showMoreIndicator(expand) },
+                lessIndicator = { showLessIndicator(collapse) },
+            ),
+            maxLines = maxLines.intValue,
+            constraints = constraints,
+        )
+    }
+}
+
+private class FlowRowSpec(
+    val itemCount: Int,
+    val key: ((index: Int) -> Any)?,
+    val collapsedLines: Int,
+    val collapsible: Boolean,
+    val horizontalArrangement: Arrangement.Horizontal,
+    val verticalArrangement: Arrangement.Vertical,
+    val itemContent: @Composable (index: Int) -> Unit,
+    val moreIndicator: @Composable () -> Unit,
+    val lessIndicator: @Composable () -> Unit,
+)
+
+private fun SubcomposeMeasureScope.measureFlowRow(
+    spec: FlowRowSpec,
+    maxLines: Int,
+    constraints: Constraints,
+): MeasureResult {
+    val childConstraints = Constraints(maxWidth = constraints.maxWidth)
+    val gap = spec.horizontalArrangement.spacing.roundToPx()
+    val limit = maxLines.coerceAtLeast(1)
+
+    val moreIndicator = if (limit < Int.MAX_VALUE) {
+        measureSlot(
+            MORE_SLOT,
+            childConstraints,
+            spec.moreIndicator,
+        )
+    } else {
+        null
+    }
+
+    val breaker = FlowLineBreaker(
+        maxWidth = constraints.maxWidth,
+        gap = gap,
+        maxLines = limit,
+        indicatorWidth = moreIndicator?.width ?: 0,
+    )
+
+    val lines = mutableListOf<MutableList<Placeable>>()
+    var overflowed = false
+
+    for (index in 0 until spec.itemCount) {
+        val item = measureSlot(ItemSlot(spec.key?.invoke(index) ?: index), childConstraints) { spec.itemContent(index) } ?: continue
+        val line = breaker.place(
+            width = item.width,
+            hasMore = index < spec.itemCount - 1,
+        )
+
+        if (line == NOT_PLACED) {
+            overflowed = true
+            break
+        }
+
+        lines.addAt(
+            line,
+            item,
+        )
+    }
+
+    if (overflowed) {
+        moreIndicator?.let {
+            if (lines.isEmpty()) lines.add(mutableListOf())
+
+            val line = lines.last()
+            val kept = breaker.fittingCount(line.map { item -> item.width })
+
+            while (line.size > kept) line.removeAt(line.lastIndex)
+
+            line.add(it)
+        }
+    } else if (spec.collapsible && lines.size > spec.collapsedLines) {
+        measureSlot(
+            LESS_SLOT,
+            childConstraints,
+            spec.lessIndicator,
+        )?.let { less ->
+            lines.addAt(
+                breaker.placeTrailing(less.width),
+                less,
             )
-        } else {
-            FlowRowOverflow.expandIndicator { showMoreIndicator(expand) }
-        },
-        content = { content() },
+        }
+    }
+
+    return layoutLines(
+        lines = lines,
+        spec = spec,
+        gap = gap,
+        constraints = constraints,
     )
 }
+
+private fun SubcomposeMeasureScope.layoutLines(
+    lines: List<List<Placeable>>,
+    spec: FlowRowSpec,
+    gap: Int,
+    constraints: Constraints,
+): MeasureResult {
+    val width = constraints.constrainWidth(
+        lines.maxOfOrNull { line -> line.sumOf { it.width } + gap * (line.size - 1) } ?: 0,
+    )
+    val lineHeights = IntArray(lines.size) { index -> lines[index].maxOf { it.height } }
+    val rowGap = spec.verticalArrangement.spacing.roundToPx()
+    val height = constraints.constrainHeight(lineHeights.sum() + rowGap * (lines.size - 1).coerceAtLeast(0))
+
+    val ys = IntArray(lines.size)
+
+    with(spec.verticalArrangement) {
+        arrange(
+            height,
+            lineHeights,
+            ys,
+        )
+    }
+
+    val xs = lines.map { line ->
+        IntArray(line.size).also { positions ->
+            with(spec.horizontalArrangement) {
+                arrange(
+                    width,
+                    IntArray(line.size) { line[it].width },
+                    layoutDirection,
+                    positions,
+                )
+            }
+        }
+    }
+
+    return layout(width, height) {
+        lines.forEachIndexed { row, line ->
+            line.forEachIndexed { column, placeable ->
+                placeable.place(
+                    xs[row][column],
+                    ys[row],
+                )
+            }
+        }
+    }
+}
+
+private fun MutableList<MutableList<Placeable>>.addAt(
+    line: Int,
+    placeable: Placeable,
+) {
+    if (line == size) add(mutableListOf())
+
+    this[line].add(placeable)
+}
+
+private fun SubcomposeMeasureScope.measureSlot(
+    slotId: Any,
+    constraints: Constraints,
+    content: @Composable () -> Unit,
+): Placeable? = subcompose(slotId) { Box { content() } }.firstOrNull()?.measure(constraints)
 
 @Composable
 private fun IndicatorChip(

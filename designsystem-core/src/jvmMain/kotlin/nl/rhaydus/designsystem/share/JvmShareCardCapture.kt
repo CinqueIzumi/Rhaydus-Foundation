@@ -35,7 +35,7 @@ internal class JvmShareCardCapture internal constructor(
             ?: return SaveOutcome.Failure(reason = "Failed to encode share card")
 
         val target = withContext(Dispatchers.Main) { chooseSaveFile(displayName) }
-            ?: return SaveOutcome.Failure(reason = "Save cancelled")
+            ?: return SaveOutcome.Cancelled
 
         return withContext(Dispatchers.IO) {
             runCatching {
@@ -90,7 +90,7 @@ internal class JvmShareCardCapture internal constructor(
                     null,
                 )
 
-                ShareOutcome.Shared
+                ShareOutcome.CopiedToClipboard
             }.getOrElse {
                 ShareOutcome.Failure(reason = "Failed to share")
             }

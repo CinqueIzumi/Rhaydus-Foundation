@@ -190,14 +190,15 @@ A list surface never stretches a single column across a desktop window.
 ### 5.9 Adaptive modal sheet (sheet to panel)
 
 **`AdaptiveModalSheet`** resolves a modal by window width: a `ModalBottomSheet` on `COMPACT` / `MEDIUM`, a
-centered, bordered, large-radius panel (a `Dialog`) on `EXPANDED`.
+centered, elevated, large-radius panel on `EXPANDED` that scales and fades in over a fading scrim.
 
 - Its `content` slot is **identical to `ModalBottomSheet`'s** (a `ColumnScope` body owning its padding and
   scroll); call sites swap one for the other without touching the body.
 - Both forms open on `surfaceContainerLowest`, lead with the canonical section header (5.6), and carry no
   close button.
 - An in-content dismiss (e.g. an "are you sure?" choice) calls `LocalModalSheetDismiss`, never drives sheet
-  state (the sheet animates down; the panel closes immediately).
+  state (both forms play their exit, then send `onDismissRequest` once). `LocalModalSheetClosing` reports that
+  the close has started.
 - A body adjusting density to its surface reads `LocalModalSheetForm` (`SHEET` vs `PANEL`), never re-derives
   the width class.
 
@@ -237,7 +238,7 @@ resources) is an app decision in the app's own doc.
 - **Cross-tab nav pulse.** An event landing on a tab other than the current one briefly pulses that tab's
   icon. `NavPulse` is a keyed, instance-owned signal: the app fires `navPulse.pulse(key)` where the event
   originates (safe outside composition) and the nav chrome scales the icon with
-  `rememberPulseScale(navPulse, key)`. The concrete key (which tab, what event) stays app-side.
+  `rememberPulseScale(navPulse, key)`. The concrete key (which tab, what event) stays app-side as a `NavPulseKey`.
 - **All motion is suppressed under reduced motion** (system animations disabled): an instant, un-animated
   swap. Mandatory for every animation.
 
@@ -274,10 +275,11 @@ The concrete catalog lives in the app's own doc.
 - **Shared interactive widgets take params, never brand values.**
   - `StarRatingInput` (`component/`): half-star tap/drag-scrub rating; star glyph is a `RhaydusIconResource`,
     filled/empty tints are color params defaulting to Material roles.
-  - `ExpandableFlowRow` (`layout/`): a `FlowRow` collapsed to N lines behind a replaceable "show more"
-    affordance. The caller's `FlowRowExpansion` sets the reveal: `Progressive` adds a few lines per tap,
-    `Full` opens the whole set. `collapsible = true` adds a matching "show less" back to the collapsed
-    height; required for a `Full` reveal over an unbounded set.
+  - `ExpandableFlowRow` (`layout/`): a wrapping row (`itemCount` + `itemContent(index)`) collapsed to N
+    lines behind a replaceable "show more" affordance; it composes only the items it places, the first
+    that overflows, and the affordance. The caller's `FlowRowExpansion` sets the reveal: `Progressive`
+    adds a few lines per tap, `Full` opens the whole set. `collapsible = true` adds a matching "show
+    less" back to the collapsed height; required for a `Full` reveal over an unbounded set.
   - `InlineErrorState` (`component/`): the in-content load/submit-failure surface, a message in the Material
     `error` role above a `RhaydusButton` retry, with retry label and text style as params (app copy and
     editorial role). It renders the TOAD error slot (`toad-architecture.md`).
@@ -369,6 +371,10 @@ Desktop-only affordances live in `jvmMain`. The `commonMain` modifiers (`pointer
   **not** a `Dialog` / `Popup`; a `Dialog` (including `AdaptiveModalSheet`'s expanded panel) already maps
   `dismissOnBackPress` to Esc. It runs in the key **preview** phase (catches Esc while a descendant text field
   holds focus) and never grabs focus while disabled, so it can gate on a transient mode.
+  **Gate vs guard:** `dismissOnEscape` takes focus on the disabled -> enabled flip, so never gate it on a
+  condition a text field drives (it would pull focus out of the field mid-word). For that case use
+  `Modifier.onEscape(enabled) { ... }`, which only installs the key handler, never takes focus, and leaves Esc
+  unconsumed while disabled.
 - **Selection on desktop.** Where touch enters multi-select by long-press, desktop also honors pointer idioms
   (right-click to open the selection, modifier-click to extend it). Long-press is never the only entry on
   desktop; the concrete gestures are an app decision.

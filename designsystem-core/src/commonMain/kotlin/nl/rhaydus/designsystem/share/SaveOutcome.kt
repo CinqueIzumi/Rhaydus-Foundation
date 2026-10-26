@@ -3,7 +3,7 @@ package nl.rhaydus.designsystem.share
 /**
  * Result of a [ShareCardCapture] save. [Cached] is a private-cache write (its [Cached.identifier] is a
  * shareable handle — a content URI on Android, a file path elsewhere); [Saved] is a gallery write with a
- * user-visible [Saved.displayPath]; [Failure] carries a human-readable [Failure.reason].
+ * user-visible [Saved.displayPath]; [Cancelled] means the user dismissed the save dialog (a no-op, not an error); [Failure] carries a human-readable [Failure.reason].
  */
 sealed interface SaveOutcome {
 
@@ -15,6 +15,8 @@ sealed interface SaveOutcome {
         val identifier: String,
         val displayPath: String,
     ) : SaveOutcome
+
+    data object Cancelled : SaveOutcome
 
     data class Failure(
         val reason: String,

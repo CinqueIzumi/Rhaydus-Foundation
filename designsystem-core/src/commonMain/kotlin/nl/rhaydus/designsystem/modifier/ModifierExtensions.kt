@@ -6,13 +6,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,7 +33,6 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import nl.rhaydus.designsystem.motion.playDecorativeMotion
 
-private const val PRESS_SCALE_TARGET = 0.97f
 private const val HOVER_HIGHLIGHT_ALPHA = 0.06f
 
 @Composable
@@ -46,74 +42,6 @@ fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier {
         indication = null,
         interactionSource = remember { MutableInteractionSource() },
     )
-}
-
-/**
- * Scales the receiver down to ~0.97 while the [interactionSource] reports a press, easing
- * back to 1f on release. Suppressed when system animations are disabled - under reduced
- * motion the surface stays at its natural size.
- *
- * Pair with the call site's existing click handler; this modifier only renders the visual
- * press feedback and does not attach a click listener of its own. For ripple-less card and
- * hero-cover surfaces, prefer [pressScaleClickable] which bundles both.
- */
-@Composable
-fun Modifier.pressScale(interactionSource: InteractionSource): Modifier {
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val playMotion = playDecorativeMotion()
-    val target = if (isPressed && playMotion) PRESS_SCALE_TARGET else 1f
-
-    val scale by animateFloatAsState(
-        targetValue = target,
-        label = "pressScale",
-    )
-
-    return this.graphicsLayer {
-        scaleX = scale
-        scaleY = scale
-    }
-}
-
-/**
- * Ripple-less clickable that also plays the press-scale feedback. The default replacement
- * for [noRippleClickable] on cards and ripple-less hero surfaces - the scale stops removing
- * the indication from meaning "remove the feedback".
- */
-@Composable
-fun Modifier.pressScaleClickable(onClick: () -> Unit): Modifier {
-    val interactionSource = remember { MutableInteractionSource() }
-
-    return this
-        .pressScale(interactionSource)
-        .clickable(
-            interactionSource = interactionSource,
-            indication = null,
-            onClick = onClick,
-        )
-}
-
-/**
- * Sibling to [pressScaleClickable] that also accepts an optional long-press handler. Reach for
- * this when a surface needs the same ripple-less press-scale feedback but also has to react to a
- * long-press. The long-press handler must fire its own haptic - this modifier deliberately does
- * not, so callers can pick the right semantic.
- */
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun Modifier.pressScaleCombinedClickable(
-    onClick: () -> Unit,
-    onLongClick: (() -> Unit)? = null,
-): Modifier {
-    val interactionSource = remember { MutableInteractionSource() }
-
-    return this
-        .pressScale(interactionSource)
-        .combinedClickable(
-            interactionSource = interactionSource,
-            indication = null,
-            onClick = onClick,
-            onLongClick = onLongClick,
-        )
 }
 
 /**
