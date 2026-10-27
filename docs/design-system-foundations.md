@@ -13,7 +13,8 @@ Brand-agnostic skeleton for `nl.rhaydus` apps (Jetpack Compose, Material 3 Expre
 - The root theme composable wraps content in **`MaterialExpressiveTheme`**
   (`@OptIn(ExperimentalMaterial3ExpressiveApi::class)`), passing a `colorScheme`, a `typography`, and
   `motionScheme = MotionScheme.expressive()`. Screens consume the expressive motion scheme; no hand-authored
-  durations or easings.
+  durations or easings. The theme swaps in a snapping scheme under reduced motion and provides
+  `LocalHaptics`; apps do neither.
 - The Expressive APIs (expressive theme entry point, expressive motion scheme, floating/expressive widgets)
   come from an **alpha `androidx.compose.material3:material3` pinned in `libs.versions.toml` over the BOM's
   version**. The pin carries a one-line comment (Expressive components) and is load-bearing. Remove it once

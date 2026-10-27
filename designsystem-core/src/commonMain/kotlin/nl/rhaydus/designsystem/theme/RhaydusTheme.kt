@@ -6,11 +6,19 @@ import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import nl.rhaydus.designsystem.haptics.LocalHaptics
+import nl.rhaydus.designsystem.haptics.rememberHaptics
+import nl.rhaydus.designsystem.motion.SnappingMotionScheme
+import nl.rhaydus.designsystem.motion.playDecorativeMotion
 
 /**
  * Brand-agnostic Material 3 Expressive theme scaffold. The app supplies its own [colorScheme] and
  * [typography] (and decides whether to derive [colorScheme] from dynamic color); this scaffold only
  * wires the expressive theme + motion and provides nothing brand-specific.
+ *
+ * [motionScheme] is the full-motion scheme; under reduced motion it is replaced by one whose specs all snap.
+ * Provides [LocalHaptics] with the platform haptics.
  *
  * App-specific custom typography (a reader/editorial scale) is provided by the app inside [content]
  * via its own CompositionLocal + `MaterialTheme.<x>Typography` extension - see
@@ -28,7 +36,11 @@ fun RhaydusTheme(
     MaterialExpressiveTheme(
         colorScheme = colorScheme,
         typography = typography,
-        motionScheme = motionScheme,
-        content = content,
-    )
+        motionScheme = if (playDecorativeMotion()) motionScheme else SnappingMotionScheme,
+    ) {
+        CompositionLocalProvider(
+            LocalHaptics provides rememberHaptics(),
+            content = content,
+        )
+    }
 }
