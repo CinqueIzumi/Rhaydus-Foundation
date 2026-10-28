@@ -13,6 +13,9 @@ kotlinxDatetime = "0.7.1"
 kermit = "2.0.6"
 detekt = "2.0.0-alpha.6"
 composeMultiplatform = "1.11.0"
+# Navigation Event library: the multiplatform back-gesture API that supersedes the deprecated CMP
+# `ui-backhandler`.
+navigationevent = "1.0.1"
 composeMaterial3Expressive = "1.11.0-alpha07"
 # Android-target Compose (consumed by the rhaydus.android.compose convention)
 composeBom = "2026.01.01"
@@ -56,6 +59,7 @@ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", ver
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-compiler-gradlePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
 compose-multiplatform-gradlePlugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "composeMultiplatform" }
+dependency-analysis-gradlePlugin = { group = "com.autonomousapps", name = "dependency-analysis-gradle-plugin", version.ref = "dependencyAnalysis" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
 
 # Module-shape convention deps (rhaydus.android.library / rhaydus.kmp.library)
@@ -73,7 +77,7 @@ voyager-koin = { group = "cafe.adriel.voyager", name = "voyager-koin", version.r
 
 # Compose convention deps (rhaydus.kmp.compose / rhaydus.android.compose) + designsystem-core (phase 4)
 compose-material3-expressive = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMaterial3Expressive" }
-compose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "composeMultiplatform" }
+navigationevent-compose = { group = "org.jetbrains.androidx.navigationevent", name = "navigationevent-compose", version.ref = "navigationevent" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

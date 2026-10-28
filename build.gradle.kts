@@ -17,9 +17,10 @@ plugins {
     alias(libs.plugins.vanniktech.mavenPublish) apply false
     // Applied (not `apply false`): the module-graph gate operates on the root + subprojects.
     id("rhaydus.module-graph")
-    // Root-applied: dependency-analysis auto-configures every subproject and adds the `buildHealth`
-    // aggregate task.
-    alias(libs.plugins.dependency.analysis)
+    // Root-applied: the shared buildHealth policy for the root and every subproject.
+    id("rhaydus.dependency-analysis")
+    // On the root classpath for the convention plugin above, which applies it by id.
+    alias(libs.plugins.dependency.analysis) apply false
 }
 
 val foundationVersion: String = providers.gradleProperty("foundation.version").getOrElse("0.0.0-SNAPSHOT")
@@ -29,99 +30,14 @@ allprojects {
     version = foundationVersion
 }
 
-// dependency-analysis (buildHealth): the root application (plugins block) registers the aggregate task;
-// each subproject needs the plugin too so it produces a project-health report, and its `check` depends on
-// that per-module `projectHealth` so the policy actually gates (not just a manually-invoked report).
-//
-// :catalog is skipped: it is a `version-catalog` project with no source set and no dependency graph to
-// analyse, so dependency-analysis registers no `projectHealth` task there and wiring `check` to one would
-// fail the task graph before any task runs.
-subprojects {
-    if (path == ":catalog") return@subprojects
-
-    apply(plugin = "com.autonomousapps.dependency-analysis")
-
-    tasks.matching { it.name == "check" }.configureEach {
-        dependsOn("projectHealth")
-    }
-}
-
-// buildHealth policy. Gate on the high-value categories - genuinely unused dependencies and wrong
-// api/implementation exposure - while excluding the uniform runtime + test + Compose bundle that the
-// convention plugins inject centrally (so it is never a per-module "unused" finding). Transitive-
-// completeness advice and compile-vs-runtime splitting are convention/BOM noise, so they stay
-// informational (ignored), not gates. The exclusions mirror exactly what build-logic's convention
-// plugins provide; a genuinely-unused app library would still fail.
+// Foundation-specific buildHealth exclusions on top of the shared policy.
 dependencyAnalysis {
     issues {
         all {
-            onUnusedDependencies {
-                severity("fail")
-                exclude(
-                    // Test bundle (Android/Kmp library convention plugins).
-                    "org.junit.jupiter:junit-jupiter-api",
-                    "org.junit.jupiter:junit-jupiter-params",
-                    "io.kotest:kotest-assertions-core",
-                    "app.cash.turbine:turbine",
-                    "org.jetbrains.kotlinx:kotlinx-coroutines-test",
-                    "io.mockk:mockk",
-                    // Runtime bundle (the library convention plugins).
-                    "io.insert-koin:koin-core",
-                    "io.insert-koin:koin-android",
-                    "org.jetbrains.kotlinx:kotlinx-coroutines-core",
-                    "org.jetbrains.kotlinx:kotlinx-coroutines-android",
-                    // Compose Multiplatform bundle (KmpComposeConventionPlugin commonMain).
-                    "org.jetbrains.compose.runtime:runtime",
-                    "org.jetbrains.compose.foundation:foundation",
-                    "org.jetbrains.compose.animation:animation",
-                    "org.jetbrains.compose.ui:ui",
-                    "org.jetbrains.compose.ui:ui-backhandler",
-                    "org.jetbrains.compose.components:components-ui-tooling-preview",
-                    "org.jetbrains.compose.components:components-resources",
-                    "org.jetbrains.compose.material3:material3",
-                    // Android Compose extras (KmpComposeConventionPlugin androidMain).
-                    "androidx.compose.ui:ui-tooling-preview",
-                    "androidx.compose.ui:ui-tooling",
-                    "androidx.activity:activity-compose",
-                    "androidx.core:core-ktx",
-                    // Compose desktop host runtimes + Hot Reload, auto-injected for every jvm() target.
-                    "org.jetbrains.compose.desktop:desktop-jvm-macos-arm64",
-                    "org.jetbrains.compose.desktop:desktop-jvm-macos-x64",
-                    "org.jetbrains.compose.desktop:desktop-jvm-linux-x64",
-                    "org.jetbrains.compose.desktop:desktop-jvm-linux-arm64",
-                    "org.jetbrains.compose.desktop:desktop-jvm-windows-x64",
-                    "org.jetbrains.compose.hot-reload:hot-reload-runtime-api",
-                )
-            }
-
             onIncorrectConfiguration {
-                severity("fail")
-                exclude(
-                    // api/implementation of convention-provided deps is managed centrally, not per module.
-                    "org.jetbrains.kotlinx:kotlinx-coroutines-core",
-                    "org.jetbrains.compose.components:components-resources",
-                    "org.jetbrains.compose.material3:material3",
-                    "androidx.compose.ui:ui",
-                    "androidx.compose.ui:ui-graphics",
-                    "androidx.compose.material3:material3",
-                    // KSafe backs the desktop SecureStorage actual and is intentionally implementation
-                    // (no KSafe type leaks into SecureStorage's public surface).
-                    "eu.anifantakis:ksafe",
-                )
-            }
-
-            // Transitive-completeness advice ("declare X directly") is BOM/convention noise.
-            onUsedTransitiveDependencies {
-                severity("ignore")
-            }
-
-            // Compile-vs-runtime splitting is a micro-optimisation entangled with the convention bundle.
-            onRuntimeOnly {
-                severity("ignore")
-            }
-
-            onRedundantPlugins {
-                severity("ignore")
+                // KSafe backs the desktop SecureStorage actual and is intentionally implementation
+                // (no KSafe type leaks into SecureStorage's public surface).
+                exclude("eu.anifantakis:ksafe")
             }
         }
     }

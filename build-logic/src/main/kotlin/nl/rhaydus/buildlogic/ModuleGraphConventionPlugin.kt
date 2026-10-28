@@ -3,6 +3,7 @@ package nl.rhaydus.buildlogic
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.ProjectDependency
 
 /**
@@ -10,11 +11,19 @@ import org.gradle.api.artifacts.ProjectDependency
  * fails the build on any project dependency that breaks the tier rules configured via [ModuleGraphExtension]
  * (`moduleGraph { … }`) — replacing manual import audits with a gate wired into every module's `check`.
  *
- * Two checks per edge:
+ * Checks per project edge:
  * 1. **Tier legality** — a module may depend only on a tier listed in its `allowedTargetTiers` entry.
  * 2. **api-visibility** — an `api` edge to a `dataAreaModules` member must be allowlisted in
  *    `allowedApiDataEdges`, so re-exporting a data/use-case layer is always a deliberate, reviewed decision
  *    rather than a silent leak. (Inert when `dataAreaModules` is empty.)
+ * 3. **Explicit allowlist** - a module in `allowedProjects` may depend only on the listed projects (none, when
+ *    the set is empty).
+ * 4. **Banned edges** - a pair in `bannedEdges` is always a violation.
+ *
+ * Per external dependency, `bannedExternalGroups` forbids a module from declaring the listed Maven groups in
+ * any configuration, except the `ignoredExternalCoordinates`.
+ *
+ * Edges are snapshotted as plain data in `projectsEvaluated`, so the task action reads no live project state.
  *
  * The mechanism is brand-agnostic; the concrete tiers, module→tier mapping, and allowlists are the
  * consuming build's data (see the `moduleGraph { }` block in its root build script).
@@ -30,56 +39,109 @@ class ModuleGraphConventionPlugin : Plugin<Project> {
             ModuleGraphExtension::class.java,
         )
 
+        // Edges are snapshotted as plain data once every project is evaluated, so the task body never touches
+        // `Project` / `Configuration` state.
+        val projectEdges = mutableListOf<ProjectEdge>()
+        val externalEdges = mutableListOf<ExternalEdge>()
+
+        target.gradle.projectsEvaluated {
+            target.subprojects.forEach { module ->
+                module.configurations.forEach forEachConfiguration@{ configuration ->
+                    // The Kotlin plugin aggregates every project into its SwiftPM lock-file classpath.
+                    if (configuration.name.startsWith("swiftPMDependencies")) return@forEachConfiguration
+
+                    configuration.dependencies.forEach { dependency ->
+                        when (dependency) {
+                            is ProjectDependency ->
+                                projectEdges += ProjectEdge(
+                                    module.path,
+                                    dependency.path,
+                                    configuration.name,
+                                )
+
+                            is ExternalModuleDependency ->
+                                externalEdges += ExternalEdge(
+                                    from = module.path,
+                                    configurationName = configuration.name,
+                                    group = dependency.group.orEmpty(),
+                                    name = dependency.name,
+                                )
+                        }
+                    }
+                }
+            }
+        }
+
         val checkModuleGraph = target.tasks.register("checkModuleGraph") {
             group = "verification"
-            description = "Fails on any module dependency that breaks the configured tier DAG."
+            description = "Fails on any module dependency that breaks the configured module graph rules."
 
-            // Note: this doLast reads the live `subprojects` / `Configuration` graph at execution time, so
-            // it is not configuration-cache-safe (unlike verifyPluginVersion, which snapshots plain values).
-            // Config cache is not enabled in this build; a config-cache-safe rewrite would need to serialize
-            // the declared edges — and the `moduleGraph` extension's `tierOf` lambda — which is deferred
-            // until config cache is actually adopted.
             doLast {
                 val violations = mutableListOf<String>()
                 var edges = 0
 
-                target.subprojects.forEach { module ->
-                    val fromTier = extension.tierOf(module.path) ?: return@forEach
-                    val allowed = extension.allowedTargetTiers[fromTier].orEmpty()
+                projectEdges.forEach edge@{ (fromPath, toPath, configurationName) ->
+                    if (toPath == fromPath) return@edge
 
-                    module.configurations.forEach forEachConfiguration@{ configuration ->
-                        // The Kotlin plugin aggregates every project into its SwiftPM lock-file classpath.
-                        if (configuration.name.startsWith("swiftPMDependencies")) return@forEachConfiguration
+                    val fromTier = extension.tierOf(fromPath) ?: return@edge
+                    val targetTier = extension.tierOf(toPath) ?: return@edge
+                    edges++
 
-                        configuration.dependencies
-                            .filterIsInstance<ProjectDependency>()
-                            .forEach forEachDependency@{ dependency ->
-                                if (dependency.path == module.path) return@forEachDependency
+                    val allowedTiers = extension.allowedTargetTiers[fromTier].orEmpty()
 
-                                val targetTier = extension.tierOf(dependency.path) ?: return@forEachDependency
-                                edges++
+                    if (targetTier !in allowedTiers) {
+                        violations += "$fromPath → $toPath  ($fromTier may depend only on $allowedTiers)"
+                    }
 
-                                if (targetTier !in allowed) {
-                                    violations += "${module.path} → ${dependency.path}  " +
-                                        "($fromTier may depend only on $allowed)"
-                                }
+                    // api-visibility: a declared `api` edge to a data-area module must be allowlisted. Match
+                    // every declarable api bucket - plain `api` and the KMP/variant `<sourceSet>Api` configs
+                    // (`commonMainApi`, …) - but never the test ones, where an api edge can't leak into a
+                    // production consumer's graph.
+                    val isApiEdge = configurationName.endsWith(
+                        "api",
+                        ignoreCase = true,
+                    ) &&
+                        configurationName.contains(
+                            "test",
+                            ignoreCase = true,
+                        ).not()
 
-                                // api-visibility: a declared `api` edge to a data-area module must be
-                                // allowlisted. Match every declarable api bucket - plain `api` and the
-                                // KMP/variant `<sourceSet>Api` configs (`commonMainApi`, …) - but never the
-                                // test ones, where an api edge can't leak into a production consumer's graph.
-                                val configName = configuration.name.lowercase()
-                                val isApiEdge = configName.endsWith("api") && configName.contains("test").not()
+                    if (
+                        isApiEdge &&
+                        toPath in extension.dataAreaModules &&
+                        (fromPath to toPath) !in extension.allowedApiDataEdges
+                    ) {
+                        violations += "$fromPath → api($toPath)  " +
+                            "(data modules must be implementation-depended unless allowlisted)"
+                    }
 
-                                if (
-                                    isApiEdge &&
-                                    dependency.path in extension.dataAreaModules &&
-                                    (module.path to dependency.path) !in extension.allowedApiDataEdges
-                                ) {
-                                    violations += "${module.path} → api(${dependency.path})  " +
-                                        "(data modules must be implementation-depended unless allowlisted)"
-                                }
-                            }
+                    if ((fromPath to toPath) in extension.bannedEdges) {
+                        violations += "$fromPath → $toPath  (wrong direction)"
+                    }
+
+                    val allowedTargets = extension.allowedProjects[fromPath]
+
+                    if (allowedTargets != null && toPath !in allowedTargets) {
+                        violations += if (allowedTargets.isEmpty()) {
+                            "$fromPath → $toPath  ($fromPath must declare no project dependency)"
+                        } else {
+                            "$fromPath → $toPath  ($fromPath may depend only on $allowedTargets)"
+                        }
+                    }
+                }
+
+                // Deliberately not restricted to non-test configurations, unlike the api-visibility rule:
+                // that one is about leakage into consumers, this one about what the module itself depends on.
+                externalEdges.forEach external@{ (fromPath, _, group, name) ->
+                    if (extension.tierOf(fromPath) == null) return@external
+
+                    val bannedGroups = extension.bannedExternalGroups[fromPath] ?: return@external
+                    val coordinate = "$group:$name"
+
+                    if (coordinate in extension.ignoredExternalCoordinates) return@external
+
+                    if (group in bannedGroups) {
+                        violations += "$fromPath → $coordinate  ($fromPath may not depend on group $group)"
                     }
                 }
 
