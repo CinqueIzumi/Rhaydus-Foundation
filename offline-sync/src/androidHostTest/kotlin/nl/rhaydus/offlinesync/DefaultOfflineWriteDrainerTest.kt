@@ -25,8 +25,11 @@ class DefaultOfflineWriteDrainerTest {
         private val rows = mutableListOf<PendingWrite<P>>()
         private var nextId = 1L
 
-        var lastRequestedMaxAttempts: Int? = null
-            private set
+        val abandonedIds = mutableListOf<Long>()
+        val deletedIds = mutableListOf<Long>()
+        val incrementedIds = mutableListOf<Long>()
+
+        var abandonFailure: Throwable? = null
 
         var getPendingCallCount = 0
             private set
@@ -47,18 +50,26 @@ class DefaultOfflineWriteDrainerTest {
             )
         }
 
-        override suspend fun getPending(maxAttempts: Int): List<PendingWrite<P>> {
-            lastRequestedMaxAttempts = maxAttempts
+        override suspend fun getPending(): List<PendingWrite<P>> {
             getPendingCallCount++
 
-            return rows.filter { it.attempts < maxAttempts }
+            return rows.toList()
         }
 
         override suspend fun delete(localId: Long) {
+            deletedIds.add(localId)
             rows.removeAll { it.localId == localId }
         }
 
+        override suspend fun abandon(write: PendingWrite<P>) {
+            abandonedIds.add(write.localId)
+            abandonFailure?.let { throw it }
+            rows.removeAll { it.localId == write.localId }
+        }
+
         override suspend fun incrementAttempts(localId: Long) {
+            incrementedIds.add(localId)
+
             val index = rows.indexOfFirst { it.localId == localId }
 
             if (index >= 0) rows[index] = rows[index].copy(attempts = rows[index].attempts + 1)
@@ -88,7 +99,7 @@ class DefaultOfflineWriteDrainerTest {
     @Nested
     inner class Drain {
         @Test
-        fun `replays pending writes oldest-first and deletes synced rows`() = runTest {
+        fun `replays pending writes oldest-first, deletes synced rows and never abandons them`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
             store.enqueue(
@@ -122,6 +133,8 @@ class DefaultOfflineWriteDrainerTest {
             // ----- Assert -----
             replayedIds shouldBe listOf(1, 2)
             store.snapshot() shouldBe emptyList()
+            store.deletedIds shouldBe listOf(1L, 2L)
+            store.abandonedIds shouldBe emptyList()
             hints shouldBe mapOf(
                 1 to setOf(TestKind.UPDATE),
                 2 to setOf(TestKind.DELETE),
@@ -157,7 +170,7 @@ class DefaultOfflineWriteDrainerTest {
         }
 
         @Test
-        fun `DISCARDED outcome deletes the row without recording a hint`() = runTest {
+        fun `DISCARDED outcome deletes the row without abandoning it or recording a hint`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
             store.enqueue(
@@ -180,6 +193,8 @@ class DefaultOfflineWriteDrainerTest {
 
             // ----- Assert -----
             hints shouldBe emptyMap()
+            store.deletedIds shouldBe listOf(1L)
+            store.abandonedIds shouldBe emptyList()
             store.snapshot() shouldBe emptyList()
         }
 
@@ -218,6 +233,7 @@ class DefaultOfflineWriteDrainerTest {
 
             // ----- Assert -----
             replayedIds shouldBe listOf(1)
+            store.abandonedIds shouldBe emptyList()
             store.snapshot() shouldBe listOf(
                 PendingWrite(
                     localId = 1,
@@ -239,7 +255,7 @@ class DefaultOfflineWriteDrainerTest {
         }
 
         @Test
-        fun `terminal failure discards the row and the drain continues`() = runTest {
+        fun `terminal failure deletes the row without abandoning it and the drain continues`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
             store.enqueue(
@@ -273,6 +289,8 @@ class DefaultOfflineWriteDrainerTest {
 
             // ----- Assert -----
             replayedIds shouldBe listOf(1, 2)
+            store.abandonedIds shouldBe emptyList()
+            store.deletedIds shouldBe listOf(1L, 2L)
             store.snapshot() shouldBe emptyList()
             hints shouldBe mapOf(2 to setOf(TestKind.UPDATE))
         }
@@ -316,7 +334,7 @@ class DefaultOfflineWriteDrainerTest {
         }
 
         @Test
-        fun `getPending is called with the policy poison cap and excludes capped rows`() = runTest {
+        fun `a row already at the cap is abandoned without replay and the pass continues`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
             store.seed(
@@ -352,11 +370,164 @@ class DefaultOfflineWriteDrainerTest {
             )
 
             // ----- Act -----
+            val hints = drainer.drain()
+
+            // ----- Assert -----
+            store.abandonedIds shouldBe listOf(1L)
+            replayedIds shouldBe listOf(2)
+            store.deletedIds shouldBe listOf(2L)
+            hints shouldBe mapOf(2 to setOf(TestKind.UPDATE))
+        }
+
+        @Test
+        fun `a throwing abandon on an over-cap row neither stops the pass nor deletes the row`() = runTest {
+            // ----- Arrange -----
+            val store = FakePendingWriteStore<TestPayload>()
+            store.abandonFailure = IllegalStateException("abandon boom")
+            store.seed(
+                PendingWrite(
+                    localId = 1,
+                    attempts = 2,
+                    payload = TestPayload(
+                        id = 1,
+                        kind = TestKind.UPDATE,
+                    ),
+                ),
+                PendingWrite(
+                    localId = 2,
+                    attempts = 0,
+                    payload = TestPayload(
+                        id = 2,
+                        kind = TestKind.UPDATE,
+                    ),
+                ),
+            )
+
+            val replayedIds = mutableListOf<Int>()
+            val drainer = DefaultOfflineWriteDrainer(
+                store = store,
+                networkAvailability = FakeNetworkAvailabilityProvider(),
+                dispatchers = appDispatchers(),
+                replay = { payload ->
+                    replayedIds.add(payload.id)
+                    ReplayOutcome.SYNCED
+                },
+                hintKey = { it.id to it.kind },
+                policy = DrainPolicy(maxAttempts = 2),
+            )
+
+            // ----- Act -----
+            val hints = drainer.drain()
+
+            // ----- Assert -----
+            replayedIds shouldBe listOf(2)
+            store.deletedIds shouldBe listOf(2L)
+            hints shouldBe mapOf(2 to setOf(TestKind.UPDATE))
+            store.snapshot() shouldBe listOf(
+                PendingWrite(
+                    localId = 1,
+                    attempts = 2,
+                    payload = TestPayload(
+                        id = 1,
+                        kind = TestKind.UPDATE,
+                    ),
+                ),
+            )
+        }
+
+        @Test
+        fun `a transient failure reaching the cap increments the attempts, abandons the row and halts`() = runTest {
+            // ----- Arrange -----
+            val store = FakePendingWriteStore<TestPayload>()
+            store.seed(
+                PendingWrite(
+                    localId = 1,
+                    attempts = 1,
+                    payload = TestPayload(
+                        id = 1,
+                        kind = TestKind.UPDATE,
+                    ),
+                ),
+                PendingWrite(
+                    localId = 2,
+                    attempts = 0,
+                    payload = TestPayload(
+                        id = 2,
+                        kind = TestKind.UPDATE,
+                    ),
+                ),
+            )
+
+            val replayedIds = mutableListOf<Int>()
+            val drainer = DefaultOfflineWriteDrainer(
+                store = store,
+                networkAvailability = FakeNetworkAvailabilityProvider(),
+                dispatchers = appDispatchers(),
+                replay = { payload ->
+                    replayedIds.add(payload.id)
+                    error("transient boom")
+                },
+                hintKey = { it.id to it.kind },
+                policy = DrainPolicy(maxAttempts = 2),
+            )
+
+            // ----- Act -----
             drainer.drain()
 
             // ----- Assert -----
-            store.lastRequestedMaxAttempts shouldBe 2
-            replayedIds shouldBe listOf(2)
+            store.incrementedIds shouldBe listOf(1L)
+            store.abandonedIds shouldBe listOf(1L)
+            replayedIds shouldBe listOf(1)
+            store.snapshot() shouldBe listOf(
+                PendingWrite(
+                    localId = 2,
+                    attempts = 0,
+                    payload = TestPayload(
+                        id = 2,
+                        kind = TestKind.UPDATE,
+                    ),
+                ),
+            )
+        }
+
+        @Test
+        fun `a throwing abandon on a cap-reaching transient failure leaves the row at the cap and never replays it again`() = runTest {
+            // ----- Arrange -----
+            val store = FakePendingWriteStore<TestPayload>()
+            store.abandonFailure = IllegalStateException("abandon boom")
+            store.seed(
+                PendingWrite(
+                    localId = 1,
+                    attempts = 1,
+                    payload = TestPayload(
+                        id = 1,
+                        kind = TestKind.UPDATE,
+                    ),
+                ),
+            )
+
+            var replayCount = 0
+            val drainer = DefaultOfflineWriteDrainer(
+                store = store,
+                networkAvailability = FakeNetworkAvailabilityProvider(),
+                dispatchers = appDispatchers(),
+                replay = {
+                    replayCount++
+                    error("transient boom")
+                },
+                hintKey = { it.id to it.kind },
+                policy = DrainPolicy(maxAttempts = 2),
+            )
+
+            // ----- Act -----
+            drainer.drain()
+            val replaysAfterFirstDrain = replayCount
+            drainer.drain()
+
+            // ----- Assert -----
+            replaysAfterFirstDrain shouldBe 1
+            replayCount shouldBe replaysAfterFirstDrain
+            store.abandonedIds shouldBe listOf(1L, 1L)
             store.snapshot() shouldBe listOf(
                 PendingWrite(
                     localId = 1,

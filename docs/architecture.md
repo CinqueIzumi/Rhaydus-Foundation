@@ -319,20 +319,23 @@ a mutation that cannot reach the server is enqueued locally and replayed when co
 app supplies write shapes, persistence and remote dispatch as injected seams.
 
 - **`PendingWriteStore<P>`** (extends **`WriteQueue<P>`**) is the persistence seam the app implements
-  (Room / SQLite / DataStore): `enqueue(payload)`, `getPending(maxAttempts)` (oldest-first, poison-capped),
-  `delete(localId)`, `incrementAttempts(localId)`. The concrete table, the payload-row codec and any
-  coalescing (upsert-replacing same-kind writes for an entity) stay app-side. `P` is the app's opaque
-  write payload; a `PendingWrite<P>` row carries `localId` + `attempts`.
+  (Room / SQLite / DataStore): `enqueue(payload)`, `getPending()` (every row, oldest-first),
+  `delete(localId)` (synced, discarded or terminally rejected writes), `incrementAttempts(localId)`,
+  `abandon(write)` (a write at the poison cap: settle or undo what the app tied to it, then remove the row;
+  idempotent, as the engine retries it on a later pass when it fails). The concrete table,
+  the payload-row codec and any coalescing (upsert-replacing same-kind writes for an entity) stay app-side.
+  `P` is the app's opaque write payload; a `PendingWrite<P>` row carries `localId` + `attempts`.
 - **`DefaultOfflineWriteDrainer<P, I, K>`** (implements **`OfflineWriteDrainer<I, K>`**) is the engine.
   `start(scope)` drains once at startup and on every connectivity return (via
   `NetworkAvailabilityProvider`); `drain()` runs one pass on demand and returns the **reconciliation
   hints** `Map<I, Set<K>>` (per entity id, the write kinds that synced). When merging a fresh fetch, the
   caller preserves only the fields each replayed write owns.
 - The app supplies the `replay: suspend (P) -> ReplayOutcome` dispatch, a `hintKey: (P) -> Pair<I, K>?`
-  extractor, an `isTransient: (Throwable) -> Boolean` classifier and a `DrainPolicy` (poison cap +
+  extractor, an `isTransient: (Throwable) -> Boolean` classifier and a `DrainPolicy` (engine poison cap +
   in-drain exponential backoff).
-- A **transient** replay failure bumps the row's attempts and halts the pass; a **terminal** failure
-  discards the row. `isTransient` defaults to transient for every failure; override it to discard writes
+- A **transient** replay failure bumps the row's attempts and halts the pass; a **terminal** failure and a
+  `DISCARDED` outcome `delete` the row, and a row at the `DrainPolicy.maxAttempts` poison cap (checked by
+  the engine) goes to `abandon`. `isTransient` defaults to transient for every failure; override it to discard writes
   the server always rejects.
 - The app owns the drain -> fetch -> reconcile composition; the module ships only the drainer.
 

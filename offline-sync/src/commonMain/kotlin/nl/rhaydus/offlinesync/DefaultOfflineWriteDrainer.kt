@@ -16,11 +16,13 @@ import nl.rhaydus.platform.NetworkAvailabilityProvider
 
 /**
  * The reusable offline drain engine. It reads pending writes from [store] oldest-first and replays each via
- * the app-supplied [replay] lambda, deleting a row once it is [ReplayOutcome.SYNCED] / [ReplayOutcome.DISCARDED]
- * and recording a reconciliation hint (via [hintKey]) for synced writes. A replay that throws is classified
- * by [isTransient]: a **transient** failure bumps the row's attempt count and **halts the whole drain**
- * (preserving enqueue order until the network settles or the row crosses the poison cap
- * [DrainPolicy.maxAttempts]); a **terminal** failure deletes the row (the server processed and rejected it).
+ * the app-supplied [replay] lambda. A [ReplayOutcome.SYNCED] row is deleted and a reconciliation hint is
+ * recorded (via [hintKey]); a [ReplayOutcome.DISCARDED] row is deleted. A replay
+ * that throws is classified by [isTransient]: a **transient** failure bumps the row's attempt count and
+ * **halts the whole drain** (preserving enqueue order until the network settles); a **terminal** failure
+ * deletes the row (the server processed and rejected it). A row that reaches the poison cap
+ * [DrainPolicy.maxAttempts] is passed to [PendingWriteStore.abandon] instead, without further replay; a
+ * failing abandon is logged and the row is abandoned again on a later pass.
  * In-drain retries and their exponential backoff come from [policy].
  *
  * [start] wires an online-triggered drain onto [scope] (drains on every connectivity return, and once
@@ -78,10 +80,20 @@ class DefaultOfflineWriteDrainer<P, I, K>(
 
     private suspend fun drainOnce() {
         val pending = runCatchingLogged(context = "offline drain: read pending queue") {
-            store.getPending(policy.maxAttempts)
+            store.getPending()
         }.getOrElse { return }
 
         for (row in pending) {
+            if (row.attempts >= policy.maxAttempts) {
+                AppLog.w(
+                    message = "offline drain: abandoning write already poisoned after ${row.attempts} attempts",
+                )
+
+                abandonGuarded(row)
+
+                continue
+            }
+
             val replayed = replayWithBackoff(row.payload)
 
             replayed
@@ -105,6 +117,8 @@ class DefaultOfflineWriteDrainer<P, I, K>(
 
                         store.incrementAttempts(row.localId)
 
+                        if (row.attempts + 1 >= policy.maxAttempts) abandonGuarded(row)
+
                         return
                     }
 
@@ -118,6 +132,12 @@ class DefaultOfflineWriteDrainer<P, I, K>(
         }
     }
 
+    private suspend fun abandonGuarded(row: PendingWrite<P>) {
+        runCatchingLogged(context = "offline drain: abandon poisoned write") {
+            store.abandon(row)
+        }
+    }
+
     private fun logTransientHalt(
         error: Throwable,
         attempts: Int,
@@ -127,7 +147,7 @@ class DefaultOfflineWriteDrainer<P, I, K>(
         if (nextAttempts >= policy.maxAttempts) {
             AppLog.w(
                 error,
-                "offline drain: write poisoned after $nextAttempts attempts; it will no longer be retried",
+                "offline drain: write poisoned after $nextAttempts attempts; it is abandoned and no longer retried",
             )
         } else {
             AppLog.w(
