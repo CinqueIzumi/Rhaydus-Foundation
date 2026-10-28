@@ -25,7 +25,10 @@ fun rememberPulseScale(
     peakScale = peakScale,
 )()
 
-/** Same pulse as the [trigger] overload of [rememberPulseScale], read through a lambda so a `graphicsLayer {}` block tracks it without recomposing. */
+/**
+ * Same pulse as the [trigger] overload of [rememberPulseScale], read through a lambda so a `graphicsLayer {}`
+ * block tracks it without recomposing.
+ */
 @Composable
 fun rememberPulseScaleProvider(
     trigger: Int,

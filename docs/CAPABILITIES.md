@@ -39,8 +39,8 @@ rather than a memorized snapshot.
 | `nl.rhaydus:designsystem-editorial` | Opt-in editorial design language (depends on core) | `EditorialTypography`, `buildEditorialTypography`, `EditorialTheme`, `MaterialTheme.editorialTypography`; components `EditorialSectionHeader`, `HeroStatNumberField` + `EditorialSuffix`, `PullToRefreshEyebrow`, `DropCapText`, `EditorialSearchField` | `design-system-foundations.md` §2 |
 | `nl.rhaydus:designsystem-image` | Opt-in async images on Coil (depends on core) | `RhaydusImage` (plain), `RhaydusPlaceholderImage` (placeholder slot), `RhaydusShimmerImage` (shimmer) | `design-system-foundations.md` §8 |
 | `nl.rhaydus:catalog` | Shared version catalog | `libs.*` aliases for the shared third-party stack | - |
-| `nl.rhaydus:ktlint-rules` | Custom ktlint ruleset (14 rules) | `ktlintCheck` / `ktlintFormat` gates | `code-style.md` |
-| `nl.rhaydus:detekt-rules` | Custom detekt ruleset (type-resolved crash-safety) + shared baseline config | `rhaydus` ruleset (`UnguardedFlowTerminalRead`), bundled `config/detekt.yml`, `detektCheck` gate | `code-style.md` |
+| `nl.rhaydus:ktlint-rules` | Custom ktlint ruleset (15 rules) | `ktlintCheck` / `ktlintFormat` gates | `code-style.md` |
+| `nl.rhaydus:detekt-rules` | Custom detekt 2 ruleset (`dev.detekt`, analysis-API crash-safety) + shared baseline config | `rhaydus` ruleset (`UnguardedFlowTerminalRead`), bundled `config/detekt.yml`, `detektCheck` gate | `code-style.md` |
 
 ### designsystem-core surface
 
@@ -75,7 +75,7 @@ images depends only on `designsystem-core`.
 
 - **Convention plugins** (`build-logic`, applied by id): `rhaydus.android.library`, `rhaydus.kmp.library`, `rhaydus.android.compose`, `rhaydus.kmp.compose`. The KMP library convention also declares the `mobileMain` / `mobileTest` (Android+iOS shared, desktop branches to `jvmMain`) seam and the shared Android lint policy (`warningsAsErrors` + the root `lint.xml`, with version-freshness checks held `informational`).
 - **Build gates** (`build-logic` + root): `rhaydus.module-graph` (a root-applied convention plugin - the `checkModuleGraph` task fails on any `project(...)` edge breaking the tier DAG configured via `moduleGraph { }`, plus an `api`-visibility allowlist); `rhaydus.doc-budgets` (a root-applied convention plugin - the `checkDocBudgets` task holds docs to the budgets and citation rules of `doc-hygiene.md`, reading the `docGuard` object of `.claude/rhaydus.json` that the plugin's doc-guard hook also reads); the `com.autonomousapps.dependency-analysis` policy (fail on unused deps / wrong api-vs-implementation, with the convention bundle excluded; each module's `projectHealth` runs in its `check`, aggregated by `buildHealth`). Both gates wire into every module's `check`.
-- **ktlint-rules** (`nl.rhaydus:ktlint-rules`): auto-fixes + gates the mechanizable layout rules (multi-arg one-per-line wrapping, trailing commas, blank-line rules, region flushing, sibling-composable spacing, boolean `.not()`) and bans raw logging (`no-raw-logging`: no `println` / `android.util.Log.*` - use the `AppLog` facade). `ktlintFormat` fixes, `ktlintCheck` gates.
+- **ktlint-rules** (`nl.rhaydus:ktlint-rules`): auto-fixes + gates the mechanizable layout rules (multi-arg one-per-line wrapping, trailing commas, blank-line rules, region flushing, sibling-composable spacing, boolean `.not()`, unused imports) and bans raw logging (`no-raw-logging`: no `println` / `android.util.Log.*` - use the `AppLog` facade). `ktlintFormat` fixes, `ktlintCheck` gates.
 - **Claude plugin** (`rhaydus-kotlin`): the `rhaydus-adopt` agent, the generic `implementer` / `reviewer` / `test-writer` agents, the `style-check` and `handoff` skills, the quiet-Gradle and token-usage scripts, and the hooks (docs-first, brief check, slow-Gradle blocker, quiet Gradle, large-read guard, doc guard, context budget) configured by `.claude/rhaydus.json`.
 
 ## Which doc governs what

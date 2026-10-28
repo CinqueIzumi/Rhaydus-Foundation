@@ -1,10 +1,24 @@
 package nl.rhaydus.ktlint
 
+import com.pinterest.ktlint.rule.engine.core.api.editorconfig.EditorConfigProperty
 import com.pinterest.ktlint.test.KtLintAssertThat.Companion.assertThatRule
+import org.ec4j.core.model.PropertyType
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 private val ruleAssertThat = assertThatRule { InlineFullyQualifiedReferenceRule() }
+
+private val exemptSegments =
+    EditorConfigProperty(
+        type =
+            PropertyType.LowerCasingPropertyType(
+                "rhaydus_fully_qualified_exempt_package_segments",
+                "Comma-separated package segments whose types may stay fully-qualified.",
+                PropertyType.PropertyValueParser.IDENTITY_VALUE_PARSER,
+                emptySet(),
+            ),
+        defaultValue = "",
+    )
 
 class InlineFullyQualifiedReferenceRuleTest {
     @Nested
@@ -44,7 +58,7 @@ class InlineFullyQualifiedReferenceRuleTest {
         }
 
         @Test
-        fun `fires for androidx fragment type - only nl_rhaydus generated fragments are exempt`() {
+        fun `fires for androidx fragment type - an exempt segment covers only a type directly under it`() {
             // ----- Arrange -----
             val code = """
                 val x: androidx.fragment.app.Fragment? = null
@@ -52,11 +66,45 @@ class InlineFullyQualifiedReferenceRuleTest {
 
             // ----- Act & Assert -----
             // "val x: " = 7 chars, so androidx starts at col 8
+            ruleAssertThat(code)
+                .withEditorConfigOverride(exemptSegments to "fragment")
+                .hasLintViolationWithoutAutoCorrect(
+                    1,
+                    8,
+                    message,
+                )
+        }
+
+        @Test
+        fun `fires for a fragment type when no exemption is configured`() {
+            // ----- Arrange -----
+            val code = """
+                val x: nl.rhaydus.sample.fragment.BookListFragment? = null
+            """.trimIndent()
+
+            // ----- Act & Assert -----
             ruleAssertThat(code).hasLintViolationWithoutAutoCorrect(
                 1,
                 8,
                 message,
             )
+        }
+
+        @Test
+        fun `fires for a type under a segment that is not exempted`() {
+            // ----- Arrange -----
+            val code = """
+                val x: nl.rhaydus.sample.model.Book? = null
+            """.trimIndent()
+
+            // ----- Act & Assert -----
+            ruleAssertThat(code)
+                .withEditorConfigOverride(exemptSegments to "fragment")
+                .hasLintViolationWithoutAutoCorrect(
+                    1,
+                    8,
+                    message,
+                )
         }
     }
 
@@ -98,14 +146,16 @@ class InlineFullyQualifiedReferenceRuleTest {
         }
 
         @Test
-        fun `clean for a generated nl_rhaydus fragment type left fully-qualified`() {
+        fun `clean for a type under an exempted package segment`() {
             // ----- Arrange -----
             val code = """
                 val x: nl.rhaydus.sample.fragment.BookListFragment? = null
             """.trimIndent()
 
             // ----- Act & Assert -----
-            ruleAssertThat(code).hasNoLintViolations()
+            ruleAssertThat(code)
+                .withEditorConfigOverride(exemptSegments to "fragment")
+                .hasNoLintViolations()
         }
 
         @Test

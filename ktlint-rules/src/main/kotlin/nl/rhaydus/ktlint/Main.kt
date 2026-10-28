@@ -30,6 +30,7 @@ private val ruleProviders: Set<RuleProvider> =
         RuleProvider { OneTypePerFileRule() },
         RuleProvider { InlineFullyQualifiedReferenceRule() },
         RuleProvider { ProjectImportOrderRule() },
+        RuleProvider { NoUnusedImportsRule() },
         RuleProvider { InlineMockkStubRule() },
         RuleProvider { UseCaseRunCatchingRule() },
         RuleProvider { NoRawLoggingRule() },

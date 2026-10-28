@@ -1,16 +1,16 @@
 package nl.rhaydus.detekt
 
-import io.gitlab.arturbosch.detekt.api.Config
-import io.gitlab.arturbosch.detekt.rules.KotlinCoreEnvironmentTest
-import io.gitlab.arturbosch.detekt.test.compileAndLintWithContext
-import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
+import dev.detekt.api.Config
+import dev.detekt.test.lintWithContext
+import dev.detekt.test.utils.KotlinEnvironmentContainer
+import dev.detekt.test.utils.createEnvironment
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-@KotlinCoreEnvironmentTest
-class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) {
-    private val rule = UnguardedFlowTerminalReadRule(Config.empty)
+class UnguardedFlowTerminalReadTest {
+    private val env: KotlinEnvironmentContainer = createEnvironment()
+    private val rule = UnguardedFlowTerminalRead(Config.empty)
 
     @Nested
     inner class Fires {
@@ -26,7 +26,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -50,7 +50,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -74,7 +74,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -98,7 +98,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -119,7 +119,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
             val code = "fun read(): Int = listOf(1, 2).first()"
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -137,7 +137,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
             val code = "fun read(): Int = listOf(1, 2).single()"
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -161,7 +161,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -185,7 +185,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -210,7 +210,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -234,7 +234,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -258,7 +258,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -282,7 +282,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )
@@ -306,7 +306,7 @@ class UnguardedFlowTerminalReadRuleTest(private val env: KotlinCoreEnvironment) 
                 """.trimIndent()
 
             // ----- Act -----
-            val findings = rule.compileAndLintWithContext(
+            val findings = rule.lintWithContext(
                 env,
                 code,
             )

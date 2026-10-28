@@ -10,21 +10,21 @@
 - `nl.rhaydus:ktlint-rules` (package `nl.rhaydus.ktlint`) enforces mechanizable style.
   `./gradlew ktlintFormat` auto-fixes; `./gradlew ktlintCheck` verifies.
 - The ktlint ruleset gates: the uniformly-internal visibility categories, one-type-per-file, no inline
-  fully-qualified references, project-import order, no inline mockk stubs, no bare `runCatching` in a
+  fully-qualified references, unused imports, project-import order, no inline mockk stubs, no bare `runCatching` in a
   `*UseCase*`, and `no-raw-logging` (use the `AppLog` facade from `nl.rhaydus:core-common`, never `println`
   or `android.util.Log.*`). Cases it does not gate (cross-module mappers, shared components, anything
   subtler) are caught in review.
-- `nl.rhaydus:detekt-rules` (`./gradlew detektCheck`, plus the shared `config/detekt.yml` baseline) adds the
-  type-resolution checks, notably `UnguardedFlowTerminalRead`: it flags an unguarded `Flow` `first()` /
+- `nl.rhaydus:detekt-rules` (`./gradlew detektCheck`, plus the shared `config/detekt.yml` baseline; detekt 2.0.0-alpha.6, group
+  `dev.detekt`) adds the type-resolution checks, notably `UnguardedFlowTerminalRead`: it flags an unguarded `Flow` `first()` /
   `single()` and does not flag the `Collection` operators of the same name.
   - `first` on a hot flow (`SharedFlow` / `StateFlow`) is exempt, so `isOnline.first { it }` is a legal
     `awaitOnline()`. `single()` stays flagged on hot flows.
 - detekt's `formatting` ruleset stays off; `ktlint-rules` owns layout rules.
 
-- The detekt rules fire only under type resolution (`detektAndroidMain` / `detektJvmMain` / `detektMain`)
-  and are inert on a syntactic run. A consuming app must run those tasks.
-- The shared baseline disables `UnreachableCode`, `IgnoredReturnValue` and `RedundantSuspendModifier`
-  (false positives from detekt 1.23's Kotlin 1.9 frontend on Kotlin 2.x; see the config's comments).
+- The detekt rules run only in full analysis mode (the `detekt<Target>` tasks) and are skipped on a light
+  run. A consuming app must run those tasks.
+- The shared baseline excludes test sources from `IgnoredReturnValue`, because a mockk `verify { }`
+  block reads as a dropped result.
 
 ## Naming Conventions
 
@@ -461,7 +461,7 @@ class Example {
 2. Third-party libraries (Kotlin stdlib, Coroutines, Ktor, Koin, Compose, etc.)
 3. Project-specific imports (`nl.rhaydus.*`)
 
-Remove unused imports.
+Remove unused imports (`ktlintFormat` does it; the rule is syntactic and never reports wildcard imports).
 
 ### No fully-qualified references
 
@@ -470,6 +470,8 @@ Remove unused imports.
 - Applies to production and test code, including parameter types, return types, generic arguments,
   lambda receiver types, `mockk()` type witnesses and top-level function calls.
 - **Strictest for project-own code** (`nl.rhaydus.*`): always add the import.
+- Generated types whose names collide may stay qualified: list their package segments in the
+  `.editorconfig` property `rhaydus_fully_qualified_exempt_package_segments` (comma-separated, empty by default).
 
 ```kotlin
 // Bad

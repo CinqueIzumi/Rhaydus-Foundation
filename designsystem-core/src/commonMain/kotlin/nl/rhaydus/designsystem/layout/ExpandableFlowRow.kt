@@ -153,25 +153,12 @@ private fun SubcomposeMeasureScope.measureFlowRow(
     )
 
     val lines = mutableListOf<MutableList<Placeable>>()
-    var overflowed = false
-
-    for (index in 0 until spec.itemCount) {
-        val item = measureSlot(ItemSlot(spec.key?.invoke(index) ?: index), childConstraints) { spec.itemContent(index) } ?: continue
-        val line = breaker.place(
-            width = item.width,
-            hasMore = index < spec.itemCount - 1,
-        )
-
-        if (line == NOT_PLACED) {
-            overflowed = true
-            break
-        }
-
-        lines.addAt(
-            line,
-            item,
-        )
-    }
+    val overflowed = placeItems(
+        spec = spec,
+        breaker = breaker,
+        childConstraints = childConstraints,
+        lines = lines,
+    )
 
     if (overflowed) {
         moreIndicator?.let {
@@ -203,6 +190,34 @@ private fun SubcomposeMeasureScope.measureFlowRow(
         gap = gap,
         constraints = constraints,
     )
+}
+
+/** Measures the items into [lines] until one no longer fits; returns whether that happened. */
+private fun SubcomposeMeasureScope.placeItems(
+    spec: FlowRowSpec,
+    breaker: FlowLineBreaker,
+    childConstraints: Constraints,
+    lines: MutableList<MutableList<Placeable>>,
+): Boolean {
+    for (index in 0 until spec.itemCount) {
+        val item = measureSlot(ItemSlot(spec.key?.invoke(index) ?: index), childConstraints) { spec.itemContent(index) }
+
+        if (item != null) {
+            val line = breaker.place(
+                width = item.width,
+                hasMore = index < spec.itemCount - 1,
+            )
+
+            if (line == NOT_PLACED) return true
+
+            lines.addAt(
+                line,
+                item,
+            )
+        }
+    }
+
+    return false
 }
 
 private fun SubcomposeMeasureScope.layoutLines(

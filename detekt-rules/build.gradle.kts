@@ -30,10 +30,10 @@ tasks.test {
 }
 
 // Repo-wide detekt over the FOUNDATION's own sources, mirroring :ktlint-rules' `ktlintCheck`. Runs the
-// detekt CLI syntactically (no type resolution) with the shared baseline config + the custom `rhaydus`
-// ruleset (discovered via ServiceLoader from this module's output). The `@RequiresTypeResolution` rule
-// is inert on this untyped run and ships for consumers that run type-resolution detekt. `-Pdetekt.root=<dir>`
-// scopes the scan; defaults to the whole repo.
+// detekt CLI in light analysis mode (no type resolution) with the shared baseline config + the custom
+// `rhaydus` ruleset (discovered via ServiceLoader from this module's output). The `RequiresAnalysisApi`
+// rule is skipped on this light run and ships for consumers that run full-analysis detekt.
+// `-Pdetekt.root=<dir>` scopes the scan; defaults to the whole repo.
 val detektCli: Configuration by configurations.creating
 
 dependencies {
@@ -44,9 +44,9 @@ val detektScanRoot = (project.findProperty("detekt.root") as String?) ?: rootDir
 
 tasks.register<JavaExec>("detektCheck") {
     group = "verification"
-    description = "Runs the shared detekt baseline + rhaydus ruleset over the repo (syntactic)."
+    description = "Runs the shared detekt baseline + rhaydus ruleset over the repo (light analysis)."
     classpath = detektCli + sourceSets["main"].output
-    mainClass.set("io.gitlab.arturbosch.detekt.cli.Main")
+    mainClass.set("dev.detekt.cli.Main")
     args(
         "--input",
         detektScanRoot,
@@ -58,6 +58,10 @@ tasks.register<JavaExec>("detektCheck") {
         // config targets library/app Kotlin source, not build configuration. Test sources are excluded too.
         "**/build/**,**/.gradle/**,**/build-logic/**,**/*.gradle.kts,**/src/*[Tt]est*/**",
     )
+}
+
+tasks.named("check") {
+    dependsOn("detektCheck")
 }
 
 // Published as nl.rhaydus:detekt-rules. Consumers add it to the `detektPlugins` configuration and point
@@ -78,7 +82,10 @@ mavenPublishing {
     )
     pom {
         name.set("rhaydus detekt-rules")
-        description.set("Custom detekt ruleset (type-resolved crash-safety rules) plus the shared detekt baseline config for the nl.rhaydus apps.")
+        description.set(
+            "Custom detekt ruleset (type-resolved crash-safety rules) plus the shared detekt baseline config " +
+                "for the nl.rhaydus apps.",
+        )
         url.set("https://github.com/CinqueIzumi/rhaydus-foundation")
         licenses {
             license {

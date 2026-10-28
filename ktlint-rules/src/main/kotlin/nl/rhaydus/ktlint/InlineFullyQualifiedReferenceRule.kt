@@ -8,6 +8,9 @@ import com.pinterest.ktlint.rule.engine.core.api.ElementType.USER_TYPE
 import com.pinterest.ktlint.rule.engine.core.api.Rule
 import com.pinterest.ktlint.rule.engine.core.api.RuleAutocorrectApproveHandler
 import com.pinterest.ktlint.rule.engine.core.api.RuleId
+import com.pinterest.ktlint.rule.engine.core.api.editorconfig.EditorConfig
+import com.pinterest.ktlint.rule.engine.core.api.editorconfig.EditorConfigProperty
+import org.ec4j.core.model.PropertyType
 import org.jetbrains.kotlin.com.intellij.lang.ASTNode
 
 /**
@@ -21,9 +24,10 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
  * top-level package (`androidx`/`android`/`java`/`javax`/`kotlin`/`kotlinx`/`nl.rhaydus`) and reaching an
  * uppercase segment is flagged, so a plain lowercase chain (`kotlinx...flow.first`) is left alone.
  *
- * Exemption: generated Apollo fragment types (`nl.rhaydus.<app>.fragment.*`) are left fully-qualified -
- * their generated names collide (many `*Fragment` types), so referencing them by FQN is deliberate. This
- * is scoped to a `.fragment.` segment under `nl.rhaydus`, so `androidx.fragment.*` is unaffected.
+ * Exemption: the `.editorconfig` property `rhaydus_fully_qualified_exempt_package_segments` lists package
+ * segments (comma-separated, e.g. `fragment`) whose types may stay fully-qualified, for generated code
+ * whose names collide. A reference is exempt when it reaches a type directly under a listed segment. The
+ * list is empty by default, so nothing is exempt unless configured.
  */
 class InlineFullyQualifiedReferenceRule :
     Rule(
@@ -33,8 +37,23 @@ class InlineFullyQualifiedReferenceRule :
             repositoryUrl = "",
             issueTrackerUrl = "",
         ),
+        usesEditorConfigProperties = setOf(EXEMPT_PACKAGE_SEGMENTS_PROPERTY),
     ),
     RuleAutocorrectApproveHandler {
+    private var exemptReference: Regex? = null
+
+    override fun beforeFirstNode(editorConfig: EditorConfig) {
+        val segments =
+            editorConfig[EXEMPT_PACKAGE_SEGMENTS_PROPERTY]
+                .split(',')
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+        exemptReference =
+            segments
+                .takeIf { it.isNotEmpty() }
+                ?.let { Regex("\\.(${it.joinToString("|") { segment -> Regex.escape(segment) }})\\.[A-Z]") }
+    }
+
     override fun beforeVisitChildNodes(
         node: ASTNode,
         emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision,
@@ -48,7 +67,7 @@ class InlineFullyQualifiedReferenceRule :
 
         if (FULLY_QUALIFIED.containsMatchIn(node.text).not()) return
 
-        if (GENERATED_FRAGMENT.containsMatchIn(node.text)) return
+        if (exemptReference?.containsMatchIn(node.text) == true) return
 
         emit(
             node.startOffset,
@@ -71,6 +90,16 @@ class InlineFullyQualifiedReferenceRule :
         val FULLY_QUALIFIED =
             Regex("^(androidx|android|java|javax|kotlin|kotlinx|nl\\.rhaydus)\\.[a-z][A-Za-z0-9_.]*\\.[A-Z]")
 
-        val GENERATED_FRAGMENT = Regex("^nl\\.rhaydus\\.[A-Za-z0-9_.]+\\.fragment\\.[A-Z]")
+        val EXEMPT_PACKAGE_SEGMENTS_PROPERTY =
+            EditorConfigProperty(
+                type =
+                    PropertyType.LowerCasingPropertyType(
+                        "rhaydus_fully_qualified_exempt_package_segments",
+                        "Comma-separated package segments whose types may stay fully-qualified.",
+                        PropertyType.PropertyValueParser.IDENTITY_VALUE_PARSER,
+                        emptySet(),
+                    ),
+                defaultValue = "",
+            )
     }
 }
