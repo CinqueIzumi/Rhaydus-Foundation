@@ -22,6 +22,8 @@ composeBom = "2026.01.01"
 # androidx.compose.ui tooling: pinned (not BOM-managed) because a published module declares these in
 # its POM and Maven Central requires explicit versions. Tracks the compose-bom value above.
 composeUiTooling = "1.10.2"
+# androidx.compose.runtime on the lint-check classpath only (see :toad); its lint.jar must not bundle an old kotlinx-metadata.
+composeRuntimeLint = "1.11.3"
 activityCompose = "1.12.0"
 coreKtx = "1.17.0"
 lifecycleRuntimeKtx = "2.10.0"

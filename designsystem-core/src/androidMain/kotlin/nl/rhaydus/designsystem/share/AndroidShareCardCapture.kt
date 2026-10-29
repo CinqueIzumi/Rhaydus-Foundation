@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -94,7 +95,7 @@ internal class AndroidShareCardCapture internal constructor(
             type = "image/png"
             putExtra(
                 Intent.EXTRA_STREAM,
-                Uri.parse(cached.identifier),
+                cached.identifier.toUri(),
             )
             putExtra(
                 Intent.EXTRA_SUBJECT,

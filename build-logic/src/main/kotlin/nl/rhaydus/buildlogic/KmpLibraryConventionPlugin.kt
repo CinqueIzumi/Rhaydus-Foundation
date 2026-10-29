@@ -1,6 +1,7 @@
 package nl.rhaydus.buildlogic
 
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
+import com.android.build.api.dsl.Lint
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
@@ -35,6 +36,27 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
         with(pluginManager) {
             apply("com.android.kotlin.multiplatform.library")
             apply("org.jetbrains.kotlin.multiplatform")
+            // The KMP library plugin creates lint tasks for `androidMain` only when `com.android.lint` is
+            // also applied; without it only the host-test compilation is analysed.
+            apply("com.android.lint")
+        }
+
+        // The `com.android.lint` plugin's own extension drives the JVM-target lint task; the Android target's
+        // policy is set in the `androidLibrary` block below.
+        extensions.configure<Lint>("lint") {
+            applyRhaydusLintPolicy(target)
+        }
+
+        // A transitive androidx.compose.runtime 1.6.0 (Voyager) ships a lint.jar bundling kotlinx-metadata
+        // 2.0.0, which crashes lint on classes compiled by Kotlin 2.1+. Only the lint-check classpaths are
+        // raised; the compiled dependency graph is unchanged.
+        val composeRuntimeLint = libs.findVersion("composeRuntimeLint").get().requiredVersion
+        configurations.matching { it.name.endsWith("LintChecksClasspath") }.configureEach {
+            resolutionStrategy.eachDependency {
+                if (requested.group == "androidx.compose.runtime") {
+                    useVersion(composeRuntimeLint)
+                }
+            }
         }
 
         extensions.configure<KotlinMultiplatformExtension> {
