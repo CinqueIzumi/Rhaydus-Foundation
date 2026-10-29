@@ -4,9 +4,9 @@
 
 **A shared backbone for Kotlin Multiplatform apps — published libraries, build tooling, conventions, and the Claude Code assets that teach an AI assistant how to use them.**
 
-![Version](https://img.shields.io/badge/version-0.3.2-1f6feb)
+![Version](https://img.shields.io/badge/version-0.4.0-1f6feb)
 ![License](https://img.shields.io/badge/license-MIT-2da44e)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?logo=kotlin&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF?logo=kotlin&logoColor=white)
 ![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Desktop-0a7ea4)
 ![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.11.0-4285F4)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757)
@@ -29,7 +29,7 @@ It ships three things most "shared module" repos don't bother to keep together:
 
 ## What's inside
 
-### Published libraries (`nl.rhaydus:*`, version `0.3.2`)
+### Published libraries (`nl.rhaydus:*`, version `0.4.0`)
 
 | Module | Coordinate | What it gives you |
 |---|---|---|
@@ -71,7 +71,7 @@ An app that wants a different look depends on `designsystem-core` alone and neve
 
 ```bash
 git submodule add https://github.com/CinqueIzumi/rhaydus-foundation.git foundation
-git -C foundation checkout v0.3.2
+git -C foundation checkout v0.4.0
 ```
 
 ```kotlin
