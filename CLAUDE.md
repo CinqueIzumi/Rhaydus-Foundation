@@ -38,7 +38,7 @@ Claude plugin's `plugin.json` version is **locked** to it by the `verifyPluginVe
 
 ```bash
 ./gradlew build                       # all targets (jvm/android/ios) + tests + gates (verifyPluginVersion, ktlint)
-./gradlew :ktlint-rules:ktlintFormat  # auto-fix mechanizable style
+./gradlew ktlintFormat                 # auto-fix mechanizable style
 ./gradlew publishToMavenLocal         # smoke-test the real artifacts before a release
 ```
 

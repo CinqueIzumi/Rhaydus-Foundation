@@ -19,6 +19,8 @@ kotlin {
         commonMain.dependencies {
             // ObserveAsEvents needs LocalLifecycleOwner + repeatOnLifecycle.
             implementation(libs.androidx.lifecycle.runtime.compose)
+            // RhaydusDatePickerDialog reports its pick as a LocalDate.
+            api(libs.kotlinx.datetime)
         }
         androidMain.dependencies {
             // ShareCardCapture (share/): FileProvider + ContextCompat for the Android save/share path,

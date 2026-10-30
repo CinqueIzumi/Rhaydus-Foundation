@@ -29,41 +29,6 @@ tasks.test {
     useJUnitPlatform()
 }
 
-// Repo-wide detekt over the FOUNDATION's own sources, mirroring :ktlint-rules' `ktlintCheck`. Runs the
-// detekt CLI in light analysis mode (no type resolution) with the shared baseline config + the custom
-// `rhaydus` ruleset (discovered via ServiceLoader from this module's output). The `RequiresAnalysisApi`
-// rule is skipped on this light run and ships for consumers that run full-analysis detekt.
-// `-Pdetekt.root=<dir>` scopes the scan; defaults to the whole repo.
-val detektCli: Configuration by configurations.creating
-
-dependencies {
-    detektCli(libs.detekt.cli)
-}
-
-val detektScanRoot = (project.findProperty("detekt.root") as String?) ?: rootDir.absolutePath
-
-tasks.register<JavaExec>("detektCheck") {
-    group = "verification"
-    description = "Runs the shared detekt baseline + rhaydus ruleset over the repo (light analysis)."
-    classpath = detektCli + sourceSets["main"].output
-    mainClass.set("dev.detekt.cli.Main")
-    args(
-        "--input",
-        detektScanRoot,
-        "--config",
-        file("src/main/resources/config/detekt.yml").absolutePath,
-        "--build-upon-default-config",
-        "--excludes",
-        // Exclude generated output, Gradle build scripts, and convention-plugin plumbing - the shared
-        // config targets library/app Kotlin source, not build configuration. Test sources are excluded too.
-        "**/build/**,**/.gradle/**,**/build-logic/**,**/*.gradle.kts,**/src/*[Tt]est*/**",
-    )
-}
-
-tasks.named("check") {
-    dependsOn("detektCheck")
-}
-
 // Published as nl.rhaydus:detekt-rules. Consumers add it to the `detektPlugins` configuration and point
 // detekt at the bundled `config/detekt.yml` (the shared foundation baseline) via `config.from(...)`.
 mavenPublishing {

@@ -14,7 +14,7 @@
   `*UseCase*`, and `no-raw-logging` (use the `AppLog` facade from `nl.rhaydus:core-common`, never `println`
   or `android.util.Log.*`). Cases it does not gate (cross-module mappers, shared components, anything
   subtler) are caught in review.
-- `nl.rhaydus:detekt-rules` (`./gradlew detektCheck`, plus the shared `config/detekt.yml` baseline; detekt 2.0.0-alpha.6, group
+- `nl.rhaydus:detekt-rules` (run by `./gradlew styleCheck`, plus the shared `config/detekt.yml` baseline; detekt 2.0.0-alpha.6, group
   `dev.detekt`) adds the type-resolution checks, notably `UnguardedFlowTerminalRead`: it flags an unguarded `Flow` `first()` /
   `single()` and does not flag the `Collection` operators of the same name.
   - `first` on a hot flow (`SharedFlow` / `StateFlow`) is exempt, so `isOnline.first { it }` is a legal

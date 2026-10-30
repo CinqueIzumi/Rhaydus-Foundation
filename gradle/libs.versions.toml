@@ -40,6 +40,7 @@ ksafe = "2.1.2"
 # Test stack
 jUnitVersion = "5.11.4"
 junitPlatform = "1.11.4"
+konsist = "0.18.1"
 kotestVersion = "5.9.1"
 mockkVersion = "1.13.17"
 turbineVersion = "1.2.0"
@@ -54,6 +55,7 @@ ktlint-cliRulesetCore = { group = "com.pinterest.ktlint", name = "ktlint-cli-rul
 ktlint-test = { group = "com.pinterest.ktlint", name = "ktlint-test", version.ref = "ktlint" }
 detekt-api = { group = "dev.detekt", name = "detekt-api", version.ref = "detekt" }
 detekt-cli = { group = "dev.detekt", name = "detekt-cli", version.ref = "detekt" }
+detekt-gradlePlugin = { group = "dev.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
 detekt-test = { group = "dev.detekt", name = "detekt-test", version.ref = "detekt" }
 
 # Gradle plugin artifacts — consumed by build-logic convention plugins (compileOnly, phase 2)
@@ -102,6 +104,7 @@ junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.r
 junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "jUnitVersion" }
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "jUnitVersion" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatform" }
+konsist = { group = "com.lemonappdev", name = "konsist", version.ref = "konsist" }
 kotest = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotestVersion" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockkVersion" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
@@ -114,4 +117,5 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
 dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" }

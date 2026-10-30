@@ -13,6 +13,7 @@ dependencies {
     compileOnly(libs.compose.compiler.gradlePlugin)
     compileOnly(libs.compose.multiplatform.gradlePlugin)
     compileOnly(libs.dependency.analysis.gradlePlugin)
+    compileOnly(libs.detekt.gradlePlugin)
 
     testImplementation(libs.junit.api)
     testImplementation(libs.kotest)
@@ -52,6 +53,14 @@ gradlePlugin {
         register("moduleGraph") {
             id = "rhaydus.module-graph"
             implementationClass = "nl.rhaydus.buildlogic.ModuleGraphConventionPlugin"
+        }
+        register("style") {
+            id = "rhaydus.style"
+            implementationClass = "nl.rhaydus.buildlogic.StyleConventionPlugin"
+        }
+        register("konsist") {
+            id = "rhaydus.konsist"
+            implementationClass = "nl.rhaydus.buildlogic.KonsistConventionPlugin"
         }
         register("dependencyAnalysis") {
             id = "rhaydus.dependency-analysis"

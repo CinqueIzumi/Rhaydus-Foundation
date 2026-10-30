@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
+import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * Captures a composable (rendered through [CapturableShareCard]) to a bitmap and then saves or shares it.
@@ -28,7 +29,10 @@ interface ShareCardCapture {
  * instance to [CapturableShareCard] to make a card capturable, then call its save/share methods.
  */
 @Composable
-expect fun rememberShareCardCapture(config: ShareCardCaptureConfig): ShareCardCapture
+expect fun rememberShareCardCapture(
+    config: ShareCardCaptureConfig,
+    ioDispatcher: CoroutineDispatcher,
+): ShareCardCapture
 
 internal fun ContentDrawScope.recordAndDraw(graphicsLayer: GraphicsLayer) {
     graphicsLayer.record { this@recordAndDraw.drawContent() }

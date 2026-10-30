@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.io.File
 
@@ -24,12 +24,13 @@ internal class AndroidShareCardCapture internal constructor(
     override val graphicsLayer: GraphicsLayer,
     private val context: Context,
     private val config: ShareCardCaptureConfig,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : ShareCardCapture {
     override suspend fun saveToGallery(displayName: String): SaveOutcome {
         val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
         val filename = buildFilename(displayName = displayName)
 
-        return withContext(Dispatchers.IO) {
+        return withContext(ioDispatcher) {
             runCatching {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     saveViaScopedStorage(
@@ -50,7 +51,7 @@ internal class AndroidShareCardCapture internal constructor(
         val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
         val filename = buildFilename(displayName = displayName)
 
-        return withContext(Dispatchers.IO) {
+        return withContext(ioDispatcher) {
             runCatching {
                 val shareDir = File(
                     context.cacheDir,
@@ -246,15 +247,19 @@ internal class AndroidShareCardCapture internal constructor(
 }
 
 @Composable
-actual fun rememberShareCardCapture(config: ShareCardCaptureConfig): ShareCardCapture {
+actual fun rememberShareCardCapture(
+    config: ShareCardCaptureConfig,
+    ioDispatcher: CoroutineDispatcher,
+): ShareCardCapture {
     val graphicsLayer = rememberGraphicsLayer()
     val context = LocalContext.current
 
-    return remember(graphicsLayer, context, config) {
+    return remember(graphicsLayer, context, config, ioDispatcher) {
         AndroidShareCardCapture(
             graphicsLayer,
             context,
             config,
+            ioDispatcher,
         )
     }
 }

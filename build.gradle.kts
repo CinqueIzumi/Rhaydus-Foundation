@@ -19,8 +19,12 @@ plugins {
     id("rhaydus.module-graph")
     // Root-applied: the shared buildHealth policy for the root and every subproject.
     id("rhaydus.dependency-analysis")
+    // Root-applied: ktlint, type-resolved detekt and `styleCheck` over every module, on the foundation's own rules.
+    id("rhaydus.style")
     // On the root classpath for the convention plugin above, which applies it by id.
     alias(libs.plugins.dependency.analysis) apply false
+    // On the root classpath for rhaydus.style, which applies it to every module by id.
+    alias(libs.plugins.detekt) apply false
 }
 
 val foundationVersion: String = providers.gradleProperty("foundation.version").getOrElse("0.0.0-SNAPSHOT")
@@ -41,6 +45,12 @@ dependencyAnalysis {
             }
         }
     }
+}
+
+// The foundation checks itself with the rules it ships: the jars come straight from the modules.
+rhaydusStyle {
+    detektRules = project(":detekt-rules")
+    ktlintRules = project(":ktlint-rules")
 }
 
 // The foundation's own module-tier DAG (rhaydus.module-graph gate). The core stack (core-common ←

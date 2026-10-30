@@ -11,8 +11,8 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.usePinned
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.jetbrains.skia.EncodedImageFormat
@@ -39,6 +39,7 @@ import platform.darwin.dispatch_get_main_queue
 internal class IosShareCardCapture internal constructor(
     override val graphicsLayer: GraphicsLayer,
     private val config: ShareCardCaptureConfig,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : ShareCardCapture {
     // TODO(iOS): gallery save needs PHPhotoLibrary + NSPhotoLibraryAddUsageDescription; revisit with the permission requester.
     override suspend fun saveToGallery(displayName: String): SaveOutcome =
@@ -48,7 +49,7 @@ internal class IosShareCardCapture internal constructor(
         val pngBytes = capturePngBytes()
             ?: return SaveOutcome.Failure(reason = "Failed to encode share card")
 
-        return withContext(Dispatchers.IO) {
+        return withContext(ioDispatcher) {
             val directory = "${cachesDirectory()}/$SHARE_CACHE_FOLDER"
             NSFileManager.defaultManager.createDirectoryAtPath(
                 path = directory,
@@ -183,13 +184,17 @@ internal class IosShareCardCapture internal constructor(
 }
 
 @Composable
-actual fun rememberShareCardCapture(config: ShareCardCaptureConfig): ShareCardCapture {
+actual fun rememberShareCardCapture(
+    config: ShareCardCaptureConfig,
+    ioDispatcher: CoroutineDispatcher,
+): ShareCardCapture {
     val graphicsLayer = rememberGraphicsLayer()
 
-    return remember(graphicsLayer, config) {
+    return remember(graphicsLayer, config, ioDispatcher) {
         IosShareCardCapture(
             graphicsLayer = graphicsLayer,
             config = config,
+            ioDispatcher = ioDispatcher,
         )
     }
 }

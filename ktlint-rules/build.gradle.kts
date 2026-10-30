@@ -70,25 +70,3 @@ mavenPublishing {
         }
     }
 }
-
-// Repo-wide tasks for linting the FOUNDATION's own sources. `ktlintFormat` autofixes; `ktlintCheck`
-// gates. Both drive the custom ruleset via ktlint's rule-engine — no Spotless/ktlint-gradle plugin,
-// so the ktlint version stays fully under our control. `-Pktlint.root=<dir>` scopes the scan;
-// defaults to the whole repo. Consumers register their own equivalents against the published jar.
-val ktlintScanRoot = (project.findProperty("ktlint.root") as String?) ?: rootDir.absolutePath
-
-tasks.register<JavaExec>("ktlintFormat") {
-    group = "formatting"
-    description = "Auto-fixes the mechanizable layout rules (arg wrapping, trailing commas, blank lines) across the repo."
-    classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set("nl.rhaydus.ktlint.MainKt")
-    args("format", ktlintScanRoot)
-}
-
-tasks.register<JavaExec>("ktlintCheck") {
-    group = "verification"
-    description = "Gates on all custom-ruleset violations (layout + structural rules)."
-    classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set("nl.rhaydus.ktlint.MainKt")
-    args("check", ktlintScanRoot)
-}
