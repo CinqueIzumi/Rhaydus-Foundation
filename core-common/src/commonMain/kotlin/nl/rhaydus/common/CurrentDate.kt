@@ -1,12 +1,12 @@
 package nl.rhaydus.common
 
-import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 /** Today's date in the system time zone. */
 fun currentLocalDate(): LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())

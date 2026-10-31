@@ -17,6 +17,16 @@ class RhaydusRuleSetProvider : RuleSetProvider {
             listOf(
                 ::UnguardedFlowTerminalRead,
                 ::NoReflection,
+                ::FileLevelDpProperty,
+                ::RawSpacingDp,
+                ::RawCornerDp,
+                ::UiModelBuiltInComposable,
+                ::InlineMockkStub,
+                ::UseCaseRunCatching,
+                ::NoRawLogging,
+                ::InlineFullyQualifiedReference,
+                ::NestedCommentInKDoc,
+                ::TestMissingArrangeActAssert,
             ),
         )
 }

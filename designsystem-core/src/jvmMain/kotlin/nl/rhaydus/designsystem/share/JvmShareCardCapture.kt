@@ -10,7 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
-import java.awt.Image as AwtImage
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
@@ -20,6 +19,7 @@ import java.io.File
 import javax.imageio.ImageIO
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
+import java.awt.Image as AwtImage
 
 /**
  * Desktop share-card capture. Compose Desktop renders through Skiko, so the capture path mirrors the iOS
@@ -63,12 +63,14 @@ internal class JvmShareCardCapture internal constructor(
                     System.getProperty("java.io.tmpdir"),
                     "${config.fileNamePrefix}-$SHARE_CACHE_FOLDER",
                 )
+
                 directory.mkdirs()
 
                 val file = File(
                     directory,
                     buildFilename(displayName),
                 )
+
                 file.writeBytes(pngBytes)
 
                 SaveOutcome.Cached(identifier = file.absolutePath)
@@ -115,6 +117,7 @@ internal class JvmShareCardCapture internal constructor(
         val chooser = JFileChooser().apply {
             dialogTitle = "Save share card"
             selectedFile = File(buildFilename(displayName))
+
             fileFilter = FileNameExtensionFilter(
                 "PNG image",
                 "png",

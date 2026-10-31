@@ -14,6 +14,7 @@ dependencies {
     compileOnly(libs.detekt.api)
 
     testImplementation(libs.detekt.test)
+    testImplementation(libs.kotest)
     testImplementation(libs.junit.api)
     testRuntimeOnly(libs.junit.engine)
     testRuntimeOnly(libs.junit.platform.launcher)

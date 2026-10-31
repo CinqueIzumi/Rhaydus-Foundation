@@ -122,6 +122,7 @@ fun Modifier.skeletonMask(
 
             while (phase == SkeletonRevealPhase.Hidden) {
                 val now = withFrameMillis { it }
+
                 phase = skeletonRevealPhase(
                     elapsedMillis = now - startMillis,
                     loadingEndedAtMillis = null,

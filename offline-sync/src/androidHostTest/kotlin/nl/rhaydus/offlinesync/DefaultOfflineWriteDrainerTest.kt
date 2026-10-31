@@ -102,12 +102,14 @@ class DefaultOfflineWriteDrainerTest {
         fun `replays pending writes oldest-first, deletes synced rows and never abandons them`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.enqueue(
                 TestPayload(
                     id = 1,
                     kind = TestKind.UPDATE,
                 ),
             )
+
             store.enqueue(
                 TestPayload(
                     id = 2,
@@ -116,6 +118,7 @@ class DefaultOfflineWriteDrainerTest {
             )
 
             val replayedIds = mutableListOf<Int>()
+
             val drainer = DefaultOfflineWriteDrainer(
                 store = store,
                 networkAvailability = FakeNetworkAvailabilityProvider(),
@@ -135,6 +138,7 @@ class DefaultOfflineWriteDrainerTest {
             store.snapshot() shouldBe emptyList()
             store.deletedIds shouldBe listOf(1L, 2L)
             store.abandonedIds shouldBe emptyList()
+
             hints shouldBe mapOf(
                 1 to setOf(TestKind.UPDATE),
                 2 to setOf(TestKind.DELETE),
@@ -145,6 +149,7 @@ class DefaultOfflineWriteDrainerTest {
         fun `hint buffer is cleared after each drain call`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.enqueue(
                 TestPayload(
                     id = 1,
@@ -173,6 +178,7 @@ class DefaultOfflineWriteDrainerTest {
         fun `DISCARDED outcome deletes the row without abandoning it or recording a hint`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.enqueue(
                 TestPayload(
                     id = 1,
@@ -202,12 +208,14 @@ class DefaultOfflineWriteDrainerTest {
         fun `transient failure halts the drain and leaves later rows untouched`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.enqueue(
                 TestPayload(
                     id = 1,
                     kind = TestKind.UPDATE,
                 ),
             )
+
             store.enqueue(
                 TestPayload(
                     id = 2,
@@ -216,6 +224,7 @@ class DefaultOfflineWriteDrainerTest {
             )
 
             val replayedIds = mutableListOf<Int>()
+
             val drainer = DefaultOfflineWriteDrainer(
                 store = store,
                 networkAvailability = FakeNetworkAvailabilityProvider(),
@@ -234,6 +243,7 @@ class DefaultOfflineWriteDrainerTest {
             // ----- Assert -----
             replayedIds shouldBe listOf(1)
             store.abandonedIds shouldBe emptyList()
+
             store.snapshot() shouldBe listOf(
                 PendingWrite(
                     localId = 1,
@@ -258,12 +268,14 @@ class DefaultOfflineWriteDrainerTest {
         fun `terminal failure deletes the row without abandoning it and the drain continues`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.enqueue(
                 TestPayload(
                     id = 1,
                     kind = TestKind.UPDATE,
                 ),
             )
+
             store.enqueue(
                 TestPayload(
                     id = 2,
@@ -272,6 +284,7 @@ class DefaultOfflineWriteDrainerTest {
             )
 
             val replayedIds = mutableListOf<Int>()
+
             val drainer = DefaultOfflineWriteDrainer(
                 store = store,
                 networkAvailability = FakeNetworkAvailabilityProvider(),
@@ -299,6 +312,7 @@ class DefaultOfflineWriteDrainerTest {
         fun `in-drain backoff retries a failing replay and eventually succeeds`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.enqueue(
                 TestPayload(
                     id = 1,
@@ -307,6 +321,7 @@ class DefaultOfflineWriteDrainerTest {
             )
 
             var callCount = 0
+
             val drainer = DefaultOfflineWriteDrainer(
                 store = store,
                 networkAvailability = FakeNetworkAvailabilityProvider(),
@@ -337,6 +352,7 @@ class DefaultOfflineWriteDrainerTest {
         fun `a row already at the cap is abandoned without replay and the pass continues`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.seed(
                 PendingWrite(
                     localId = 1,
@@ -357,6 +373,7 @@ class DefaultOfflineWriteDrainerTest {
             )
 
             val replayedIds = mutableListOf<Int>()
+
             val drainer = DefaultOfflineWriteDrainer(
                 store = store,
                 networkAvailability = FakeNetworkAvailabilityProvider(),
@@ -384,6 +401,7 @@ class DefaultOfflineWriteDrainerTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
             store.abandonFailure = IllegalStateException("abandon boom")
+
             store.seed(
                 PendingWrite(
                     localId = 1,
@@ -404,6 +422,7 @@ class DefaultOfflineWriteDrainerTest {
             )
 
             val replayedIds = mutableListOf<Int>()
+
             val drainer = DefaultOfflineWriteDrainer(
                 store = store,
                 networkAvailability = FakeNetworkAvailabilityProvider(),
@@ -423,6 +442,7 @@ class DefaultOfflineWriteDrainerTest {
             replayedIds shouldBe listOf(2)
             store.deletedIds shouldBe listOf(2L)
             hints shouldBe mapOf(2 to setOf(TestKind.UPDATE))
+
             store.snapshot() shouldBe listOf(
                 PendingWrite(
                     localId = 1,
@@ -439,6 +459,7 @@ class DefaultOfflineWriteDrainerTest {
         fun `a transient failure reaching the cap increments the attempts, abandons the row and halts`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.seed(
                 PendingWrite(
                     localId = 1,
@@ -459,6 +480,7 @@ class DefaultOfflineWriteDrainerTest {
             )
 
             val replayedIds = mutableListOf<Int>()
+
             val drainer = DefaultOfflineWriteDrainer(
                 store = store,
                 networkAvailability = FakeNetworkAvailabilityProvider(),
@@ -478,6 +500,7 @@ class DefaultOfflineWriteDrainerTest {
             store.incrementedIds shouldBe listOf(1L)
             store.abandonedIds shouldBe listOf(1L)
             replayedIds shouldBe listOf(1)
+
             store.snapshot() shouldBe listOf(
                 PendingWrite(
                     localId = 2,
@@ -495,6 +518,7 @@ class DefaultOfflineWriteDrainerTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
             store.abandonFailure = IllegalStateException("abandon boom")
+
             store.seed(
                 PendingWrite(
                     localId = 1,
@@ -507,6 +531,7 @@ class DefaultOfflineWriteDrainerTest {
             )
 
             var replayCount = 0
+
             val drainer = DefaultOfflineWriteDrainer(
                 store = store,
                 networkAvailability = FakeNetworkAvailabilityProvider(),
@@ -528,6 +553,7 @@ class DefaultOfflineWriteDrainerTest {
             replaysAfterFirstDrain shouldBe 1
             replayCount shouldBe replaysAfterFirstDrain
             store.abandonedIds shouldBe listOf(1L, 1L)
+
             store.snapshot() shouldBe listOf(
                 PendingWrite(
                     localId = 1,
@@ -547,6 +573,7 @@ class DefaultOfflineWriteDrainerTest {
         fun `drains immediately when already online`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.enqueue(
                 TestPayload(
                     id = 1,
@@ -577,6 +604,7 @@ class DefaultOfflineWriteDrainerTest {
         fun `drains again when isOnline flips false to true`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.enqueue(
                 TestPayload(
                     id = 1,
@@ -585,6 +613,7 @@ class DefaultOfflineWriteDrainerTest {
             )
 
             val network = FakeNetworkAvailabilityProvider(initiallyOnline = false)
+
             val drainer = DefaultOfflineWriteDrainer(
                 store = store,
                 networkAvailability = network,
@@ -612,6 +641,7 @@ class DefaultOfflineWriteDrainerTest {
                     ),
                 ),
             )
+
             store.snapshot() shouldBe emptyList()
         }
 
@@ -619,6 +649,7 @@ class DefaultOfflineWriteDrainerTest {
         fun `a drain failure in the background collector does not cancel it`() = runTest {
             // ----- Arrange -----
             val store = FakePendingWriteStore<TestPayload>()
+
             store.enqueue(
                 TestPayload(
                     id = 1,
@@ -628,6 +659,7 @@ class DefaultOfflineWriteDrainerTest {
 
             val network = FakeNetworkAvailabilityProvider(initiallyOnline = true)
             val replayedIds = mutableListOf<Int>()
+
             val drainer = DefaultOfflineWriteDrainer(
                 store = store,
                 networkAvailability = network,
@@ -648,12 +680,14 @@ class DefaultOfflineWriteDrainerTest {
 
             network.isOnline.value = false
             runCurrent()
+
             store.enqueue(
                 TestPayload(
                     id = 2,
                     kind = TestKind.UPDATE,
                 ),
             )
+
             network.isOnline.value = true
             runCurrent()
 

@@ -20,6 +20,7 @@ class ClassFileReaderTest {
             '.',
             '/',
         ) + ".class"
+
         val bytes = type.classLoader.getResourceAsStream(path).shouldNotBeNull().use { it.readBytes() }
 
         directory.resolve(path).apply {
@@ -46,6 +47,7 @@ class ClassFileReaderTest {
             info.superName shouldBe "java.lang.Object"
             info.interfaces shouldContainExactly listOf("java.lang.Runnable")
             info.isConcrete shouldBe true
+
             info.constructors shouldBe setOf(
                 "()V",
                 "(Ljava/lang/String;)V",
@@ -92,10 +94,12 @@ class ClassFileReaderTest {
         fun `reads classes from a jar`() {
             // ----- Arrange -----
             copyClass(ReaderFixture::class.java)
+
             val jar = File(
                 directory,
                 "fixture.jar",
             )
+
             ZipOutputStream(jar.outputStream()).use { zip ->
                 zip.putNextEntry(ZipEntry("nl/rhaydus/buildlogic/ReaderFixture.class"))
                 zip.write(directory.resolve("nl/rhaydus/buildlogic/ReaderFixture.class").readBytes())

@@ -44,6 +44,7 @@ class AndroidSecureStorageTest {
         }
 
         val dispatcher = UnconfinedTestDispatcher()
+
         dispatchers = AppDispatchers(
             main = dispatcher,
             io = dispatcher,
@@ -65,10 +66,13 @@ class AndroidSecureStorageTest {
         every {
             KeyStore.getInstance("AndroidKeyStore")
         } returns keyStore
-        every { keyStore.getKey(
-            "rhaydus_secure_storage",
+
+        every {
+            keyStore.getKey(
+                "rhaydus_secure_storage",
             null,
-        ) } returns secretKey
+        )
+        } returns secretKey
 
         every {
             Cipher.getInstance("AES/GCM/NoPadding")
@@ -79,6 +83,7 @@ class AndroidSecureStorageTest {
         } returns fakeIv
 
         val bytesSlot = slot<ByteArray>()
+
         every {
             cipher.doFinal(capture(bytesSlot))
         } answers { bytesSlot.captured }
@@ -100,6 +105,7 @@ class AndroidSecureStorageTest {
         fun `returns the round-tripped value after write then read`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
+
             storage.write(
                 "my-key",
                 "my-value",
@@ -128,15 +134,18 @@ class AndroidSecureStorageTest {
         fun `returns null and deletes the file when the ciphertext cannot be decrypted`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
+
             val corruptedFile = File(
                 tempDir,
                 "secure_corrupted.enc",
             )
+
             corruptedFile.outputStream().use { output ->
                 output.write(fakeIv.size)
                 output.write(fakeIv)
                 output.write(byteArrayOf(1, 2, 3, 4))
             }
+
             every {
                 cipher.doFinal(any())
             } throws IllegalStateException("bad tag")
@@ -156,6 +165,7 @@ class AndroidSecureStorageTest {
         fun `creates a secure enc file on disk after write`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
+
             val storageFile = File(
                 tempDir,
                 "secure_my_45_key.enc",
@@ -175,6 +185,7 @@ class AndroidSecureStorageTest {
         fun `sanitizes a non-alphanumeric character in the key into its escaped file name`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
+
             val storageFile = File(
                 tempDir,
                 "secure_api_95_key.enc",
@@ -194,6 +205,7 @@ class AndroidSecureStorageTest {
         fun `writing one key does not disturb a value already stored under another key`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
+
             storage.write(
                 "key-a",
                 "value-a",
@@ -217,10 +229,12 @@ class AndroidSecureStorageTest {
         fun `removes the file from disk after delete`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
+
             storage.write(
                 "key-to-delete",
                 "value",
             )
+
             val storageFile = File(
                 tempDir,
                 "secure_key_45_to_45_delete.enc",
@@ -237,10 +251,12 @@ class AndroidSecureStorageTest {
         fun `read returns null for a key after it has been deleted`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
+
             storage.write(
                 "key-to-delete",
                 "value",
             )
+
             storage.delete("key-to-delete")
 
             // ----- Act -----
@@ -254,10 +270,12 @@ class AndroidSecureStorageTest {
         fun `deleting one key does not disturb a value stored under another key`() = runTest {
             // ----- Arrange -----
             val storage = buildStorage()
+
             storage.write(
                 "key-a",
                 "value-a",
             )
+
             storage.write(
                 "key-b",
                 "value-b",

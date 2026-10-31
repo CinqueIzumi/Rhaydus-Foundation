@@ -11,8 +11,10 @@ internal data class DocBudgets(
         fun parse(text: String): DocBudgets {
             val rules = mutableListOf<BudgetRule>()
             var nowLimit: Long? = null
+
             text.lineSequence().forEach { rawLine ->
                 val line = rawLine.trim()
+
                 when {
                     line.isBlank() -> Unit
                     line.startsWith("## Now") -> nowLimit = parseLimit(line.split(WHITESPACE).last()).first
@@ -20,6 +22,7 @@ internal data class DocBudgets(
                     else -> {
                         val fields = line.split(WHITESPACE)
                         val (limit, unit) = parseLimit(fields.last())
+
                         rules += BudgetRule(
                             fields.first(),
                             fields.last(),
@@ -29,6 +32,7 @@ internal data class DocBudgets(
                     }
                 }
             }
+
             return DocBudgets(
                 rules,
                 nowLimit,

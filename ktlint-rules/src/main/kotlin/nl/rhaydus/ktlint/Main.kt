@@ -1,7 +1,3 @@
-// This is the ktlint CLI entrypoint: stdout is its report channel and stderr its failure summary, so
-// the println / System.err.println calls below are the tool's output, not stray app logging.
-@file:Suppress("ktlint:rhaydus:no-raw-logging")
-
 package nl.rhaydus.ktlint
 
 import com.pinterest.ktlint.rule.engine.api.Code
@@ -20,20 +16,15 @@ import kotlin.system.exitProcess
 private val ruleProviders: Set<RuleProvider> =
     setOf(
         RuleProvider { MultiArgWrappingRule() },
+        RuleProvider { TrailingLambdaBraceRule() },
         RuleProvider { TrailingCommaRule() },
         RuleProvider { BooleanNotationRule() },
-        RuleProvider { BlankLineAfterStatementRule() },
+        RuleProvider { StatementParagraphRule() },
         RuleProvider { RegionCommentFlushRule() },
         RuleProvider { BraceBlankLineRule() },
         RuleProvider { SiblingComposableBlankLineRule() },
-        RuleProvider { VisibilityModifierRule() },
-        RuleProvider { OneTypePerFileRule() },
-        RuleProvider { InlineFullyQualifiedReferenceRule() },
-        RuleProvider { ProjectImportOrderRule() },
+        RuleProvider { ImportLayoutRule() },
         RuleProvider { NoUnusedImportsRule() },
-        RuleProvider { InlineMockkStubRule() },
-        RuleProvider { UseCaseRunCatchingRule() },
-        RuleProvider { NoRawLoggingRule() },
     )
 
 fun main(args: Array<String>) {
@@ -54,10 +45,12 @@ fun main(args: Array<String>) {
 
     files.forEach { file ->
         val code = Code.fromFile(file)
+
         when (mode) {
             "format" -> {
                 val original = file.readText()
                 val formatted = engine.format(code) { AutocorrectDecision.ALLOW_AUTOCORRECT }
+
                 if (formatted != original) {
                     file.writeText(formatted)
                     println("formatted: ${file.path}")

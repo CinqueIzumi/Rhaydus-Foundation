@@ -32,7 +32,9 @@ class BooleanNotationRule :
         if (node.elementType != PREFIX_EXPRESSION) return
 
         val operator = node.firstChildNode
+
         if (operator?.elementType != OPERATION_REFERENCE) return
+
         if (operator.firstChildNode?.elementType != EXCL) return
 
         emit(

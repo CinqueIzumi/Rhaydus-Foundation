@@ -34,8 +34,11 @@ internal data class DocGuardConfig(
 
         fun load(file: File): DocGuardConfig {
             if (file.isFile.not()) return DISABLED
+
             val root = JsonSlurper().parse(file) as? Map<*, *> ?: return DISABLED
+
             val section = root["docGuard"] as? Map<*, *> ?: return DISABLED
+
             return DocGuardConfig(
                 budgetsFile = section["budgetsFile"] as? String,
                 activeFile = section["activeFile"] as? String,

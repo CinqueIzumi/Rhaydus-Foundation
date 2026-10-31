@@ -24,9 +24,6 @@ import androidx.compose.ui.unit.dp
 /** Lines shown before any expansion, when a caller doesn't specify one. */
 private const val DEFAULT_COLLAPSED_LINES = 2
 
-/** Default gap between wrapped items. */
-private val FlowGap = 8.dp
-
 private const val MORE_SLOT = "expandableFlowRow.more"
 
 private const val LESS_SLOT = "expandableFlowRow.less"
@@ -64,8 +61,8 @@ fun ExpandableFlowRow(
     collapsedLines: Int = DEFAULT_COLLAPSED_LINES,
     expansion: FlowRowExpansion = FlowRowExpansion.Progressive(),
     collapsible: Boolean = false,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(FlowGap),
-    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(FlowGap),
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(8.dp),
+    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(8.dp),
     showMoreLabel: String = "Show more",
     showLessLabel: String = "Show less",
     showMoreIndicator: @Composable (onExpand: () -> Unit) -> Unit = { onExpand ->
@@ -153,6 +150,7 @@ private fun SubcomposeMeasureScope.measureFlowRow(
     )
 
     val lines = mutableListOf<MutableList<Placeable>>()
+
     val overflowed = placeItems(
         spec = spec,
         breaker = breaker,
@@ -229,6 +227,7 @@ private fun SubcomposeMeasureScope.layoutLines(
     val width = constraints.constrainWidth(
         lines.maxOfOrNull { line -> line.sumOf { it.width } + gap * (line.size - 1) } ?: 0,
     )
+
     val lineHeights = IntArray(lines.size) { index -> lines[index].maxOf { it.height } }
     val rowGap = spec.verticalArrangement.spacing.roundToPx()
     val height = constraints.constrainHeight(lineHeights.sum() + rowGap * (lines.size - 1).coerceAtLeast(0))

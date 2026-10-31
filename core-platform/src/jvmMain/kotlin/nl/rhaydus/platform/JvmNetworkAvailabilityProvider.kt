@@ -8,11 +8,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import nl.rhaydus.common.AppDispatchers
+import nl.rhaydus.common.runCatchingCancellable
 import java.net.InetSocketAddress
 import java.net.Socket
 import kotlin.time.Duration.Companion.seconds
-import nl.rhaydus.common.AppDispatchers
-import nl.rhaydus.common.runCatchingCancellable
 
 /**
  * Desktop connectivity provider. The JDK exposes no network-change callback (unlike Android's

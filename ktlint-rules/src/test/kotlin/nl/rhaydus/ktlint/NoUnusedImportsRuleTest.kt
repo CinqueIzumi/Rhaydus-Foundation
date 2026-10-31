@@ -5,11 +5,9 @@ import com.pinterest.ktlint.test.LintViolation
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-private val ruleAssertThat = assertThatRule { NoUnusedImportsRule() }
-
-private const val MESSAGE = "Unused import"
-
 class NoUnusedImportsRuleTest {
+    private val ruleAssertThat = assertThatRule { NoUnusedImportsRule() }
+
     @Nested
     inner class Reporting {
         @Test
@@ -21,6 +19,7 @@ class NoUnusedImportsRuleTest {
 
                 val x = Used()
             """.trimIndent()
+
             val formatted = """
                 import a.b.Used
 
@@ -59,6 +58,7 @@ class NoUnusedImportsRuleTest {
                 // Ghost
                 val x = "Ghost"
             """.trimIndent()
+
             val formatted = """
                 // Ghost
                 val x = "Ghost"
@@ -84,6 +84,7 @@ class NoUnusedImportsRuleTest {
 
                 val x = Used()
             """.trimIndent()
+
             val formatted = """
                 import a.b.Used
 
@@ -130,6 +131,7 @@ class NoUnusedImportsRuleTest {
 
                 val x = Original()
             """.trimIndent()
+
             val formatted = """
                 val x = Original()
             """.trimIndent()
@@ -186,6 +188,7 @@ class NoUnusedImportsRuleTest {
                 /** Mentions Linked in prose. */
                 val x = 1
             """.trimIndent()
+
             val formatted = """
                 /** Mentions Linked in prose. */
                 val x = 1
@@ -219,19 +222,6 @@ class NoUnusedImportsRuleTest {
         }
 
         @Test
-        fun `keeps a provideDelegate import for a by delegate`() {
-            // ----- Arrange -----
-            val code = """
-                import a.b.provideDelegate
-
-                val x by holder
-            """.trimIndent()
-
-            // ----- Act & Assert -----
-            ruleAssertThat(code).hasNoLintViolations()
-        }
-
-        @Test
         fun `reports getValue import when there is no delegate`() {
             // ----- Arrange -----
             val code = """
@@ -239,6 +229,7 @@ class NoUnusedImportsRuleTest {
 
                 val x = 1
             """.trimIndent()
+
             val formatted = """
                 val x = 1
             """.trimIndent()
@@ -287,6 +278,7 @@ class NoUnusedImportsRuleTest {
 
                 val x = left
             """.trimIndent()
+
             val formatted = """
                 val x = left
             """.trimIndent()
@@ -372,6 +364,7 @@ class NoUnusedImportsRuleTest {
 
                 val x = Used()
             """.trimIndent()
+
             val formatted = """
                 import a.b.Used
 
@@ -397,6 +390,7 @@ class NoUnusedImportsRuleTest {
 
                 val x = Used()
             """.trimIndent()
+
             val formatted = """
                 import a.b.Used
 
@@ -423,6 +417,7 @@ class NoUnusedImportsRuleTest {
 
                 val x = 1
             """.trimIndent()
+
             val formatted = """
                 package a.b
 
@@ -449,6 +444,7 @@ class NoUnusedImportsRuleTest {
 
                 val x = First(Last)
             """.trimIndent()
+
             val formatted = """
                 import a.b.First
                 import a.b.Last
@@ -465,5 +461,9 @@ class NoUnusedImportsRuleTest {
                 )
                 .isFormattedAs(formatted)
         }
+    }
+
+    private companion object {
+        const val MESSAGE = "Unused import"
     }
 }

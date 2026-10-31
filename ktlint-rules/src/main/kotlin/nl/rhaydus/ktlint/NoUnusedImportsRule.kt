@@ -68,13 +68,17 @@ class NoUnusedImportsRule :
         if (node.elementType != FILE) return
 
         val importList = node.findChildByType(IMPORT_LIST) ?: return
+
         val imports = importList.getChildren(null).filter { it.elementType == IMPORT_DIRECTIVE }
+
         if (imports.isEmpty()) return
 
         val usedNames = node.collectUsedNames()
+
         val unused =
             imports.filter { directive ->
                 val psi = directive.psi as? KtImportDirective ?: return@filter false
+
                 if (psi.isAllUnder) return@filter false
 
                 val name = psi.aliasName ?: psi.importedFqName?.shortName()?.asString() ?: return@filter false
@@ -134,6 +138,7 @@ class NoUnusedImportsRule :
     private fun ASTNode.removeImport(importList: ASTNode) {
         val previous = treePrev?.takeIf { it.elementType == WHITE_SPACE }
         val next = treeNext?.takeIf { it.elementType == WHITE_SPACE }
+
         val separator =
             when {
                 previous == null -> next
@@ -143,6 +148,7 @@ class NoUnusedImportsRule :
             }
 
         val remaining = importList.getChildren(null).count { it.elementType == IMPORT_DIRECTIVE }
+
         if (remaining == 1) {
             val after = importList.treeNext?.takeIf { it.elementType == WHITE_SPACE }
             importList.treeParent.removeChild(importList)

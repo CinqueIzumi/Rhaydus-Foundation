@@ -38,6 +38,7 @@ class PickerDatesTest {
                 6,
                 15,
             )
+
             val millis = date.toPickerMillis()
 
             // ----- Act -----
@@ -55,6 +56,7 @@ class PickerDatesTest {
                 2,
                 29,
             )
+
             val millis = date.toPickerMillis()
 
             // ----- Act -----
@@ -75,6 +77,7 @@ class PickerDatesTest {
                 6,
                 15,
             )
+
             val millis = expected.toPickerMillis()
             val newYork = TimeZone.of("America/New_York")
 
@@ -88,6 +91,7 @@ class PickerDatesTest {
                 6,
                 14,
             )
+
             pickerDecode shouldBe expected
         }
     }

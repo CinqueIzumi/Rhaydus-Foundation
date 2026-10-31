@@ -12,13 +12,16 @@ internal object DocCommentExtractors {
      */
     fun kotlinStyle(line: String): String? {
         val trimmed = line.trimStart()
+
         if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/**")) return trimmed
 
         var inString = false
         var inChar = false
         var index = 0
+
         while (index < line.length) {
             val char = line[index]
+
             when {
                 inString && char == '\\' -> index += 2
                 inString && char == '"' -> {
@@ -50,6 +53,7 @@ internal object DocCommentExtractors {
                 else -> index += 1
             }
         }
+
         return null
     }
 
@@ -60,8 +64,10 @@ internal object DocCommentExtractors {
     fun yamlStyle(line: String): String? {
         var quote: Char? = null
         var index = 0
+
         while (index < line.length) {
             val char = line[index]
+
             when (quote) {
                 '\'' -> when {
                     char != '\'' -> index += 1
@@ -95,6 +101,7 @@ internal object DocCommentExtractors {
                 }
             }
         }
+
         return null
     }
 }

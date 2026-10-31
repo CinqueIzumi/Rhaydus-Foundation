@@ -29,10 +29,12 @@ internal fun Project.applyComposeStabilityGate() {
     val androidMainInfo = layout.buildDirectory.file("stability/compileAndroidMain/stability-info.json")
     val dumps = tasks.withType<StabilityDumpTask>().matching { it.name.startsWith("androidMain") }
     val checks = tasks.withType<StabilityCheckTask>().matching { it.name.startsWith("androidMain") }
+
     afterEvaluate {
         dumps.configureEach { stabilityInputFiles.setFrom(androidMainInfo) }
         checks.configureEach { stabilityInputFiles.setFrom(androidMainInfo) }
     }
+
     dumps.configureEach { dependsOn("compileAndroidMain") }
     checks.configureEach { dependsOn("compileAndroidMain") }
 }

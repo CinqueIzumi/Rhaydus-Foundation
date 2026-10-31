@@ -66,6 +66,7 @@ fun Modifier.hoverHighlight(
 ): Modifier {
     val isHovered by interactionSource.collectIsHoveredAsState()
     val playMotion = playDecorativeMotion()
+
     val alpha by animateFloatAsState(
         targetValue = if (isHovered && playMotion) 1f else 0f,
         label = "hoverHighlight",
@@ -107,6 +108,7 @@ fun Modifier.shimmer(shape: Shape = RectangleShape): Modifier {
     )
 
     val transition = rememberInfiniteTransition(label = "Shimmer")
+
     val translateAnim by transition.animateFloat(
         initialValue = -400f,
         targetValue = 1200f,
@@ -164,6 +166,7 @@ fun Modifier.grayscale(): Modifier {
                 ),
                 paint = paint,
             )
+
             drawContent()
             canvas.restore()
         }

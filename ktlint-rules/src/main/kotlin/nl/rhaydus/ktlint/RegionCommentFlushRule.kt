@@ -28,10 +28,12 @@ class RegionCommentFlushRule :
         emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision,
     ) {
         if (node.elementType != EOL_COMMENT) return
+
         val text = node.text.trimStart(
             '/',
             ' ',
         )
+
         if (text.startsWith("region").not() && text.startsWith("endregion").not()) return
 
         val before = node.treePrev

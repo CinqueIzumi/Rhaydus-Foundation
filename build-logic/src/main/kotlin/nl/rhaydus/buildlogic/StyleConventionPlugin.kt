@@ -4,6 +4,7 @@ import dev.detekt.gradle.Detekt
 import dev.detekt.gradle.extensions.DetektExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.provider.Provider
@@ -52,6 +53,7 @@ class StyleConventionPlugin : Plugin<Project> {
                 )
             },
         )
+
         ktlintRules.dependencies.addLater(
             target.provider {
                 target.rulesDependency(
@@ -71,6 +73,7 @@ class StyleConventionPlugin : Plugin<Project> {
             from(detektConfig.elements.map { jars -> jars.map { target.zipTree(it.asFile) } }) {
                 include("config/detekt.yml")
             }
+
             into(target.layout.buildDirectory.dir("rhaydus-detekt"))
         }
 
@@ -85,11 +88,13 @@ class StyleConventionPlugin : Plugin<Project> {
             description = "Runs ktlintCheck and type-resolved detekt (shared baseline + rhaydus ruleset) across all modules."
 
             dependsOn(target.tasks.named("ktlintCheck"))
+
             dependsOn(
                 Callable {
-                    target.subprojects.map { sub -> sub.tasks.matching { it.name in TYPE_RESOLVED_TASKS } }
+                    target.subprojects.map { sub -> sub.tasks.matching { isTypeResolved(it) } }
                 },
             )
+
             dependsOn(
                 Callable {
                     target.subprojects.map { sub -> sub.tasks.matching { it.name in style.extraStyleTasks } }
@@ -157,6 +162,7 @@ class StyleConventionPlugin : Plugin<Project> {
                     },
                 )
             }
+
             if (isRuleProject.not()) {
                 style.detektRuleProjects.forEach {
                     dependencies.add(
@@ -168,17 +174,20 @@ class StyleConventionPlugin : Plugin<Project> {
 
             extensions.configure<DetektExtension> {
                 buildUponDefaultConfig.set(true)
+
                 // Layered, later wins: the shared baseline, then the project's own deltas.
                 config.setFrom(
                     listOf(rootProject.layout.buildDirectory.file("rhaydus-detekt/config/detekt.yml")) +
                         style.detektConfigFiles +
                         style.appDetektConfigFiles.takeIf { isRuleProject.not() }.orEmpty(),
                 )
+
                 parallel.set(true)
             }
 
             tasks.withType<Detekt>().configureEach {
                 dependsOn(extractDetektConfig)
+
                 reports {
                     html.required.set(true)
                     checkstyle.required.set(true)
@@ -224,6 +233,7 @@ class StyleConventionPlugin : Plugin<Project> {
             tasks.matching { it.name == "detektMain" && it !is Detekt }.configureEach {
                 doFirst {
                     val variantTasks = taskDependencies.getDependencies(this).filterIsInstance<Detekt>()
+
                     check(variantTasks.isNotEmpty()) {
                         "No type-resolved detekt<Variant> task is registered for $path; " +
                             "the detekt gate would pass vacuously."
@@ -239,7 +249,7 @@ class StyleConventionPlugin : Plugin<Project> {
             }
 
             tasks.matching { it.name == "check" }.configureEach {
-                dependsOn(tasks.matching { it.name in TYPE_RESOLVED_TASKS })
+                dependsOn(tasks.matching { isTypeResolved(it) })
                 dependsOn(rootProject.tasks.named("ktlintCheck"))
             }
         }
@@ -260,14 +270,30 @@ class StyleConventionPlugin : Plugin<Project> {
         }
     }
 
+    /**
+     * True for the type-resolved detekt tasks. `detektTest` counts only on a plain `kotlin("jvm")` module,
+     * where it is the `test` source set; elsewhere it is a lifecycle over variant tasks that the Android and
+     * KMP wiring already covers or deliberately leaves out.
+     */
+    private fun isTypeResolved(task: Task): Boolean {
+        return task.name in TYPE_RESOLVED_TASKS ||
+            (task.name == "detektTest" && task.project.pluginManager.hasPlugin(KOTLIN_JVM_PLUGIN))
+    }
+
     private companion object {
+        const val KOTLIN_JVM_PLUGIN = "org.jetbrains.kotlin.jvm"
         const val DETEKT_CONFIG = "rhaydusDetektConfig"
         const val KTLINT_RULES = "ktlintRules"
         const val KTLINT_MAIN = "nl.rhaydus.ktlint.MainKt"
 
         // The detekt tasks that carry TYPE RESOLUTION, by module shape: KMP libraries get one task per
         // compilation, the Android application gets a `detektMain` lifecycle over its variants, and plain
-        // JVM modules get `detektMain` for the main compilation.
-        val TYPE_RESOLVED_TASKS = setOf("detektMainAndroid", "detektMainJvm", "detektMain", "detektHostTestAndroid")
+        // JVM modules get `detektMain` for the main compilation and `detektTest` for the `test` source set.
+        val TYPE_RESOLVED_TASKS = setOf(
+            "detektMainAndroid",
+            "detektMainJvm",
+            "detektMain",
+            "detektHostTestAndroid",
+        )
     }
 }

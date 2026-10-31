@@ -21,6 +21,7 @@ class FlowLineBreakerTest {
         fun `keeps an item on the current line when it fits exactly including the gap`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 2)
+
             breaker.place(
                 width = 60,
                 hasMore = false,
@@ -40,6 +41,7 @@ class FlowLineBreakerTest {
         fun `wraps to a new line when the gap pushes the item over the width`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 2)
+
             breaker.place(
                 width = 60,
                 hasMore = false,
@@ -59,10 +61,12 @@ class FlowLineBreakerTest {
         fun `measures the next item against the new line after wrapping`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 3)
+
             breaker.place(
                 width = 60,
                 hasMore = false,
             )
+
             breaker.place(
                 width = 50,
                 hasMore = false,
@@ -82,6 +86,7 @@ class FlowLineBreakerTest {
         fun `returns NOT_PLACED when the last line is full`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 1)
+
             breaker.place(
                 width = 60,
                 hasMore = false,
@@ -101,10 +106,12 @@ class FlowLineBreakerTest {
         fun `places an item on the last line when nothing follows it`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 1)
+
             breaker.place(
                 width = 50,
                 hasMore = false,
             )
+
             breaker.place(
                 width = 10,
                 hasMore = false,
@@ -124,10 +131,12 @@ class FlowLineBreakerTest {
         fun `does not place an item that would crowd out the indicator on the last line`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 1)
+
             breaker.place(
                 width = 50,
                 hasMore = true,
             )
+
             breaker.place(
                 width = 10,
                 hasMore = true,
@@ -147,6 +156,7 @@ class FlowLineBreakerTest {
         fun `places an item that leaves exactly the indicator width free`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 1)
+
             breaker.place(
                 width = 50,
                 hasMore = true,
@@ -166,6 +176,7 @@ class FlowLineBreakerTest {
         fun `does not start the last line with an item that leaves no room for the indicator`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 2)
+
             breaker.place(
                 width = 60,
                 hasMore = true,
@@ -185,6 +196,7 @@ class FlowLineBreakerTest {
         fun `starts the last line with an item that leaves room for the indicator`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 2)
+
             breaker.place(
                 width = 60,
                 hasMore = true,
@@ -219,6 +231,7 @@ class FlowLineBreakerTest {
         fun `wraps the item after an oversized first item`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 2)
+
             breaker.place(
                 width = 150,
                 hasMore = false,
@@ -238,6 +251,7 @@ class FlowLineBreakerTest {
         fun `stops placing after an oversized first item on a single line`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 1)
+
             breaker.place(
                 width = 150,
                 hasMore = true,
@@ -260,6 +274,7 @@ class FlowLineBreakerTest {
         fun `joins the current line when it fits`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 2)
+
             breaker.place(
                 width = 50,
                 hasMore = false,
@@ -276,6 +291,7 @@ class FlowLineBreakerTest {
         fun `wraps to a new line when it does not fit`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 2)
+
             breaker.place(
                 width = 50,
                 hasMore = false,
@@ -304,6 +320,7 @@ class FlowLineBreakerTest {
         fun `ignores the line limit`() {
             // ----- Arrange -----
             val breaker = breaker(maxLines = 1)
+
             breaker.place(
                 width = 95,
                 hasMore = false,

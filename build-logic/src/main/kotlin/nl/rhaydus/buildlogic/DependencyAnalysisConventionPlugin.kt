@@ -47,16 +47,20 @@ class DependencyAnalysisConventionPlugin : Plugin<Project> {
                         severity("fail")
                         exclude(*UNUSED_EXCLUSIONS)
                     }
+
                     onIncorrectConfiguration {
                         severity("fail")
                         exclude(*INCORRECT_CONFIGURATION_EXCLUSIONS)
                     }
+
                     onUsedTransitiveDependencies {
                         severity("ignore")
                     }
+
                     onRuntimeOnly {
                         severity("ignore")
                     }
+
                     onRedundantPlugins {
                         severity("ignore")
                     }

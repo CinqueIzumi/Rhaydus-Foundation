@@ -33,6 +33,7 @@ private const val PRESS_SCALE_TARGET = 0.97f
 @Composable
 fun Modifier.pressScale(interactionSource: InteractionSource): Modifier {
     val isPressed by interactionSource.collectIsPressedAsState()
+
     val scale by animateFloatAsState(
         targetValue = if (isPressed) PRESS_SCALE_TARGET else 1f,
         animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),

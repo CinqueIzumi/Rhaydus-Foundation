@@ -9,11 +9,12 @@
 
 - `nl.rhaydus:ktlint-rules` (package `nl.rhaydus.ktlint`) enforces mechanizable style.
   `./gradlew ktlintFormat` auto-fixes; `./gradlew ktlintCheck` verifies.
-- The ktlint ruleset gates: the uniformly-internal visibility categories, one-type-per-file, no inline
-  fully-qualified references, unused imports, project-import order, no inline mockk stubs, no bare `runCatching` in a
-  `*UseCase*`, and `no-raw-logging` (use the `AppLog` facade from `nl.rhaydus:core-common`, never `println`
-  or `android.util.Log.*`). Cases it does not gate (cross-module mappers, shared components, anything
-  subtler) are caught in review.
+- The ktlint ruleset is a formatter: every rule auto-fixes (argument wrapping, trailing commas, lambda braces,
+  paragraph and brace blank lines, sibling composables, import layout, unused imports). Declaration and
+  semantic rules live in `detekt-rules` (no inline mockk stubs, no bare `runCatching` in a `*UseCase*`, no raw
+  logging through the `AppLog` facade from `nl.rhaydus:core-common`, no inline fully-qualified references) and
+  `konsist-rules` (one type per file, uniformly-internal visibility). Cases no tool gates (cross-module
+  mappers, shared components, anything subtler) are caught in review.
 - `nl.rhaydus:detekt-rules` (run by `./gradlew styleCheck`, plus the shared `config/detekt.yml` baseline; detekt 2.0.0-alpha.6, group
   `dev.detekt`) adds the type-resolution checks, notably `UnguardedFlowTerminalRead`: it flags an unguarded `Flow` `first()` /
   `single()` and does not flag the `Collection` operators of the same name.
@@ -230,7 +231,7 @@ val message = if (progress.isOnTrack) "You're on track."
 `Screen(state: FooUiState, …)` member composable whose `FooUiState` is internal). Fix it at the member;
 never re-widen the type.
 
-- The `nl.rhaydus.ktlint` visibility-modifier rule (`ktlintCheck` / `check`) gates the
+- The `nl.rhaydus:konsist-rules` plumbing assertion (`assertPlumbingIsInternal`) gates the
   uniformly-internal categories (the `*Action` / `*Event` / `*UiState` / `*LocalVariables` /
   `*ScreenModel` / `*Dependencies` / `flows` / `*Impl` suffixes in their packages). Other cases are
   caught in review.
@@ -457,9 +458,14 @@ class Example {
 
 ## Import Ordering
 
-1. Android / AndroidX imports
-2. Third-party libraries (Kotlin stdlib, Coroutines, Ktor, Koin, Compose, etc.)
-3. Project-specific imports (`nl.rhaydus.*`)
+Imports follow the layout in the `.editorconfig` property `ij_kotlin_imports_layout`, the value IntelliJ's
+Optimize Imports reads. The default is `*,java.**,javax.**,kotlin.**,^`:
+
+1. Every other import, ASCII-sorted by path in one block with no blank lines.
+2. `java.*`, then `javax.*`, then `kotlin.*`.
+3. Aliased imports (`import a.B as C`) in their own trailing bucket (`^`).
+
+`ktlintFormat` sorts the whole block; `ktlintCheck` gates it.
 
 Remove unused imports (`ktlintFormat` does it; the rule is syntactic and never reports wildcard imports).
 

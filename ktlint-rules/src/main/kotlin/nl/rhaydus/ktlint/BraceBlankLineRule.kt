@@ -38,6 +38,7 @@ class BraceBlankLineRule :
         when (node.elementType) {
             LBRACE -> {
                 if (isSealedClassBody(node)) return
+
                 if ((node.treeNext?.newlineCount() ?: 0) < 2) return
 
                 emit(
@@ -65,10 +66,15 @@ class BraceBlankLineRule :
 
     private fun isSealedClassBody(lbrace: ASTNode): Boolean {
         val body = lbrace.treeParent
+
         if (body?.elementType != CLASS_BODY) return false
+
         val classNode = body.treeParent
+
         if (classNode?.elementType != CLASS) return false
+
         val modifiers = classNode.children().firstOrNull { it.elementType == MODIFIER_LIST } ?: return false
+
         return modifiers.children().any { it.elementType == SEALED_KEYWORD }
     }
 }

@@ -46,6 +46,7 @@ class AndroidNetworkAvailabilityProvider(context: Context) : BaseNetworkAvailabi
 
     private fun initialOnlineState(): Boolean {
         val active = connectivityManager?.activeNetwork ?: return false
+
         val caps = connectivityManager.getNetworkCapabilities(active)
 
         return caps.isUsableInternet()

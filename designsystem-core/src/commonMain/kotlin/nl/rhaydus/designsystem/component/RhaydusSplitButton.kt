@@ -62,10 +62,12 @@ fun RhaydusSplitButton(
     // outer corners (half the button height) makes every corner size-independent.
     val corners = splitButtonCornersFor(size = size)
     val leadingButtonShapes = leadingShapesFrom(corners)
+
     val leadingButtonContentPadding =
         SplitButtonDefaults.leadingButtonContentPaddingFor(buttonHeight = size.height)
 
     val trailingButtonShapes = trailingShapesFrom(corners)
+
     val trailingButtonContentPadding =
         SplitButtonDefaults.trailingButtonContentPaddingFor(buttonHeight = size.height)
 

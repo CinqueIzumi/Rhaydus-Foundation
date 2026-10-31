@@ -93,6 +93,7 @@ class DocGuardConfigTest {
                 decisionPattern = """\bDEC-[0-9]+\b""",
                 stepPattern = """\bSTEP-[0-9]+\b""",
             )
+
             config.isEnabled.shouldBeTrue()
         }
 

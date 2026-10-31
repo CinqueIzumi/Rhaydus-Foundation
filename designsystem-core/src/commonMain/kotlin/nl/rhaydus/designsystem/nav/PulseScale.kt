@@ -48,10 +48,12 @@ fun rememberPulseScaleProvider(
         if (playMotion.not()) return@LaunchedEffect
 
         scale.snapTo(targetValue = 1f)
+
         scale.animateTo(
             targetValue = peakScale,
             animationSpec = peakSpec,
         )
+
         scale.animateTo(
             targetValue = 1f,
             animationSpec = settleSpec,

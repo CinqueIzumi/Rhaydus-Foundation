@@ -45,6 +45,7 @@ class KmpComposeConventionPlugin : Plugin<Project> {
                 // pin the alpha material3 artifact explicitly (see the catalog note).
                 implementation(libs.library("compose-material3-expressive"))
             }
+
             sourceSets.getByName("androidMain").dependencies {
                 implementation(libs.library("androidx-activity-compose"))
                 // These androidx tooling artifacts are pinned (versioned in the catalog) rather than

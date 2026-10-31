@@ -84,7 +84,9 @@ class ModuleGraphConventionPlugin : Plugin<Project> {
                     if (toPath == fromPath) return@edge
 
                     val fromTier = extension.tierOf(fromPath) ?: return@edge
+
                     val targetTier = extension.tierOf(toPath) ?: return@edge
+
                     edges++
 
                     val allowedTiers = extension.allowedTargetTiers[fromTier].orEmpty()
@@ -136,6 +138,7 @@ class ModuleGraphConventionPlugin : Plugin<Project> {
                     if (extension.tierOf(fromPath) == null) return@external
 
                     val bannedGroups = extension.bannedExternalGroups[fromPath] ?: return@external
+
                     val coordinate = "$group:$name"
 
                     if (coordinate in extension.ignoredExternalCoordinates) return@external

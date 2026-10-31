@@ -51,6 +51,7 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
         // 2.0.0, which crashes lint on classes compiled by Kotlin 2.1+. Only the lint-check classpaths are
         // raised; the compiled dependency graph is unchanged.
         val composeRuntimeLint = libs.findVersion("composeRuntimeLint").get().requiredVersion
+
         configurations.matching { it.name.endsWith("LintChecksClasspath") }.configureEach {
             resolutionStrategy.eachDependency {
                 if (requested.group == "androidx.compose.runtime") {
@@ -91,11 +92,13 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 implementation(libs.library("kotlinx-coroutines-core"))
                 implementation(libs.library("koin-core"))
             }
+
             sourceSets.getByName("commonTest").dependencies {
                 implementation(libs.library("kotest"))
                 implementation(libs.library("coroutines-test"))
                 implementation(libs.library("turbine"))
             }
+
             sourceSets.getByName("androidHostTest").dependencies {
                 implementation(libs.library("junit-api"))
                 implementation(libs.library("junit-params"))
@@ -136,6 +139,7 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
         // Host tests mock JDK statics (MockK inline instrumentation), which breaks on the newest JDKs,
         // so they run on a pinned launcher regardless of the JDK that launches Gradle.
         val javaToolchains = extensions.getByType<JavaToolchainService>()
+
         tasks.withType<Test> {
             useJUnitPlatform()
             javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(17)) })

@@ -15,6 +15,7 @@ internal data class BudgetRule(
 private fun globToRegex(glob: String): Regex {
     val pattern = StringBuilder("^")
     var index = 0
+
     while (index < glob.length) {
         when {
             glob.startsWith(
@@ -41,6 +42,7 @@ private fun globToRegex(glob: String): Regex {
             }
         }
     }
+
     pattern.append("$")
     return Regex(pattern.toString())
 }

@@ -41,8 +41,9 @@ It ships three things most "shared module" repos don't bother to keep together:
 | **Design system — editorial** | `nl.rhaydus:designsystem-editorial` | **Opt-in** editorial design language: shared type-role contract + components (section header, hero stat, drop cap, search field, pull-to-refresh eyebrow). |
 | **Design system — image** | `nl.rhaydus:designsystem-image` | **Opt-in** async images on Coil: plain, placeholder, and shimmer variants. |
 | **Version catalog** | `nl.rhaydus:catalog` | The shared third-party version set, consumable as a Gradle version catalog. |
-| **ktlint rules** | `nl.rhaydus:ktlint-rules` | 14 custom rules: layout (one-per-line arg wrapping, trailing commas, blank-line rules, sibling-composable spacing, boolean `.not()`) with auto-fix, plus gating checks (one-type-per-file, no fully-qualified references, project-import order, no inline mockk stubs, no bare `runCatching` in use cases, and a raw-logging ban that routes `println` / `Log.*` through the `AppLog` facade). |
-| **detekt rules** | `nl.rhaydus:detekt-rules` | Custom detekt ruleset (a type-resolved crash-safety rule for unguarded `Flow.first()` / `single()`) plus the shared detekt baseline config every app builds on. |
+| **ktlint rules** | `nl.rhaydus:ktlint-rules` | 10 auto-fixing layout rules: one-per-line arg wrapping, trailing-lambda braces, trailing commas, statement paragraphs, brace and sibling-composable blank lines, region flushing, boolean `.not()`, unused imports, and the import layout. |
+| **detekt rules** | `nl.rhaydus:detekt-rules` | Custom detekt ruleset for call sites and function bodies (unguarded `Flow.first()` / `single()`, reflection by name, raw dp in spacing and corners, raw logging, inline mockk stubs, Arrange / Act / Assert markers, and more) plus the shared detekt baseline config every app builds on. |
+| **Konsist rules** | `nl.rhaydus:konsist-rules` | Konsist assertions for declarations and architecture: import bans with per-file allowlists, layering, one type per file, `@Nested` tests, Screen arguments that survive serialization, and UI models built in `UiState` getters. |
 
 ### Tooling
 
@@ -156,7 +157,7 @@ Every agent reads [`CAPABILITIES.md`](docs/CAPABILITIES.md) first — so it reus
 
 ## Versioning
 
-One version covers the whole release: `foundation.version` in `gradle.properties` drives all ten published artifacts, and a `verifyPluginVersion` build gate **locks the Claude plugin's version to it** (the build fails if they drift). Bump them together; a tagged push (`v*`) publishes to Maven Central via CI.
+One version covers the whole release: `foundation.version` in `gradle.properties` drives all eleven published artifacts, and a `verifyPluginVersion` build gate **locks the Claude plugin's version to it** (the build fails if they drift). Bump them together; a tagged push (`v*`) publishes to Maven Central via CI.
 
 ---
 

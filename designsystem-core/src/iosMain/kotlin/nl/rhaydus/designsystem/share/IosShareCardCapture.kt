@@ -5,7 +5,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
-import kotlin.coroutines.resume
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
@@ -34,6 +33,7 @@ import platform.UIKit.UIWindowScene
 import platform.UIKit.popoverPresentationController
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
+import kotlin.coroutines.resume
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 internal class IosShareCardCapture internal constructor(
@@ -51,6 +51,7 @@ internal class IosShareCardCapture internal constructor(
 
         return withContext(ioDispatcher) {
             val directory = "${cachesDirectory()}/$SHARE_CACHE_FOLDER"
+
             NSFileManager.defaultManager.createDirectoryAtPath(
                 path = directory,
                 withIntermediateDirectories = true,
@@ -59,6 +60,7 @@ internal class IosShareCardCapture internal constructor(
             )
 
             val path = "$directory/${buildFilename(displayName = displayName)}"
+
             val written = pngBytes.toNSData().writeToFile(
                 path = path,
                 atomically = true,

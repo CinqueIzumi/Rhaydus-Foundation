@@ -21,15 +21,18 @@ class AndroidR8KeepContractConventionPlugin : Plugin<Project> {
             "r8KeepContract",
             R8KeepContractExtension::class.java,
         )
+
         extension.renamedOnlySupertypes.convention(
             listOf(
                 "cafe.adriel.voyager.core.screen.Screen",
                 "androidx.glance.appwidget.GlanceAppWidget",
             ),
         )
+
         extension.excludedProjectDirs.convention(emptyList())
 
         var registered = 0
+
         val aggregate = tasks.register("checkR8KeepContract") {
             group = "verification"
             description = "Fails when R8 renames or drops a class that is reached by name."
@@ -59,6 +62,7 @@ class AndroidR8KeepContractConventionPlugin : Plugin<Project> {
                 projectPrefix.set(extension.projectPackage.map { "$it." })
                 databaseImplSuffix.set(extension.databaseImplSuffix)
                 renamedOnlySupertypes.set(extension.renamedOnlySupertypes)
+
                 keepFiles.from(
                     rootProject.fileTree(rootProject.layout.projectDirectory) {
                         include("**/src/*/keepRules/*.keep")
@@ -66,6 +70,7 @@ class AndroidR8KeepContractConventionPlugin : Plugin<Project> {
                         exclude(extension.excludedProjectDirs.get().map { "$it/**" })
                     },
                 )
+
                 report.set(layout.buildDirectory.file("reports/r8-keep-contract/${variant.name}.txt"))
             }
 

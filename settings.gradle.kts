@@ -29,6 +29,7 @@ rootProject.name = "rhaydus-foundation"
 
 include(":ktlint-rules")
 include(":detekt-rules")
+include(":konsist-rules")
 include(":catalog")
 include(":toad")
 include(":core-common")

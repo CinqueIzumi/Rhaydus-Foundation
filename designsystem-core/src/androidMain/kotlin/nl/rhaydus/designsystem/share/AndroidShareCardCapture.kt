@@ -64,6 +64,7 @@ internal class AndroidShareCardCapture internal constructor(
                     shareDir,
                     filename,
                 )
+
                 file.outputStream().use { stream ->
                     bitmap.compress(
                         Bitmap.CompressFormat.PNG, /* quality = */
@@ -94,14 +95,17 @@ internal class AndroidShareCardCapture internal constructor(
 
         val sendIntent = Intent(Intent.ACTION_SEND).apply {
             type = "image/png"
+
             putExtra(
                 Intent.EXTRA_STREAM,
                 cached.identifier.toUri(),
             )
+
             putExtra(
                 Intent.EXTRA_SUBJECT,
                 displayName,
             )
+
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
@@ -139,14 +143,17 @@ internal class AndroidShareCardCapture internal constructor(
                 MediaStore.MediaColumns.DISPLAY_NAME,
                 filename,
             )
+
             put(
                 MediaStore.MediaColumns.MIME_TYPE,
                 "image/png",
             )
+
             put(
                 MediaStore.MediaColumns.RELATIVE_PATH,
                 "$RELATIVE_PICTURES_PATH/${config.galleryAlbum}",
             )
+
             put(
                 MediaStore.MediaColumns.IS_PENDING,
                 1,
@@ -170,10 +177,12 @@ internal class AndroidShareCardCapture internal constructor(
         }
 
         values.clear()
+
         values.put(
             MediaStore.MediaColumns.IS_PENDING,
             0,
         )
+
         resolver.update(
             uri,
             values,
@@ -203,6 +212,7 @@ internal class AndroidShareCardCapture internal constructor(
             picturesDir,
             filename,
         )
+
         file.outputStream().use { stream ->
             bitmap.compress(
                 Bitmap.CompressFormat.PNG, /* quality = */
@@ -216,10 +226,12 @@ internal class AndroidShareCardCapture internal constructor(
                 MediaStore.Images.Media.DATA,
                 file.absolutePath,
             )
+
             put(
                 MediaStore.Images.Media.MIME_TYPE,
                 "image/png",
             )
+
             put(
                 MediaStore.Images.Media.DISPLAY_NAME,
                 filename,

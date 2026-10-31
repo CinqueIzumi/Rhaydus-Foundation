@@ -24,6 +24,7 @@ class ResourcePackagingConventionPlugin : Plugin<Project> {
 
         target.tasks.register("checkResourcePackaging") {
             group = "verification"
+
             description = "Fails when a module declares Compose Multiplatform resources but does not enable " +
                 "Android resources, which silently omits them from the APK."
 
@@ -38,6 +39,7 @@ class ResourcePackagingConventionPlugin : Plugin<Project> {
                     // "this module owns resources"; the plugin leaves it empty for everyone else.
                     val compose = module.extensions.findByName("compose") as? ExtensionAware
                         ?: return@forEach
+
                     val resources = compose.extensions.findByType(ResourcesExtension::class.java)
                         ?: return@forEach
 
@@ -45,6 +47,7 @@ class ResourcePackagingConventionPlugin : Plugin<Project> {
 
                     val kotlin = module.extensions.findByName("kotlin") as? ExtensionAware
                         ?: return@forEach
+
                     val androidLibrary = kotlin.extensions
                         .findByName("androidLibrary") as? KotlinMultiplatformAndroidLibraryExtension
                         ?: return@forEach

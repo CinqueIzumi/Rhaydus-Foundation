@@ -45,12 +45,9 @@ import nl.rhaydus.designsystem.layout.WindowWidthClass
 import nl.rhaydus.designsystem.layout.rememberWindowSizeClass
 import nl.rhaydus.designsystem.model.ModalSheetForm
 
-private val DesktopPanelWidth = 420.dp
-private val DesktopPanelCorner = 28.dp
 private const val DESKTOP_PANEL_HEIGHT_FRACTION = 0.9f
 private const val PANEL_ENTER_SCALE = 0.92f
 private const val PANEL_SCRIM_ALPHA = 0.32f
-private val DesktopPanelShadow = 6.dp
 
 /**
  * The [ModalSheetForm] the nearest [AdaptiveModalSheet] resolved to, so a body can adjust its
@@ -99,7 +96,7 @@ fun AdaptiveModalSheet(
     modifier: Modifier = Modifier,
     dismissOnTapOutside: Boolean = true,
     dismissOnBackPress: Boolean = true,
-    panelShape: Shape = RoundedCornerShape(size = DesktopPanelCorner),
+    panelShape: Shape = RoundedCornerShape(size = 28.dp),
     overlay: @Composable BoxScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -143,6 +140,7 @@ private fun BottomSheetForm(
     var dismissSent by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
+
     val closing by remember(sheetState) {
         derivedStateOf {
             val leavingVisible = sheetState.currentValue != SheetValue.Hidden &&
@@ -160,6 +158,7 @@ private fun BottomSheetForm(
             }
         }
     }
+
     val dismiss: () -> Unit = remember(sheetState, coroutineScope) {
         {
             if (closeRequested.not()) {
@@ -223,6 +222,7 @@ private fun DesktopSheetPanel(
                     animationSpec = spatialSpec,
                 )
             }
+
             launch {
                 alpha.animateTo(
                     targetValue = if (closing) 0f else 1f,
@@ -265,12 +265,12 @@ private fun DesktopSheetPanel(
                                 scaleY = scale.value
                                 this.alpha = alpha.value
                             }
-                            .widthIn(max = DesktopPanelWidth)
+                            .widthIn(max = 420.dp)
                             .fillMaxWidth()
                             .heightIn(max = maxHeight),
                         shape = panelShape,
                         color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                        shadowElevation = DesktopPanelShadow,
+                        shadowElevation = 6.dp,
                     ) {
                         Column(
                             modifier = Modifier.padding(top = 16.dp),

@@ -31,6 +31,7 @@ class CheckDocBudgetsTaskTest {
             .directory(repoRoot)
             .redirectErrorStream(true)
             .start()
+
         process.inputStream.readBytes()
         check(process.waitFor() == 0) { "git ${args.joinToString(" ")} failed in $repoRoot" }
     }
@@ -41,16 +42,19 @@ class CheckDocBudgetsTaskTest {
             "-b",
             branch,
         )
+
         git(
             "config",
             "user.email",
             "test@example.com",
         )
+
         git(
             "config",
             "user.name",
             "Test",
         )
+
         git(
             "config",
             "commit.gpgsign",
@@ -63,6 +67,7 @@ class CheckDocBudgetsTaskTest {
             "add",
             "-A",
         )
+
         git(
             "commit",
             "-m",
@@ -80,16 +85,19 @@ class CheckDocBudgetsTaskTest {
 
     private fun repoWith(vararg files: Pair<String, String>) {
         initRepo()
+
         write(
             ".gitkeep",
             "",
         )
+
         files.forEach { (path, content) ->
             write(
                 path,
                 content,
             )
         }
+
         commitAll()
     }
 
@@ -101,18 +109,26 @@ class CheckDocBudgetsTaskTest {
         permanentDocs: List<String> = listOf("docs/reference/", ".claude/agent-memory/"),
     ) {
         val project = ProjectBuilder.builder().withProjectDir(repoRoot).build()
+
         val task = project.tasks.create(
             "checkDocBudgets",
             CheckDocBudgetsTask::class.java,
         )
-        if (budgets != null) task.budgetsFile.set(write(
-            "docs/doc-budgets.txt",
-            budgets,
-        ),)
-        if (active != null) task.activeFile.set(write(
-            "docs/working/ACTIVE.md",
-            active,
-        ),)
+
+        if (budgets != null) task.budgetsFile.set(
+            write(
+                "docs/doc-budgets.txt",
+                budgets,
+            ),
+        )
+
+        if (active != null) task.activeFile.set(
+            write(
+                "docs/working/ACTIVE.md",
+                active,
+            ),
+        )
+
         task.workingDocs.set(listOf("docs/working/"))
         task.permanentDocs.set(permanentDocs)
         task.decisionPattern.set(DocGuardConfig.DEFAULT_DECISION_PATTERN)
@@ -130,6 +146,7 @@ class CheckDocBudgetsTaskTest {
         fun `fails a new file over its byte budget`() {
             // ----- Arrange -----
             repoWith()
+
             write(
                 "fixture/new.md",
                 "12345678901",
@@ -142,6 +159,7 @@ class CheckDocBudgetsTaskTest {
                     markdown = listOf("fixture/new.md"),
                 )
             }
+
             exception.message shouldContain "new file over budget"
         }
 
@@ -177,6 +195,7 @@ class CheckDocBudgetsTaskTest {
         fun `fails a file one line over its line budget`() {
             // ----- Arrange -----
             repoWith()
+
             write(
                 "fixture/lines.md",
                 "one\ntwo\nthree\nfour\n",
@@ -189,6 +208,7 @@ class CheckDocBudgetsTaskTest {
                     markdown = listOf("fixture/lines.md"),
                 )
             }
+
             exception.message shouldContain "fixture/lines.md"
         }
 
@@ -196,10 +216,12 @@ class CheckDocBudgetsTaskTest {
         fun `applies the double-star rule rather than the single-star rule to a nested path`() {
             // ----- Arrange -----
             repoWith()
+
             write(
                 "docs/reference/sub/deep.md",
                 "x".repeat(25),
             )
+
             val budgets = "docs/reference/*.md 100B\ndocs/reference/**/*.md 20B"
 
             // ----- Act & Assert -----
@@ -209,6 +231,7 @@ class CheckDocBudgetsTaskTest {
                     markdown = listOf("docs/reference/sub/deep.md"),
                 )
             }
+
             exception.message shouldContain "docs/reference/sub/deep.md"
         }
 
@@ -216,10 +239,12 @@ class CheckDocBudgetsTaskTest {
         fun `applies the first matching rule when several globs match`() {
             // ----- Arrange -----
             repoWith()
+
             write(
                 "fixture/special/exact.md",
                 "1234567890",
             )
+
             val budgets = "fixture/special/exact.md 8B\nfixture/special/*.md 1000B"
 
             // ----- Act & Assert -----
@@ -229,6 +254,7 @@ class CheckDocBudgetsTaskTest {
                     markdown = listOf("fixture/special/exact.md"),
                 )
             }
+
             exception.message shouldContain "fixture/special/exact.md"
         }
 
@@ -236,6 +262,7 @@ class CheckDocBudgetsTaskTest {
         fun `passes a file no rule matches`() {
             // ----- Arrange -----
             repoWith()
+
             write(
                 "fixture/other.md",
                 "x".repeat(5000),
@@ -285,6 +312,7 @@ class CheckDocBudgetsTaskTest {
         fun `passes a file over budget that shrank since the merge-base`() {
             // ----- Arrange -----
             repoWith("fixture/tiny.md" to "12345678901234")
+
             write(
                 "fixture/tiny.md",
                 "123456789012",
@@ -303,6 +331,7 @@ class CheckDocBudgetsTaskTest {
         fun `fails a file over budget that grew since the merge-base`() {
             // ----- Arrange -----
             repoWith("fixture/tiny.md" to "12345678901234")
+
             write(
                 "fixture/tiny.md",
                 "1234567890123456789",
@@ -315,6 +344,7 @@ class CheckDocBudgetsTaskTest {
                     markdown = listOf("fixture/tiny.md"),
                 )
             }
+
             exception.message shouldContain "grew since merge-base"
         }
 
@@ -322,6 +352,7 @@ class CheckDocBudgetsTaskTest {
         fun `measures growth in lines for a line budget`() {
             // ----- Arrange -----
             repoWith("fixture/lines.md" to "1\n2\n3\n4\n")
+
             write(
                 "fixture/lines.md",
                 "1\n2\n3\n4\n5\n",
@@ -334,6 +365,7 @@ class CheckDocBudgetsTaskTest {
                     markdown = listOf("fixture/lines.md"),
                 )
             }
+
             exception.message shouldContain "4 L -> 5 L"
         }
 
@@ -341,10 +373,12 @@ class CheckDocBudgetsTaskTest {
         fun `fails when no merge-base can be resolved`() {
             // ----- Arrange -----
             initRepo(branch = "trunk")
+
             write(
                 "fixture/tiny.md",
                 "x",
             )
+
             commitAll()
 
             // ----- Act & Assert -----
@@ -354,6 +388,7 @@ class CheckDocBudgetsTaskTest {
                     markdown = listOf("fixture/tiny.md"),
                 )
             }
+
             exception.message shouldContain "cannot resolve a git merge-base"
         }
     }
@@ -366,6 +401,7 @@ class CheckDocBudgetsTaskTest {
         fun `fails when the Now section grows past its budget`() {
             // ----- Arrange -----
             repoWith(tracker to "# Tracker\n\n## Now\n- a\n\n## Later\n- z\n")
+
             write(
                 tracker,
                 "# Tracker\n\n## Now\n- a\n- b\n- c\n\n## Later\n- z\n",
@@ -378,6 +414,7 @@ class CheckDocBudgetsTaskTest {
                     active = "$tracker\n",
                 )
             }
+
             exception.message shouldContain "$tracker ## Now section"
         }
 
@@ -399,6 +436,7 @@ class CheckDocBudgetsTaskTest {
         fun `ignores growth outside the Now section`() {
             // ----- Arrange -----
             repoWith(tracker to "# Tracker\n\n## Now\n- a\n\n## Later\n- z\n")
+
             write(
                 tracker,
                 "# Tracker\n\n## Now\n- a\n\n## Later\n- z\n- y\n- x\n- w\n- v\n",
@@ -417,6 +455,7 @@ class CheckDocBudgetsTaskTest {
         fun `fails a new tracker whose Now section is over budget`() {
             // ----- Arrange -----
             repoWith()
+
             write(
                 tracker,
                 "## Now\n- a\n- b\n- c\n- d\n",
@@ -429,6 +468,7 @@ class CheckDocBudgetsTaskTest {
                     active = "$tracker\n",
                 )
             }
+
             exception.message shouldContain "$tracker ## Now section"
         }
     }
@@ -444,6 +484,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(markdown = listOf("docs/reference/foo.md"))
             }
+
             exception.message shouldContain "docs/reference/foo.md:3: cites a plan directory"
         }
 
@@ -456,6 +497,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(markdown = listOf("docs/reference/foo.md"))
             }
+
             exception.message shouldContain "cites a decision number"
         }
 
@@ -468,6 +510,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(markdown = listOf("docs/reference/foo.md"))
             }
+
             exception.message shouldContain "cites a plan step"
         }
 
@@ -481,6 +524,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(markdown = listOf(note))
             }
+
             exception.message shouldContain "cites a plan step"
         }
 
@@ -493,6 +537,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(markdown = listOf("docs/reference/foo.md"))
             }
+
             exception.message shouldContain "cites a decision number"
             exception.message shouldContain "cites a plan step"
         }
@@ -559,6 +604,7 @@ class CheckDocBudgetsTaskTest {
                     permanentDocs = listOf("README.md"),
                 )
             }
+
             exception.message shouldContain "README.md:1"
             exception.message shouldNotContain "README.md.bak.md"
         }
@@ -576,6 +622,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(config = listOf(path))
             }
+
             exception.message shouldContain "$path:2: comment cites working docs"
         }
 
@@ -589,6 +636,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(config = listOf(path))
             }
+
             exception.message shouldContain "comment cites a decision number"
         }
 
@@ -602,6 +650,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(config = listOf(path))
             }
+
             exception.message shouldContain "comment cites a plan step"
         }
 
@@ -614,6 +663,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(config = listOf("build.gradle.kts"))
             }
+
             exception.message shouldContain "comment cites a plan step"
         }
 
@@ -626,6 +676,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(config = listOf("build.gradle.kts"))
             }
+
             exception.message shouldContain "comment cites a decision number"
         }
 
@@ -638,6 +689,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(config = listOf("build.gradle.kts"))
             }
+
             exception.message shouldContain "build.gradle.kts:2: comment cites working docs"
         }
 
@@ -661,6 +713,7 @@ class CheckDocBudgetsTaskTest {
             val exception = shouldThrow<GradleException> {
                 runCheck(config = listOf("build.gradle.kts"))
             }
+
             exception.message shouldContain "comment cites a plan step"
         }
 
@@ -708,6 +761,7 @@ class CheckDocBudgetsTaskTest {
                 "docs/doc-budgets.txt" to "docs/reference/*.md 1KB",
                 "docs/reference/foo.md" to "# Foo\n\nChosen in D17.\n",
             )
+
             val project = ProjectBuilder.builder().withProjectDir(repoRoot).build()
             project.pluginManager.apply("rhaydus.doc-budgets")
             val task = project.tasks.getByName("checkDocBudgets") as CheckDocBudgetsTask

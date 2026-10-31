@@ -1,8 +1,8 @@
 package nl.rhaydus.buildlogic
 
+import org.w3c.dom.Element
 import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
-import org.w3c.dom.Element
 
 /**
  * The R8 keep contract: what R8 had to preserve for the platform and libraries that reach classes by name.
@@ -23,10 +23,12 @@ internal class R8KeepContract(
         val manifestClasses = manifestClasses(manifest)
         val byName = manifestClasses.byName + databaseClasses()
         val renamedOnly = renamedOnlyClasses()
+
         val mapped = mappedNames(
             mapping,
             byName.keys + renamedOnly,
         )
+
         val seedLines = seeds.readLines().toSet()
 
         return keepFileViolations(
@@ -145,6 +147,7 @@ internal class R8KeepContract(
                 )
             }
         }
+
         val worker = implementors(LISTENABLE_WORKER)
             .filter { it.name.startsWith(settings.projectPrefix) && WORKER_DESCRIPTOR in it.constructors }
             .map {
@@ -162,6 +165,7 @@ internal class R8KeepContract(
                 arguments,
             )
         }
+
         val fromManifest = needsInit.map { (name, label) ->
             Triple(
                 name,
@@ -287,6 +291,7 @@ internal class R8KeepContract(
                 if (line.isEmpty() || line[0] == ' ' || line[0] == '#') return@forEach
 
                 val arrow = line.indexOf(" -> ")
+
                 val original = line.substring(
                     0,
                     arrow.coerceAtLeast(0),

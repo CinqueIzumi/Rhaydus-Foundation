@@ -11,14 +11,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlin.time.Clock
 import kotlinx.coroutines.delay
 import nl.rhaydus.designsystem.motion.playDecorativeMotion
+import kotlin.time.Clock
 
 private const val DEFAULT_STEP_MS = 60
 private const val DEFAULT_WINDOW_MS = 350
 private const val DEFAULT_FADE_MS = 240
-private val DEFAULT_TRANSLATE = 8.dp
 
 /**
  * Plays a brief upward-translate + fade-in for items appearing in a lazy carousel or list
@@ -78,7 +77,7 @@ fun rememberStaggeredEntryCoordinator(
 fun Modifier.staggeredEntry(
     coordinator: StaggeredEntryCoordinator,
     index: Int,
-    translateFrom: Dp = DEFAULT_TRANSLATE,
+    translateFrom: Dp = 8.dp,
 ): Modifier {
     val shouldPlay = remember(coordinator) {
         coordinator.playMotion &&
@@ -91,6 +90,7 @@ fun Modifier.staggeredEntry(
 
     LaunchedEffect(Unit) {
         delay((index.coerceAtLeast(0) * coordinator.stepMillis).toLong())
+
         progress.animateTo(
             targetValue = 1f,
             animationSpec = tween(durationMillis = DEFAULT_FADE_MS),

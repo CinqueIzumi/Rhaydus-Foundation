@@ -43,10 +43,12 @@ internal fun ratingForOffsetX(
     starCount: Int,
 ): Double {
     val slot = starSizePx + spacingPx
+
     val index = (x / slot).toInt().coerceIn(
         0,
         starCount - 1,
     )
+
     val localX = x - index * slot
     val isHalf = localX < starSizePx / 2f
 

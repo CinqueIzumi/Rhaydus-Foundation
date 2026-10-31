@@ -27,6 +27,43 @@ rhaydus:
     # A test may look a class up by name to assert on it; R8 never runs over test sources. An app adds its
     # own debug and tooling source sets to this list, which replaces rather than merges.
     excludes: ['**/*Test/**', '**/test/**']
+  FileLevelDpProperty:
+    active: true
+    # A test fixture may hoist a dp value; the rule guards render code.
+    excludes: ['**/*Test/**', '**/test/**']
+  RawSpacingDp:
+    active: true
+    # allowedValues: ['0', '64', '96'] and tokenFiles: ['Spacing.kt'] are the defaults; an app overrides
+    # them here to match its token scale.
+    excludes: ['**/*Test/**', '**/test/**']
+  RawCornerDp:
+    active: true
+    # allowedValues: ['0'] and tokenFiles: ['Corners.kt'] are the defaults.
+    excludes: ['**/*Test/**', '**/test/**']
+  UiModelBuiltInComposable:
+    active: true
+    # A test builds models freely. An app adds its previews, galleries and debug source sets to this list,
+    # which replaces rather than merges.
+    excludes: ['**/*Test/**', '**/test/**']
+  InlineMockkStub:
+    active: true
+    includes: ['**/*Test/**', '**/test/**']
+  UseCaseRunCatching:
+    active: true
+    # The convention reaches production use-case files; a test may call runCatching directly.
+    includes: ['**/*UseCase*.kt']
+    excludes: ['**/*Test/**', '**/test/**']
+  NoRawLogging:
+    active: true
+  InlineFullyQualifiedReference:
+    active: true
+    # rootPackages and exemptPackageSegments are configurable; an app lists the generated-code package
+    # segments whose names collide in exemptPackageSegments.
+  NestedCommentInKDoc:
+    active: true
+  TestMissingArrangeActAssert:
+    active: true
+    includes: ['**/*Test/**', '**/test/**']
 
 # Note: detekt's `formatting` ruleset (the ktlint wrapper) is deliberately NOT on the classpath - the
 # mechanizable layout rules are owned by nl.rhaydus:ktlint-rules. So there is no `formatting:` block here;
@@ -119,6 +156,25 @@ naming:
     packagePattern: '[a-z][a-z0-9]*(_[a-z0-9]+)*(\.[a-z][a-z0-9]*(_[a-z0-9]+)*)*'
 
 style:
+  ForbiddenSuppress:
+    # A suppression of a contract rule defeats the contract, so it is itself a finding. Fix the code, or
+    # restructure it so the rule no longer applies.
+    active: true
+    # Every rule in the `rhaydus` ruleset, plus the built-in null-safety contract.
+    rules:
+      - 'UnguardedFlowTerminalRead'
+      - 'NoReflection'
+      - 'FileLevelDpProperty'
+      - 'RawSpacingDp'
+      - 'RawCornerDp'
+      - 'UiModelBuiltInComposable'
+      - 'InlineMockkStub'
+      - 'UseCaseRunCatching'
+      - 'NoRawLogging'
+      - 'InlineFullyQualifiedReference'
+      - 'NestedCommentInKDoc'
+      - 'TestMissingArrangeActAssert'
+      - 'UnsafeCallOnNullableType'
   MagicNumber:
     # Compose dp/sp/alpha/weight literals saturate this rule with noise.
     active: false

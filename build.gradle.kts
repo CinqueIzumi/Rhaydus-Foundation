@@ -55,11 +55,12 @@ dependencyAnalysis {
 rhaydusStyle {
     detektRules = project(":detekt-rules")
     ktlintRules = project(":ktlint-rules")
+    detektConfigFiles = listOf(file("config/detekt/detekt.yml"))
 }
 
 // The foundation's own module-tier DAG (rhaydus.module-graph gate). The core stack (core-common ←
 // core-platform ← offline-sync) may depend only on itself; the design-system stack may depend on itself
-// and the non-visual core; toad is standalone. Tooling modules (ktlint-rules, detekt-rules, catalog) are
+// and the non-visual core; toad is standalone. Tooling modules (ktlint-rules, detekt-rules, konsist-rules, catalog) are
 // excluded. The foundation ships no re-exported data-area modules, so the api-visibility half is inert here.
 moduleGraph {
     tierOf = { path ->

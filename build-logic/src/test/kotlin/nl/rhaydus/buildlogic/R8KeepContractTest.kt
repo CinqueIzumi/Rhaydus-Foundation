@@ -505,9 +505,11 @@ class R8KeepContractTest {
                 "a.keep",
                 "-keep class a.X { *; }",
             )
+
             val manifest = manifest(
                 """<application android:name=".App"><activity android:name="a.Main"/></application>""",
             )
+
             val classes = listOf(
                 cls(
                     "com.example.app.HomeScreen",

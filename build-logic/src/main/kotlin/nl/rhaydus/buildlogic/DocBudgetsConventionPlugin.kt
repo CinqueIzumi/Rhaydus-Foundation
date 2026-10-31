@@ -16,6 +16,7 @@ class DocBudgetsConventionPlugin : Plugin<Project> {
             "docBudgets",
             DocBudgetsExtension::class.java,
         )
+
         extension.configFile.convention(layout.projectDirectory.file(DEFAULT_CONFIG_PATH))
         extension.defaultBranch.convention("main")
 
@@ -35,12 +36,14 @@ class DocBudgetsConventionPlugin : Plugin<Project> {
             stepPattern.set(config.map { it.stepPattern })
             defaultBranch.set(extension.defaultBranch)
             repoRoot.set(layout.projectDirectory)
+
             markdownFiles.from(
                 fileTree(layout.projectDirectory) {
                     include("**/*.md")
                     exclude(excluded)
                 },
             )
+
             configFiles.from(
                 fileTree(layout.projectDirectory) {
                     include(
@@ -49,6 +52,7 @@ class DocBudgetsConventionPlugin : Plugin<Project> {
                         "**/*.yaml",
                         "**/*.kts",
                     )
+
                     exclude(excluded)
                 },
             )

@@ -55,6 +55,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 "implementation",
                 libs.library("kotlinx-coroutines-android"),
             )
+
             add(
                 "implementation",
                 libs.library("koin-android"),
@@ -64,32 +65,39 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 "testImplementation",
                 libs.library("junit-api"),
             )
+
             add(
                 "testImplementation",
                 libs.library("junit-params"),
             )
+
             add(
                 "testRuntimeOnly",
                 libs.library("junit-engine"),
             )
+
             // Gradle 9 no longer puts the JUnit Platform launcher on the test runtime classpath
             // automatically — it must be declared explicitly.
             add(
                 "testRuntimeOnly",
                 libs.library("junit-platform-launcher"),
             )
+
             add(
                 "testImplementation",
                 libs.library("mockk"),
             )
+
             add(
                 "testImplementation",
                 libs.library("kotest"),
             )
+
             add(
                 "testImplementation",
                 libs.library("coroutines-test"),
             )
+
             add(
                 "testImplementation",
                 libs.library("turbine"),

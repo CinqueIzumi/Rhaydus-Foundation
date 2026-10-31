@@ -25,8 +25,7 @@ import org.jetbrains.kotlin.psi.KtCallExpression
  *
  * **`SharedFlow` / `StateFlow` receivers are exempt from `first`, but not from `single`.** A hot flow
  * never completes and never fails, so neither hazard exists: `first()` returns the current value and
- * `first { predicate }` suspends until one matches - which is precisely how `awaitOnline()` is written
- * against a `StateFlow<Boolean>`. `single()` is a different story: on a flow that never completes it
+ * `first { predicate }` suspends until one matches. `single()` is a different story: on a flow that never completes it
  * either suspends forever or throws on the second emission, so it stays flagged on every receiver.
  */
 class UnguardedFlowTerminalRead(config: Config) :
@@ -41,7 +40,9 @@ class UnguardedFlowTerminalRead(config: Config) :
 
         val terminal = analyze(expression) {
             val call = expression.resolveToCall()?.successfulFunctionCallOrNull() ?: return@analyze null
+
             val callableId = call.symbol.callableId ?: return@analyze null
+
             val name = callableId.asSingleFqName().asString()
 
             if (name != FLOW_FIRST && name != FLOW_SINGLE) return@analyze null
