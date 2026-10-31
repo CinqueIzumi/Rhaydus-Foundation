@@ -365,8 +365,15 @@ fits:
 - **One Koin `module { }` per module**, aggregated as in section 4.
 - A single-module app keeps the same package boundaries and declare-what-you-import discipline.
 
-The multi-module shape gates three things, each wired into every module's `check`:
+The multi-module shape gates these, each wired into every module's `check`:
 
+- **Resource packaging** - the root-applied `rhaydus.resource-packaging` plugin registers
+  `checkResourcePackaging`, which fails a module that declares Compose resources (a non-empty
+  `packageOfResClass`) but leaves `androidResources.enable` off in its `androidLibrary` block, since the
+  resources would be silently missing from the APK.
+- **Compose stability** - `rhaydus.kmp.compose` and `rhaydus.android.compose` apply the Compose stability
+  analyzer; `stabilityCheck` fails on any change to a module's checked-in `stability` baseline
+  (`androidMain` only). Refresh it with `stabilityDump` and commit the result.
 - **Module-graph tiers** - the root-applied `rhaydus.module-graph` convention plugin registers
   `checkModuleGraph`, which derives each module's tier from its path and fails on any `project(...)`
   dependency pointing sideways or upward. An `api` edge to a designated data-area module must be
@@ -380,6 +387,21 @@ The multi-module shape gates three things, each wired into every module's `check
 - **Android lint** - every module runs lint with `warningsAsErrors` + `abortOnError` against the shared
   root `lint.xml`; its version-freshness checks (`NewerVersionAvailable` / `GradleDependency` /
   `AndroidGradlePluginVersion`) are `informational`.
+
+### Consumer keep rules
+
+A class reached by name (a manifest component, a persisted class name, a library that instantiates by
+reflection) has no static reference, so R8 can rename or remove it. The module that owns such a class owns
+its keep rule, in `src/<sourceSet>/keepRules/<name>.keep`, with a comment saying what reaches the class and
+what breaks without it; it reaches R8 as a consumer rule.
+
+The application applies `rhaydus.android.r8-keep-contract` and sets `r8KeepContract { projectPackage,
+databaseImplSuffix, renamedOnlySupertypes, excludedProjectDirs }`. `checkR8KeepContract` (not part of
+`check`) then fails when R8 renamed or dropped a manifest component, a project `Screen` or
+`GlanceAppWidget`, a Room database, or a constructor `seeds.txt` should keep, or when a `.keep` rule never
+reached R8's `configuration.txt`. The detekt rule `rhaydus:NoReflection` blocks lookups by name, and
+`@TransientNavArg` (`nl.rhaydus.toad.navigation`) marks a Voyager `Screen` argument that Android's back-stack
+serialization must skip.
 
 ---
 

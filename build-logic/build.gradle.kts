@@ -14,8 +14,11 @@ dependencies {
     compileOnly(libs.compose.multiplatform.gradlePlugin)
     compileOnly(libs.dependency.analysis.gradlePlugin)
     compileOnly(libs.detekt.gradlePlugin)
+    compileOnly(libs.stability.analyzer.gradlePlugin)
 
+    testImplementation(gradleTestKit())
     testImplementation(libs.junit.api)
+    testImplementation(libs.junit.params)
     testImplementation(libs.kotest)
     testRuntimeOnly(libs.junit.engine)
     testRuntimeOnly(libs.junit.platform.launcher)
@@ -61,6 +64,14 @@ gradlePlugin {
         register("konsist") {
             id = "rhaydus.konsist"
             implementationClass = "nl.rhaydus.buildlogic.KonsistConventionPlugin"
+        }
+        register("resourcePackaging") {
+            id = "rhaydus.resource-packaging"
+            implementationClass = "nl.rhaydus.buildlogic.ResourcePackagingConventionPlugin"
+        }
+        register("androidR8KeepContract") {
+            id = "rhaydus.android.r8-keep-contract"
+            implementationClass = "nl.rhaydus.buildlogic.AndroidR8KeepContractConventionPlugin"
         }
         register("dependencyAnalysis") {
             id = "rhaydus.dependency-analysis"

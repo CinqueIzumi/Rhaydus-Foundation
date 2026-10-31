@@ -21,10 +21,14 @@ plugins {
     id("rhaydus.dependency-analysis")
     // Root-applied: ktlint, type-resolved detekt and `styleCheck` over every module, on the foundation's own rules.
     id("rhaydus.style")
+    // Root-applied: fails a module that declares Compose resources but does not package them on Android.
+    id("rhaydus.resource-packaging")
     // On the root classpath for the convention plugin above, which applies it by id.
     alias(libs.plugins.dependency.analysis) apply false
     // On the root classpath for rhaydus.style, which applies it to every module by id.
     alias(libs.plugins.detekt) apply false
+    // On the root classpath for the Compose convention plugins, which apply it by id for the stability gate.
+    alias(libs.plugins.stability.analyzer) apply false
 }
 
 val foundationVersion: String = providers.gradleProperty("foundation.version").getOrElse("0.0.0-SNAPSHOT")

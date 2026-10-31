@@ -8,11 +8,13 @@ import org.gradle.kotlin.dsl.dependencies
 
 /**
  * Layers Jetpack Compose on top of [AndroidLibraryConventionPlugin]. Applied by the Android modules
- * that own UI.
+ * that own UI, and adds the Compose stability gate ([applyComposeStabilityGate]).
  */
 class AndroidComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+
+        applyComposeStabilityGate()
 
         extensions.configure<LibraryExtension> {
             buildFeatures {

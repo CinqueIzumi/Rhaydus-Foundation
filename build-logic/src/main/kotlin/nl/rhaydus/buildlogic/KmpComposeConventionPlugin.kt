@@ -16,6 +16,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * so the widgets compile for every target (on Android these resolve to the AndroidX Compose
  * libraries, so existing `androidx.compose.*` imports keep working). Android-only Compose extras —
  * `activity-compose` and the preview tooling — stay in `androidMain`.
+ *
+ * Also applies the Compose stability gate ([applyComposeStabilityGate]).
  */
 class KmpComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -23,6 +25,8 @@ class KmpComposeConventionPlugin : Plugin<Project> {
             apply("org.jetbrains.kotlin.plugin.compose")
             apply("org.jetbrains.compose")
         }
+
+        applyComposeStabilityGate()
 
         val compose = extensions.getByType<ComposeExtension>().dependencies
 

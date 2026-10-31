@@ -84,7 +84,8 @@ syntax tinting, ...) are app extensions documented in the app's own doc, never h
 
 - **Corners.** Small radii on cards/tiles, medium on buttons (Material defaults via the expressive theme),
   fully rounded (`RoundedCornerShape(percent = 50)`) for pill chips and active toggle states. Exact radii are
-  app-tunable.
+  app-tunable. The scale ships as `Corners` (shapes) over `CornerRadius` (dp) in designsystem-core, and
+  `RhaydusTheme(shapes = ...)` sets the Material shape scale.
 - **Elevation is tonal** (section 3): step the container shade, never add elevation.
 - **Accent bar.** A short primary-colored bar leads a section label, in **two sizes picked by label role**: a
   larger section bar in the page gutter ahead of a full-size label-plus-headline pair, and a smaller inline
@@ -95,9 +96,9 @@ syntax tinting, ...) are app extensions documented in the app's own doc, never h
 
 ### 5.1 Spacing scale
 
-- Spacing comes from a small fixed set of dp steps, each roughly double the last: tight inline gaps,
-  within-component padding, the page horizontal gutter, gaps between blocks in a region, gaps between major
-  sections. Values are app-tunable within this doubling rhythm.
+- Spacing ships as `Spacing` in designsystem-core: a 2dp hairline (`xxxs`), a 4dp grid from 4dp to 48dp,
+  `gutter` (the page horizontal gutter) and `section` (the gap between major sections). Padding, `spacedBy`,
+  `offset` and `Spacer` sizes read `Spacing.*`; component sizes and strokes stay literal `.dp`.
 - One gutter value per page.
 - Two adjacent section headers without a generous gap between them is a layout bug.
 
@@ -218,7 +219,9 @@ resources) is an app decision in the app's own doc.
 ## 7. Motion (structure)
 
 - Use the Material **expressive motion scheme** (section 1); hand-author durations or easings only for a
-  custom property the scheme cannot express.
+  custom property the scheme cannot express. `MaterialTheme.motion` (designsystem-core) adds the specs the
+  scheme has none for, such as a slow `valueChange` spring; `RhaydusTheme` provides it and it snaps under
+  reduced motion.
 - **Press feedback on ripple-less surfaces.** Tappable cards and ripple-less surfaces scale to about 0.97
   while pressed and ease back on release, driven by an `InteractionSource`. Press scale is the *only*
   indication there: never strip a card's ripple without adding the scale. Material buttons keep their ripple

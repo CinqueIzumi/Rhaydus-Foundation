@@ -16,6 +16,7 @@ class RhaydusRuleSetProvider : RuleSetProvider {
             ruleSetId,
             listOf(
                 ::UnguardedFlowTerminalRead,
+                ::NoReflection,
             ),
         )
 }

@@ -91,6 +91,8 @@ class DependencyAnalysisConventionPlugin : Plugin<Project> {
             "org.jetbrains.compose.components:components-ui-tooling-preview",
             "org.jetbrains.compose.components:components-resources",
             "org.jetbrains.compose.material3:material3",
+            // Added to every Compose module by the stability analyzer (applyComposeStabilityGate).
+            "com.github.skydoves:compose-stability-runtime",
             // Android Compose extras (KmpComposeConventionPlugin androidMain).
             "androidx.compose.ui:ui-tooling-preview",
             "androidx.compose.ui:ui-tooling",

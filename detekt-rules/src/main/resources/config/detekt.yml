@@ -22,6 +22,11 @@ rhaydus:
     # default instead. So the rule is excluded from test sources, matching detekt's own policy for the
     # rules whose advice does not transfer to test code.
     excludes: ['**/*Test/**', '**/test/**']
+  NoReflection:
+    active: true
+    # A test may look a class up by name to assert on it; R8 never runs over test sources. An app adds its
+    # own debug and tooling source sets to this list, which replaces rather than merges.
+    excludes: ['**/*Test/**', '**/test/**']
 
 # Note: detekt's `formatting` ruleset (the ktlint wrapper) is deliberately NOT on the classpath - the
 # mechanizable layout rules are owned by nl.rhaydus:ktlint-rules. So there is no `formatting:` block here;

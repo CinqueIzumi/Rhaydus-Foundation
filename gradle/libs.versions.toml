@@ -12,6 +12,7 @@ coroutines = "1.10.2"
 kotlinxDatetime = "0.7.1"
 kermit = "2.0.6"
 detekt = "2.0.0-alpha.6"
+stabilityAnalyzer = "0.9.0"
 composeMultiplatform = "1.11.0"
 # Navigation Event library: the multiplatform back-gesture API that supersedes the deprecated CMP
 # `ui-backhandler`.
@@ -56,6 +57,7 @@ ktlint-test = { group = "com.pinterest.ktlint", name = "ktlint-test", version.re
 detekt-api = { group = "dev.detekt", name = "detekt-api", version.ref = "detekt" }
 detekt-cli = { group = "dev.detekt", name = "detekt-cli", version.ref = "detekt" }
 detekt-gradlePlugin = { group = "dev.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+stability-analyzer-gradlePlugin = { group = "com.github.skydoves", name = "compose-stability-gradle", version.ref = "stabilityAnalyzer" }
 detekt-test = { group = "dev.detekt", name = "detekt-test", version.ref = "detekt" }
 
 # Gradle plugin artifacts — consumed by build-logic convention plugins (compileOnly, phase 2)
@@ -118,4 +120,5 @@ compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMu
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
+stability-analyzer = { id = "com.github.skydoves.compose.stability.analyzer", version.ref = "stabilityAnalyzer" }
 dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" }
