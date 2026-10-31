@@ -141,12 +141,11 @@ internal class IosShareCardCapture internal constructor(
         return "${config.fileNamePrefix}-$sanitized.png"
     }
 
-    private fun cachesDirectory(): String =
-        NSSearchPathForDirectoriesInDomains(
-            directory = NSCachesDirectory,
-            domainMask = NSUserDomainMask,
-            expandTilde = true,
-        ).first() as String
+    private fun cachesDirectory(): String = NSSearchPathForDirectoriesInDomains(
+        directory = NSCachesDirectory,
+        domainMask = NSUserDomainMask,
+        expandTilde = true,
+    ).first() as String
 
     private fun topMostViewController(): UIViewController? {
         // `keyWindow` is deprecated and returns nil under multi-scene iPad; resolve the foreground
@@ -168,17 +167,16 @@ internal class IosShareCardCapture internal constructor(
         return controller
     }
 
-    private fun ByteArray.toNSData(): NSData =
-        if (isEmpty()) {
-            NSData()
-        } else {
-            usePinned { pinned ->
-                NSData.create(
-                    bytes = pinned.addressOf(0),
-                    length = size.convert(),
-                )
-            }
+    private fun ByteArray.toNSData(): NSData = if (isEmpty()) {
+        NSData()
+    } else {
+        usePinned { pinned ->
+            NSData.create(
+                bytes = pinned.addressOf(0),
+                length = size.convert(),
+            )
         }
+    }
 
     private companion object {
         const val SHARE_CACHE_FOLDER = "share"

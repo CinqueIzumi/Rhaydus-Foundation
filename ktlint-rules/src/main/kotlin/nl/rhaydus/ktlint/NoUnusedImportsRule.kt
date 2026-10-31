@@ -75,16 +75,15 @@ class NoUnusedImportsRule :
 
         val usedNames = node.collectUsedNames()
 
-        val unused =
-            imports.filter { directive ->
-                val psi = directive.psi as? KtImportDirective ?: return@filter false
+        val unused = imports.filter { directive ->
+            val psi = directive.psi as? KtImportDirective ?: return@filter false
 
-                if (psi.isAllUnder) return@filter false
+            if (psi.isAllUnder) return@filter false
 
-                val name = psi.aliasName ?: psi.importedFqName?.shortName()?.asString() ?: return@filter false
+            val name = psi.aliasName ?: psi.importedFqName?.shortName()?.asString() ?: return@filter false
 
-                name.removeSurrounding("`") !in usedNames
-            }
+            name.removeSurrounding("`") !in usedNames
+        }
 
         unused.forEach { directive ->
             emit(
@@ -139,13 +138,12 @@ class NoUnusedImportsRule :
         val previous = treePrev?.takeIf { it.elementType == WHITE_SPACE }
         val next = treeNext?.takeIf { it.elementType == WHITE_SPACE }
 
-        val separator =
-            when {
-                previous == null -> next
-                next == null -> previous
-                next.newlineCount() <= previous.newlineCount() -> next
-                else -> previous
-            }
+        val separator = when {
+            previous == null -> next
+            next == null -> previous
+            next.newlineCount() <= previous.newlineCount() -> next
+            else -> previous
+        }
 
         val remaining = importList.getChildren(null).count { it.elementType == IMPORT_DIRECTIVE }
 
@@ -174,30 +172,29 @@ class NoUnusedImportsRule :
 
         val FOR_CONVENTIONS = setOf("iterator", "next", "hasNext")
 
-        val OPERATOR_CONVENTIONS: Map<IElementType, Set<String>> =
-            mapOf(
-                PLUS to setOf("plus", "unaryPlus"),
-                MINUS to setOf("minus", "unaryMinus"),
-                MUL to setOf("times"),
-                DIV to setOf("div"),
-                PERC to setOf("rem"),
-                RANGE to setOf("rangeTo"),
-                RANGE_UNTIL to setOf("rangeUntil"),
-                PLUSEQ to setOf("plusAssign", "plus"),
-                MINUSEQ to setOf("minusAssign", "minus"),
-                MULTEQ to setOf("timesAssign", "times"),
-                DIVEQ to setOf("divAssign", "div"),
-                PERCEQ to setOf("remAssign", "rem"),
-                PLUSPLUS to setOf("inc"),
-                MINUSMINUS to setOf("dec"),
-                EXCL to setOf("not"),
-                LT to setOf("compareTo"),
-                GT to setOf("compareTo"),
-                LTEQ to setOf("compareTo"),
-                GTEQ to setOf("compareTo"),
-                IN_KEYWORD to setOf("contains"),
-                NOT_IN to setOf("contains"),
-            )
+        val OPERATOR_CONVENTIONS: Map<IElementType, Set<String>> = mapOf(
+            PLUS to setOf("plus", "unaryPlus"),
+            MINUS to setOf("minus", "unaryMinus"),
+            MUL to setOf("times"),
+            DIV to setOf("div"),
+            PERC to setOf("rem"),
+            RANGE to setOf("rangeTo"),
+            RANGE_UNTIL to setOf("rangeUntil"),
+            PLUSEQ to setOf("plusAssign", "plus"),
+            MINUSEQ to setOf("minusAssign", "minus"),
+            MULTEQ to setOf("timesAssign", "times"),
+            DIVEQ to setOf("divAssign", "div"),
+            PERCEQ to setOf("remAssign", "rem"),
+            PLUSPLUS to setOf("inc"),
+            MINUSMINUS to setOf("dec"),
+            EXCL to setOf("not"),
+            LT to setOf("compareTo"),
+            GT to setOf("compareTo"),
+            LTEQ to setOf("compareTo"),
+            GTEQ to setOf("compareTo"),
+            IN_KEYWORD to setOf("contains"),
+            NOT_IN to setOf("contains"),
+        )
     }
 }
 

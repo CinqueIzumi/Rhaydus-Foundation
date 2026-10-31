@@ -16,32 +16,30 @@ class BaseNetworkAvailabilityProviderTest {
     @Nested
     inner class AwaitOnline {
         @Test
-        fun `returns immediately when isOnline is already true`() =
-            runTest {
-                // ----- Arrange -----
-                val provider = FakeProvider(MutableStateFlow(true))
+        fun `returns immediately when isOnline is already true`() = runTest {
+            // ----- Arrange -----
+            val provider = FakeProvider(MutableStateFlow(true))
 
-                // ----- Act & Assert -----
-                provider.awaitOnline()
-            }
+            // ----- Act & Assert -----
+            provider.awaitOnline()
+        }
 
         @Test
-        fun `suspends while offline and completes once isOnline flips to true`() =
-            runTest {
-                // ----- Arrange -----
-                val isOnline = MutableStateFlow(false)
-                val provider = FakeProvider(isOnline)
+        fun `suspends while offline and completes once isOnline flips to true`() = runTest {
+            // ----- Arrange -----
+            val isOnline = MutableStateFlow(false)
+            val provider = FakeProvider(isOnline)
 
-                // ----- Act -----
-                val job = launch { provider.awaitOnline() }
-                runCurrent()
+            // ----- Act -----
+            val job = launch { provider.awaitOnline() }
+            runCurrent()
 
-                // ----- Assert -----
-                job.isCompleted shouldBe false
+            // ----- Assert -----
+            job.isCompleted shouldBe false
 
-                isOnline.value = true
-                runCurrent()
-                job.isCompleted shouldBe true
-            }
+            isOnline.value = true
+            runCurrent()
+            job.isCompleted shouldBe true
+        }
     }
 }

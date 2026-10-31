@@ -52,12 +52,11 @@ class MultiArgWrappingRule :
         node: ASTNode,
         emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision,
     ) {
-        val entryType =
-            when (node.elementType) {
-                VALUE_ARGUMENT_LIST -> if (shouldWrapArgumentList(node)) VALUE_ARGUMENT else return
-                VALUE_PARAMETER_LIST -> if (shouldWrapParameterList(node)) VALUE_PARAMETER else return
-                else -> return
-            }
+        val entryType = when (node.elementType) {
+            VALUE_ARGUMENT_LIST -> if (shouldWrapArgumentList(node)) VALUE_ARGUMENT else return
+            VALUE_PARAMETER_LIST -> if (shouldWrapParameterList(node)) VALUE_PARAMETER else return
+            else -> return
+        }
 
         val entries = node.children().filter { it.elementType == entryType }.toList()
 
@@ -220,14 +219,13 @@ class MultiArgWrappingRule :
 
         val DECLARATION_OWNERS = setOf(FUN, PRIMARY_CONSTRUCTOR, SECONDARY_CONSTRUCTOR)
 
-        val COLLECTION_FACTORIES =
-            setOf(
-                "listOf", "mutableListOf", "listOfNotNull", "arrayListOf",
-                "setOf", "mutableSetOf", "sortedSetOf", "linkedSetOf", "hashSetOf",
-                "mapOf", "mutableMapOf", "sortedMapOf", "linkedMapOf", "hashMapOf",
-                "arrayOf", "intArrayOf", "longArrayOf", "doubleArrayOf", "floatArrayOf",
-                "booleanArrayOf", "charArrayOf", "byteArrayOf", "shortArrayOf",
-                "buildList", "buildSet", "buildMap", "persistentListOf", "persistentSetOf", "persistentMapOf",
-            )
+        val COLLECTION_FACTORIES = setOf(
+            "listOf", "mutableListOf", "listOfNotNull", "arrayListOf",
+            "setOf", "mutableSetOf", "sortedSetOf", "linkedSetOf", "hashSetOf",
+            "mapOf", "mutableMapOf", "sortedMapOf", "linkedMapOf", "hashMapOf",
+            "arrayOf", "intArrayOf", "longArrayOf", "doubleArrayOf", "floatArrayOf",
+            "booleanArrayOf", "charArrayOf", "byteArrayOf", "shortArrayOf",
+            "buildList", "buildSet", "buildMap", "persistentListOf", "persistentSetOf", "persistentMapOf",
+        )
     }
 }

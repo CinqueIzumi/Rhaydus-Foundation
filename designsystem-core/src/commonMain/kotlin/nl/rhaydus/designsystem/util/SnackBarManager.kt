@@ -24,10 +24,12 @@ object SnackBarManager {
         title: String,
         duration: SnackbarDuration = SnackbarDuration.Short,
     ) {
-        if (isShowing.compareAndSet(
+        val acquired = isShowing.compareAndSet(
             false,
             true,
-        ).not()) return
+        )
+
+        if (acquired.not()) return
 
         scope.launch {
             try {
@@ -48,10 +50,12 @@ object SnackBarManager {
         onActionClick: () -> Unit,
         onDismiss: () -> Unit = {},
     ) {
-        if (isShowing.compareAndSet(
+        val acquired = isShowing.compareAndSet(
             false,
             true,
-        ).not()) return
+        )
+
+        if (acquired.not()) return
 
         scope.launch {
             try {

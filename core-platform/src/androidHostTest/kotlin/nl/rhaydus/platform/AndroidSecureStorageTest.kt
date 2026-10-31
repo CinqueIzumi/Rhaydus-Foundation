@@ -70,8 +70,8 @@ class AndroidSecureStorageTest {
         every {
             keyStore.getKey(
                 "rhaydus_secure_storage",
-            null,
-        )
+                null,
+            )
         } returns secretKey
 
         every {

@@ -84,11 +84,10 @@ class SiblingComposableBlankLineRule :
     }
 
     private companion object {
-        val LAYOUT_SCOPES =
-            setOf(
-                "Column", "Row", "Box", "BoxWithConstraints",
-                "LazyColumn", "LazyRow", "LazyVerticalGrid", "LazyHorizontalGrid",
-                "FlowRow", "FlowColumn",
-            )
+        val LAYOUT_SCOPES = setOf(
+            "Column", "Row", "Box", "BoxWithConstraints",
+            "LazyColumn", "LazyRow", "LazyVerticalGrid", "LazyHorizontalGrid",
+            "FlowRow", "FlowColumn",
+        )
     }
 }

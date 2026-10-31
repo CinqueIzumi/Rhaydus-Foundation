@@ -17,7 +17,6 @@ internal class IosGalleryWritePermissionRequester internal constructor(
 @Composable
 actual fun rememberGalleryWritePermissionRequester(
     onResult: (Boolean) -> Unit,
-): GalleryWritePermissionRequester =
-    remember(onResult) {
-        IosGalleryWritePermissionRequester(onResult = onResult)
-    }
+): GalleryWritePermissionRequester = remember(onResult) {
+    IosGalleryWritePermissionRequester(onResult = onResult)
+}

@@ -44,20 +44,19 @@ class JvmNetworkAvailabilityProvider(dispatchers: AppDispatchers) :
         scope.cancel()
     }
 
-    private fun isHostReachable(): Boolean =
-        runCatchingCancellable {
-            Socket().use { socket ->
-                socket.connect(
-                    InetSocketAddress(
-                        PROBE_HOST,
-                        PROBE_PORT,
-                    ),
-                    PROBE_TIMEOUT_MS,
-                )
-            }
+    private fun isHostReachable(): Boolean = runCatchingCancellable {
+        Socket().use { socket ->
+            socket.connect(
+                InetSocketAddress(
+                    PROBE_HOST,
+                    PROBE_PORT,
+                ),
+                PROBE_TIMEOUT_MS,
+            )
+        }
 
-            true
-        }.getOrDefault(false)
+        true
+    }.getOrDefault(false)
 
     private companion object {
         val POLL_INTERVAL = 15.seconds

@@ -62,11 +62,10 @@ fun Modifier.dismissOnEscape(
 fun Modifier.onEscape(
     enabled: Boolean,
     onEscape: () -> Unit,
-): Modifier =
-    if (enabled) {
-        onPreviewKeyEvent { event -> event.isEscapeDown().also { if (it) onEscape() } }
-    } else {
-        this
-    }
+): Modifier = if (enabled) {
+    onPreviewKeyEvent { event -> event.isEscapeDown().also { if (it) onEscape() } }
+} else {
+    this
+}
 
 private fun KeyEvent.isEscapeDown(): Boolean = type == KeyEventType.KeyDown && key == Key.Escape

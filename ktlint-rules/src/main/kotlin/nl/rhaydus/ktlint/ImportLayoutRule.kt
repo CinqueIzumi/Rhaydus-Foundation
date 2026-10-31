@@ -122,12 +122,11 @@ class ImportLayoutRule :
         }
     }
 
-    private fun ordered(directives: List<ASTNode>): List<ASTNode> =
-        directives.sortedWith(
-            compareBy<ASTNode> { bucketIndex(it) }
-                .thenBy { importPath(it) }
-                .thenBy { it.text },
-        )
+    private fun ordered(directives: List<ASTNode>): List<ASTNode> = directives.sortedWith(
+        compareBy<ASTNode> { bucketIndex(it) }
+            .thenBy { importPath(it) }
+            .thenBy { it.text },
+    )
 
     private fun blankLineBetween(
         previousBucket: Int,
@@ -229,16 +228,14 @@ class ImportLayoutRule :
                     }
                 }
 
-        val IMPORT_LAYOUT_PROPERTY =
-            EditorConfigProperty(
-                type =
-                    PropertyType.LowerCasingPropertyType(
-                        "ij_kotlin_imports_layout",
-                        "Comma-separated import layout, as IntelliJ's Optimize Imports reads it.",
-                        PropertyType.PropertyValueParser.IDENTITY_VALUE_PARSER,
-                        emptySet(),
-                    ),
-                defaultValue = DEFAULT_LAYOUT,
-            )
+        val IMPORT_LAYOUT_PROPERTY = EditorConfigProperty(
+            type = PropertyType.LowerCasingPropertyType(
+                "ij_kotlin_imports_layout",
+                "Comma-separated import layout, as IntelliJ's Optimize Imports reads it.",
+                PropertyType.PropertyValueParser.IDENTITY_VALUE_PARSER,
+                emptySet(),
+            ),
+            defaultValue = DEFAULT_LAYOUT,
+        )
     }
 }

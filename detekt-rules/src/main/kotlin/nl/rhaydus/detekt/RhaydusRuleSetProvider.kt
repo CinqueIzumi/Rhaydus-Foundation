@@ -11,22 +11,21 @@ import dev.detekt.api.RuleSetProvider
 class RhaydusRuleSetProvider : RuleSetProvider {
     override val ruleSetId = RuleSetId("rhaydus")
 
-    override fun instance(): RuleSet =
-        RuleSet(
-            ruleSetId,
-            listOf(
-                ::UnguardedFlowTerminalRead,
-                ::NoReflection,
-                ::FileLevelDpProperty,
-                ::RawSpacingDp,
-                ::RawCornerDp,
-                ::UiModelBuiltInComposable,
-                ::InlineMockkStub,
-                ::UseCaseRunCatching,
-                ::NoRawLogging,
-                ::InlineFullyQualifiedReference,
-                ::NestedCommentInKDoc,
-                ::TestMissingArrangeActAssert,
-            ),
-        )
+    override fun instance(): RuleSet = RuleSet(
+        ruleSetId,
+        listOf(
+            ::UnguardedFlowTerminalRead,
+            ::NoReflection,
+            ::FileLevelDpProperty,
+            ::RawSpacingDp,
+            ::RawCornerDp,
+            ::UiModelBuiltInComposable,
+            ::InlineMockkStub,
+            ::UseCaseRunCatching,
+            ::NoRawLogging,
+            ::InlineFullyQualifiedReference,
+            ::NestedCommentInKDoc,
+            ::TestMissingArrangeActAssert,
+        ),
+    )
 }

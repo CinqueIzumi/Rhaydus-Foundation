@@ -388,7 +388,7 @@ class UiModelBuiltInComposableTest {
 
             fun Int.toFooUiModel() = FooUiModel(this)
 
-        """.trimIndent() + "\n"
+            """.trimIndent() + "\n"
 
         private val HEADER = header("nl.rhaydus.sample")
 

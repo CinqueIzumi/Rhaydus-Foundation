@@ -38,13 +38,12 @@ internal fun ASTNode.isRegionMarker(): Boolean {
     return text.startsWith("region") || text.startsWith("endregion")
 }
 
-internal fun ASTNode.isGuardClause(): Boolean =
-    when (elementType) {
-        IF -> isJumpGuardIf()
-        PROPERTY -> children().any { it.elementType == BINARY_EXPRESSION && it.isElvisJump() }
-        BINARY_EXPRESSION -> isElvisJump()
-        else -> false
-    }
+internal fun ASTNode.isGuardClause(): Boolean = when (elementType) {
+    IF -> isJumpGuardIf()
+    PROPERTY -> children().any { it.elementType == BINARY_EXPRESSION && it.isElvisJump() }
+    BINARY_EXPRESSION -> isElvisJump()
+    else -> false
+}
 
 /** `if (…) <jump>` or `if (…) { <jump> }` without an `else`. */
 private fun ASTNode.isJumpGuardIf(): Boolean {

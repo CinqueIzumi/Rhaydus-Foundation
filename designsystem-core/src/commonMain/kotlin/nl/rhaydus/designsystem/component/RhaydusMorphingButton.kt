@@ -100,7 +100,7 @@ fun RhaydusMorphingButton(
                 (
                     fadeIn(animationSpec = motionScheme.fastEffectsSpec()) togetherWith
                         fadeOut(animationSpec = motionScheme.fastEffectsSpec())
-                    ).using(
+                ).using(
                     SizeTransform(clip = false) { _, _ -> snap() },
                 )
             },

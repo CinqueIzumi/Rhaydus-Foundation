@@ -209,10 +209,12 @@ abstract class CheckDocBudgetsTask : DefaultTask() {
         markdownFiles.files.forEach { file ->
             val relativePath = file.relativeTo(root).invariantSeparatorsPath
 
-            if (isListed(
+            val listed = isListed(
                 relativePath,
                 permanent,
-            ).not()) return@forEach
+            )
+
+            if (listed.not()) return@forEach
 
             file.readText().lineSequence().forEachIndexed { index, line ->
                 val at = "$relativePath:${index + 1}"
@@ -308,18 +310,17 @@ abstract class CheckDocBudgetsTask : DefaultTask() {
     private fun resolveMergeBase(
         root: File,
         branch: String,
-    ): String =
-        listOf("origin/$branch", branch).firstNotNullOfOrNull { ref ->
-            runGit(
-                root,
-                "merge-base",
-                "HEAD",
-                ref,
-            )?.toString(Charsets.UTF_8)?.trim()
-        } ?: throw GradleException(
-            "checkDocBudgets: cannot resolve a git merge-base against origin/$branch or $branch - " +
-                "the checkout needs full history (fetch-depth: 0).",
-        )
+    ): String = listOf("origin/$branch", branch).firstNotNullOfOrNull { ref ->
+        runGit(
+            root,
+            "merge-base",
+            "HEAD",
+            ref,
+        )?.toString(Charsets.UTF_8)?.trim()
+    } ?: throw GradleException(
+        "checkDocBudgets: cannot resolve a git merge-base against origin/$branch or $branch - " +
+            "the checkout needs full history (fetch-depth: 0).",
+    )
 
     private fun gitShow(
         root: File,
