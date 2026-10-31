@@ -271,9 +271,10 @@ The concrete catalog lives in the app's own doc.
   self-contained (kotlinx `Dispatchers`, no Koin); failures surface through the `SaveOutcome` /
   `ShareOutcome` return types, not a logger. `GalleryWritePermissionRequester` gates the legacy Android write
   permission (API ≤ 28) and reports granted immediately elsewhere.
-- **The button family is shared.** `RhaydusButton`, `RhaydusToggleButton`, `RhaydusIconToggleButton`, and
-  `RhaydusSplitButton` (`designsystem-core`) are the canonical buttons, parameterized by the `ButtonSize` /
-  `ButtonStyle` / `ToggleButtonStyle` / `IconToggleButtonStyle` / `SplitButtonStyle` enums, with icons as
+- **The button family is shared.** `RhaydusButton`, `RhaydusMorphingButton`, `RhaydusToggleButton`,
+  `RhaydusIconToggleButton`, and `RhaydusSplitButton` (`designsystem-core`) are the canonical buttons,
+  parameterized by the `ButtonSize` / `ButtonStyle` / `MorphingButtonTone` / `ToggleButtonStyle` /
+  `IconToggleButtonStyle` / `SplitButtonStyle` enums, with icons as
   `RhaydusIconResource`. Use them, not Material `Button` directly. The filled style carries press-scale
   feedback (section 7). They use Material typography (no editorial dependency).
 - **Shared interactive widgets take params, never brand values.**

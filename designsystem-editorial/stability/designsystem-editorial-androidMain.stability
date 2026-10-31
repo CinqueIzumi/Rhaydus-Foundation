@@ -34,8 +34,8 @@ public fun nl.rhaydus.designsystem.editorial.component.EditorialSearchField(quer
     - query: STABLE (String is immutable)
     - onQueryChange: STABLE (function type)
     - onClearClick: STABLE (function type)
-    - searchIcon: STABLE (class with no mutable properties)
-    - clearIcon: STABLE (class with no mutable properties)
+    - searchIcon: STABLE (marked @Stable or @Immutable)
+    - clearIcon: STABLE (marked @Stable or @Immutable)
     - modifier: STABLE (marked @Stable or @Immutable)
     - placeholder: STABLE (String is immutable)
 

@@ -72,7 +72,7 @@ public fun nl.rhaydus.designsystem.component.InlineErrorState(message: kotlin.St
 
 @Composable
 public fun nl.rhaydus.designsystem.component.RhaydusButton(label: kotlin.String, style: nl.rhaydus.designsystem.model.ButtonStyle, onClick: kotlin.Function0<kotlin.Unit>, modifier: androidx.compose.ui.Modifier, enabled: kotlin.Boolean, icon: nl.rhaydus.designsystem.icon.RhaydusIconResource?, size: nl.rhaydus.designsystem.model.ButtonSize): kotlin.Unit
-  skippable: false
+  skippable: true
   restartable: true
   params:
     - label: STABLE (String is immutable)
@@ -80,19 +80,19 @@ public fun nl.rhaydus.designsystem.component.RhaydusButton(label: kotlin.String,
     - onClick: STABLE (function type)
     - modifier: STABLE (marked @Stable or @Immutable)
     - enabled: STABLE (primitive type)
-    - icon: UNSTABLE (has mutable properties or unstable members)
+    - icon: STABLE (marked @Stable or @Immutable)
     - size: STABLE (class with no mutable properties)
 
 @Composable
 public fun nl.rhaydus.designsystem.component.RhaydusButton(style: nl.rhaydus.designsystem.model.ButtonStyle, onClick: kotlin.Function0<kotlin.Unit>, modifier: androidx.compose.ui.Modifier, enabled: kotlin.Boolean, icon: nl.rhaydus.designsystem.icon.RhaydusIconResource?, size: nl.rhaydus.designsystem.model.ButtonSize, content: @[Composable] @[ExtensionFunctionType] androidx.compose.runtime.internal.ComposableFunction1<androidx.compose.foundation.layout.RowScope, kotlin.Unit>): kotlin.Unit
-  skippable: false
+  skippable: true
   restartable: true
   params:
     - style: STABLE (class with no mutable properties)
     - onClick: STABLE (function type)
     - modifier: STABLE (marked @Stable or @Immutable)
     - enabled: STABLE (primitive type)
-    - icon: UNSTABLE (has mutable properties or unstable members)
+    - icon: STABLE (marked @Stable or @Immutable)
     - size: STABLE (class with no mutable properties)
     - content: STABLE (composable function type)
 
@@ -111,16 +111,29 @@ public fun nl.rhaydus.designsystem.component.RhaydusDatePickerDialog(initialDate
 
 @Composable
 public fun nl.rhaydus.designsystem.component.RhaydusIconToggleButton(checked: kotlin.Boolean, icon: nl.rhaydus.designsystem.icon.RhaydusIconResource, style: nl.rhaydus.designsystem.model.IconToggleButtonStyle, onCheckedChange: kotlin.Function1<kotlin.Boolean, kotlin.Unit>, modifier: androidx.compose.ui.Modifier, enabled: kotlin.Boolean, shape: nl.rhaydus.designsystem.model.IconToggleButtonShape, size: nl.rhaydus.designsystem.model.ButtonSize): kotlin.Unit
-  skippable: false
+  skippable: true
   restartable: true
   params:
     - checked: STABLE (primitive type)
-    - icon: UNSTABLE (has mutable properties or unstable members)
+    - icon: STABLE (marked @Stable or @Immutable)
     - style: STABLE (class with no mutable properties)
     - onCheckedChange: STABLE (function type)
     - modifier: STABLE (marked @Stable or @Immutable)
     - enabled: STABLE (primitive type)
     - shape: STABLE (class with no mutable properties)
+    - size: STABLE (class with no mutable properties)
+
+@Composable
+public fun nl.rhaydus.designsystem.component.RhaydusMorphingButton(label: kotlin.String, tone: nl.rhaydus.designsystem.model.MorphingButtonTone, onClick: kotlin.Function0<kotlin.Unit>, modifier: androidx.compose.ui.Modifier, enabled: kotlin.Boolean, icon: nl.rhaydus.designsystem.icon.RhaydusIconResource?, size: nl.rhaydus.designsystem.model.ButtonSize): kotlin.Unit
+  skippable: true
+  restartable: true
+  params:
+    - label: STABLE (String is immutable)
+    - tone: STABLE (class with no mutable properties)
+    - onClick: STABLE (function type)
+    - modifier: STABLE (marked @Stable or @Immutable)
+    - enabled: STABLE (primitive type)
+    - icon: STABLE (marked @Stable or @Immutable)
     - size: STABLE (class with no mutable properties)
 
 @Composable
@@ -131,7 +144,7 @@ public fun nl.rhaydus.designsystem.component.RhaydusSplitButton(checked: kotlin.
     - checked: STABLE (primitive type)
     - dropDownItems: RUNTIME (requires runtime check)
     - label: STABLE (String is immutable)
-    - trailingIcon: UNSTABLE (has mutable properties or unstable members)
+    - trailingIcon: STABLE (marked @Stable or @Immutable)
     - onDismissMenuRequest: STABLE (function type)
     - onLeadingButtonClick: STABLE (function type)
     - onTrailingButtonClick: STABLE (function type)
@@ -140,7 +153,7 @@ public fun nl.rhaydus.designsystem.component.RhaydusSplitButton(checked: kotlin.
     - leadingEnabled: STABLE (primitive type)
     - trailingButtonStyle: STABLE (class with no mutable properties)
     - trailingEnabled: STABLE (primitive type)
-    - leadingIcon: UNSTABLE (has mutable properties or unstable members)
+    - leadingIcon: STABLE (marked @Stable or @Immutable)
     - stretchToWidth: STABLE (primitive type)
 
 @Composable
@@ -167,12 +180,12 @@ internal fun nl.rhaydus.designsystem.component.ScrimlessDialog(onDismissRequest:
 
 @Composable
 public fun nl.rhaydus.designsystem.component.StarRatingInput(rating: kotlin.Double?, onRatingChange: kotlin.Function1<kotlin.Double, kotlin.Unit>, starIcon: nl.rhaydus.designsystem.icon.RhaydusIconResource, modifier: androidx.compose.ui.Modifier, filledColor: androidx.compose.ui.graphics.Color, emptyColor: androidx.compose.ui.graphics.Color, starCount: kotlin.Int, starSize: androidx.compose.ui.unit.Dp, spacing: androidx.compose.ui.unit.Dp, enabled: kotlin.Boolean, contentDescription: kotlin.String?): kotlin.Unit
-  skippable: false
+  skippable: true
   restartable: true
   params:
     - rating: STABLE (class with no mutable properties)
     - onRatingChange: STABLE (function type)
-    - starIcon: UNSTABLE (has mutable properties or unstable members)
+    - starIcon: STABLE (marked @Stable or @Immutable)
     - modifier: STABLE (marked @Stable or @Immutable)
     - filledColor: STABLE (marked @Stable or @Immutable)
     - emptyColor: STABLE (marked @Stable or @Immutable)
@@ -235,12 +248,6 @@ public fun nl.rhaydus.designsystem.component.staggeredEntry(coordinator: nl.rhay
 
 @Composable
 public fun nl.rhaydus.designsystem.haptics.rememberHaptics(): nl.rhaydus.designsystem.haptics.Haptics
-  skippable: true
-  restartable: true
-  params:
-
-@Composable
-public fun nl.rhaydus.designsystem.icon.RhaydusIconResource.Custom.getIconPainter(): androidx.compose.ui.graphics.painter.Painter
   skippable: true
   restartable: true
   params:
