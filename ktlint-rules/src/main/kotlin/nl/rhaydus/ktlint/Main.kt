@@ -1,37 +1,21 @@
 package nl.rhaydus.ktlint
 
 import com.pinterest.ktlint.rule.engine.api.Code
-import com.pinterest.ktlint.rule.engine.api.KtLintRuleEngine
 import com.pinterest.ktlint.rule.engine.core.api.AutocorrectDecision
-import com.pinterest.ktlint.rule.engine.core.api.RuleProvider
 import java.io.File
 import kotlin.system.exitProcess
 
 /**
- * Drives the custom rhaydus ktlint ruleset directly via ktlint's rule-engine — no Spotless or
+ * Drives [rhaydusKtLintEngine] directly via ktlint's rule-engine, with no Spotless or
  * ktlint-gradle plugin, so the ktlint version is fully under our control.
  *
  * Usage: Main <format|check> <rootDir>
  */
-private val ruleProviders: Set<RuleProvider> =
-    setOf(
-        RuleProvider { MultiArgWrappingRule() },
-        RuleProvider { TrailingLambdaBraceRule() },
-        RuleProvider { TrailingCommaRule() },
-        RuleProvider { BooleanNotationRule() },
-        RuleProvider { StatementParagraphRule() },
-        RuleProvider { RegionCommentFlushRule() },
-        RuleProvider { BraceBlankLineRule() },
-        RuleProvider { SiblingComposableBlankLineRule() },
-        RuleProvider { ImportLayoutRule() },
-        RuleProvider { NoUnusedImportsRule() },
-    )
-
 fun main(args: Array<String>) {
     val mode = args.getOrNull(0) ?: "check"
     val root = File(args.getOrNull(1) ?: ".")
 
-    val engine = KtLintRuleEngine(ruleProviders = ruleProviders)
+    val engine = rhaydusKtLintEngine()
 
     val files =
         root

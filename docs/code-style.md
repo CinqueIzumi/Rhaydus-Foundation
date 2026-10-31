@@ -10,11 +10,12 @@
 - `nl.rhaydus:ktlint-rules` (package `nl.rhaydus.ktlint`) enforces mechanizable style.
   `./gradlew ktlintFormat` auto-fixes; `./gradlew ktlintCheck` verifies.
 - The ktlint ruleset is a formatter: every rule auto-fixes (argument wrapping, trailing commas, lambda braces,
-  paragraph and brace blank lines, sibling composables, import layout, unused imports). Declaration and
-  semantic rules live in `detekt-rules` (no inline mockk stubs, no bare `runCatching` in a `*UseCase*`, no raw
-  logging through the `AppLog` facade from `nl.rhaydus:core-common`, no inline fully-qualified references) and
-  `konsist-rules` (one type per file, uniformly-internal visibility). Cases no tool gates (cross-module
-  mappers, shared components, anything subtler) are caught in review.
+  multi-line expressions opening on the `=` line, paragraph and brace blank lines, sibling composables, import
+  layout, unused imports, indentation). Declaration and semantic rules live in `detekt-rules` (no inline
+  mockk stubs, no bare `runCatching` in a `*UseCase*`, no raw logging through the `AppLog` facade from
+  `nl.rhaydus:core-common`, no inline fully-qualified references) and `konsist-rules` (one type per file,
+  uniformly-internal visibility). Cases no tool gates (cross-module mappers, shared components, anything
+  subtler) are caught in review.
 - `nl.rhaydus:detekt-rules` (run by `./gradlew styleCheck`, plus the shared `config/detekt.yml` baseline; detekt 2.0.0-alpha.6, group
   `dev.detekt`) adds the type-resolution checks, notably `UnguardedFlowTerminalRead`: it flags an unguarded `Flow` `first()` /
   `single()` and does not flag the `Collection` operators of the same name.
@@ -296,6 +297,9 @@ Row(...) {
   - data-class instantiations,
   - `apply { ... }` / `copy(...)` invocations on data classes,
   - any other parenthesised parameter list with two or more entries.
+- A multi-line expression after `=` (property initializer, expression or accessor body, default parameter value,
+  named argument, assignment) opens on the `=` line: `val listed = isListed(`. A dangling `=` stays when the
+  expression's first line does not open a bracket or lambda, or when the join would pass 140 columns.
 - A trailing lambda (`fn(arg) { ... }`) does not count as an argument: `runTest(dispatcher) { ... }`
   stays on one line.
 - **Property/parameter annotations go on their own line** above the declaration, never inline. When a

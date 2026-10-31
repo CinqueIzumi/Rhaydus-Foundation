@@ -12,6 +12,7 @@ plugins {
 dependencies {
     implementation(libs.ktlint.ruleEngine)
     api(libs.ktlint.ruleEngineCore)
+    implementation(libs.ktlint.rulesetStandard)
 
     // ktlint's rule-engine logs via slf4j; provide the api + a no-op binding at runtime
     implementation("org.slf4j:slf4j-api:2.0.16")
@@ -49,7 +50,7 @@ mavenPublishing {
     )
     pom {
         name.set("rhaydus ktlint-rules")
-        description.set("Custom ktlint ruleset (multi-arg wrapping, blank-line, visibility, etc.) shared across the nl.rhaydus apps.")
+        description.set("Custom ktlint ruleset (multi-arg wrapping, blank-line, visibility, etc.) plus the standard indent rule shared across the nl.rhaydus apps.")
         url.set("https://github.com/CinqueIzumi/rhaydus-foundation")
         licenses {
             license {
