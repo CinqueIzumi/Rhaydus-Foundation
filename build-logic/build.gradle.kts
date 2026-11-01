@@ -53,6 +53,10 @@ gradlePlugin {
             id = "rhaydus.doc-budgets"
             implementationClass = "nl.rhaydus.buildlogic.DocBudgetsConventionPlugin"
         }
+        register("fileSize") {
+            id = "rhaydus.file-size"
+            implementationClass = "nl.rhaydus.buildlogic.FileSizeConventionPlugin"
+        }
         register("moduleGraph") {
             id = "rhaydus.module-graph"
             implementationClass = "nl.rhaydus.buildlogic.ModuleGraphConventionPlugin"
