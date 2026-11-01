@@ -121,6 +121,9 @@ feature/<name>/
   Keeping them private prevents composables from one screen leaking into and being reused by other
   screens (which couples screens and bypasses the screen model). If you need a preview, put the
   `@Preview` function inside the same `object`.
+- **A composable embedded in another `Screen` receives its ScreenModel from the owning `Screen`**, which
+  fetches it with `koinScreenModel` and passes it down. Fetching it inside the composable with
+  `koinNavigatorScreenModel` widens its lifetime from that `Screen` to the whole `Navigator`.
 - Put cross-feature state (auth, session, anything more than one feature reads) in a `core`
   repository exposing a `StateFlow`, inject it through `XDependencies`, and mirror it into UI state
   with a collector - don't trap shared state inside a feature. An auth/session/account repository

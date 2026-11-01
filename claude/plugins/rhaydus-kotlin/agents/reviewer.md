@@ -63,8 +63,9 @@ hand-check it.
    `document-code` standard).
 10. **Tests:** test files in scope are reviewed like source. Each test must pass the project's tests rules; one
     that fails "it would be missed", "behaviour, not implementation" or the change-detector ban is 🟡 with a
-    delete suggestion. Every `@Test` sits in a `@Nested inner class` and carries all three AAA markers
-    (`Act & Assert` only when the assertion is the act): no gate checks either, so grep for them.
+    delete suggestion. Konsist gates the `@Nested` nesting and detekt the AAA markers; review checks that
+    each nested class groups one function under test and that `Act & Assert` appears only when the
+    assertion is the act.
 11. **Stability baselines:** re-dumping the baseline accepts whatever changed, so this diff is the only place a
     regression is caught. A `<module>/stability/*.stability` hunk where a parameter loses `STABLE` or a
     composable goes from `skippable: true` to `false` is 🔴 unless justified. A composable added, removed or

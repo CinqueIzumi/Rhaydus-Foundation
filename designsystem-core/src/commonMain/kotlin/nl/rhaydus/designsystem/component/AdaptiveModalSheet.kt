@@ -80,7 +80,9 @@ val LocalModalSheetClosing = staticCompositionLocalOf { false }
  * padding and scroll - so a call site swaps `ModalBottomSheet` for `AdaptiveModalSheet` without
  * touching the body. Both forms open on `surfaceContainerLowest` and lead with the canonical section
  * header (section 5.6); neither carries a close button. An in-content dismiss button reaches the
- * right close behaviour through [LocalModalSheetDismiss] rather than its own sheet state.
+ * right close behaviour through [LocalModalSheetDismiss] rather than its own sheet state. Both forms
+ * bound the body's height, so pinned rows plus one `weight(1f)` scrolling region fill the available
+ * height rather than wrapping.
  *
  * The expanded panel scales and fades in over a fading scrim and plays the same exit before
  * [onDismissRequest], whichever way it closes. [panelShape] shapes it. [overlay] is composed above the

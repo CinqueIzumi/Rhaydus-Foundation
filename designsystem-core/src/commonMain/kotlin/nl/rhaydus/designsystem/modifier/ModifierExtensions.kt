@@ -54,7 +54,8 @@ fun Modifier.pointerHandCursor(): Modifier = this.pointerHoverIcon(PointerIcon.H
 /**
  * Desktop affordance: paints a subtle translucent overlay (clipped to [shape]) over the receiver
  * while [interactionSource] reports a hover, cross-fading in and out. The hover sibling of
- * [pressScale] - pair it with a `clickable` / `hoverable` that shares the same `InteractionSource`.
+ * [pressScale]. It only reads [interactionSource]: a `clickable` on the same source already emits hover,
+ * so add a `hoverable` only when nothing else does.
  * Inert on touch platforms, where hover interactions never fire. The default tint is a low-alpha
  * `onSurface` wash; pass [color] for surfaces that need a stronger or differently-keyed highlight.
  */

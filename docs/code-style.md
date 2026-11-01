@@ -302,6 +302,8 @@ Row(...) {
   expression's first line does not open a bracket or lambda, or when the join would pass 140 columns.
 - A trailing lambda (`fn(arg) { ... }`) does not count as an argument: `runTest(dispatcher) { ... }`
   stays on one line.
+- A lambda whose body spans more than one line puts its `{` and `}` each on their own line, never `) }`
+  or `{ call(`. A single-line body stays inline: `repository.observe { it.first() }`.
 - **Property/parameter annotations go on their own line** above the declaration, never inline. When a
   class's properties carry such annotations, separate **every** property in that list with a blank
   line, including unannotated ones mixed in.
