@@ -46,6 +46,7 @@ fun DropCapText(
             color = bodyColor,
             modifier = modifier,
         )
+
         return
     }
 
@@ -169,10 +170,12 @@ fun DropCapText(
                 x = 0,
                 y = 0,
             )
+
             firstPlaceable.placeRelative(
                 x = capWidth + gapPx,
                 y = 0,
             )
+
             secondPlaceable?.placeRelative(
                 x = 0,
                 y = firstPlaceable.height,

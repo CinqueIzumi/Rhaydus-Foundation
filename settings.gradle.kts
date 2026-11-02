@@ -13,6 +13,10 @@ pluginManagement {
     }
 }
 
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -25,7 +29,7 @@ rootProject.name = "rhaydus-foundation"
 
 include(":ktlint-rules")
 include(":detekt-rules")
-include(":catalog")
+include(":konsist-rules")
 include(":toad")
 include(":core-common")
 include(":core-platform")

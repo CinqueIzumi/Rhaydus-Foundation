@@ -1,24 +1,25 @@
 # Foundation version catalog, trimmed to what foundation modules actually need. App-only libraries
-# (Apollo, Room, CameraX, MLKit,
-# markdown, DataStore, etc.) stay in each app's own catalog. (Coil entered here for :designsystem-image;
-# the network fetcher stays an app choice.) In phase 2 this is published as a
-# `version-catalog` artifact and consumed by both apps via `from("nl.rhaydus:catalog:<v>")`.
+# (Apollo, Room, CameraX, MLKit, markdown, DataStore, etc.) stay in each app's own catalog. Consumers
+# load this file from the submodule via `from(files("foundation/gradle/libs.versions.toml"))`.
 
 [versions]
-agp = "9.0.0"
-kotlin = "2.3.21"
+agp = "9.3.3"
+kotlin = "2.4.21"
 ktlint = "1.7.1"
 coroutines = "1.10.2"
 kotlinxDatetime = "0.7.1"
 kermit = "2.0.6"
-detekt = "1.23.8"
+detekt = "2.0.0-alpha.6"
+stabilityAnalyzer = "0.9.0"
 composeMultiplatform = "1.11.0"
+# Navigation Event library: the multiplatform back-gesture API that supersedes the deprecated CMP
+# `ui-backhandler`.
+navigationevent = "1.0.1"
 composeMaterial3Expressive = "1.11.0-alpha07"
 # Android-target Compose (consumed by the rhaydus.android.compose convention)
 composeBom = "2026.01.01"
-# androidx.compose.ui tooling: pinned (not BOM-managed) because a published module declares these in
-# its POM and Maven Central requires explicit versions. Tracks the compose-bom value above.
-composeUiTooling = "1.10.2"
+# androidx.compose.runtime on the lint-check classpath only (see :toad); its lint.jar must not bundle an old kotlinx-metadata.
+composeRuntimeLint = "1.11.3"
 activityCompose = "1.12.0"
 coreKtx = "1.17.0"
 lifecycleRuntimeKtx = "2.10.0"
@@ -27,35 +28,38 @@ coil = "3.2.0"
 voyager = "1.1.0-beta02"
 koinVersion = "3.5.3"
 koinComposeMultiplatform = "1.1.2"
-ksp = "2.3.9"
-dependencyAnalysis = "3.14.1"
+ksp = "2.3.12"
+dependencyAnalysis = "3.19.2"
 # KSafe backs the desktop (JVM) SecureStorage actual: it custodies the encryption key in the OS
 # secret store (macOS Keychain / Windows DPAPI / Linux Secret Service).
 ksafe = "2.1.2"
 # Test stack
 jUnitVersion = "5.11.4"
 junitPlatform = "1.11.4"
+konsist = "0.18.1"
 kotestVersion = "5.9.1"
 mockkVersion = "1.13.17"
 turbineVersion = "1.2.0"
-# Publishing
-vanniktechMavenPublish = "0.30.0"
 
 [libraries]
 # ktlint rule-engine — consumed by :ktlint-rules (phase 1)
 ktlint-ruleEngine = { group = "com.pinterest.ktlint", name = "ktlint-rule-engine", version.ref = "ktlint" }
 ktlint-ruleEngineCore = { group = "com.pinterest.ktlint", name = "ktlint-rule-engine-core", version.ref = "ktlint" }
 ktlint-cliRulesetCore = { group = "com.pinterest.ktlint", name = "ktlint-cli-ruleset-core", version.ref = "ktlint" }
+ktlint-rulesetStandard = { group = "com.pinterest.ktlint", name = "ktlint-ruleset-standard", version.ref = "ktlint" }
 ktlint-test = { group = "com.pinterest.ktlint", name = "ktlint-test", version.ref = "ktlint" }
-detekt-api = { group = "io.gitlab.arturbosch.detekt", name = "detekt-api", version.ref = "detekt" }
-detekt-cli = { group = "io.gitlab.arturbosch.detekt", name = "detekt-cli", version.ref = "detekt" }
-detekt-test = { group = "io.gitlab.arturbosch.detekt", name = "detekt-test", version.ref = "detekt" }
+detekt-api = { group = "dev.detekt", name = "detekt-api", version.ref = "detekt" }
+detekt-cli = { group = "dev.detekt", name = "detekt-cli", version.ref = "detekt" }
+detekt-gradlePlugin = { group = "dev.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+stability-analyzer-gradlePlugin = { group = "com.github.skydoves", name = "compose-stability-gradle", version.ref = "stabilityAnalyzer" }
+detekt-test = { group = "dev.detekt", name = "detekt-test", version.ref = "detekt" }
 
 # Gradle plugin artifacts — consumed by build-logic convention plugins (compileOnly, phase 2)
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-compiler-gradlePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
 compose-multiplatform-gradlePlugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "composeMultiplatform" }
+dependency-analysis-gradlePlugin = { group = "com.autonomousapps", name = "dependency-analysis-gradle-plugin", version.ref = "dependencyAnalysis" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
 
 # Module-shape convention deps (rhaydus.android.library / rhaydus.kmp.library)
@@ -73,15 +77,15 @@ voyager-koin = { group = "cafe.adriel.voyager", name = "voyager-koin", version.r
 
 # Compose convention deps (rhaydus.kmp.compose / rhaydus.android.compose) + designsystem-core (phase 4)
 compose-material3-expressive = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMaterial3Expressive" }
-compose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "composeMultiplatform" }
+navigationevent-compose = { group = "org.jetbrains.androidx.navigationevent", name = "navigationevent-compose", version.ref = "navigationevent" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "composeUiTooling" }
-androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "composeUiTooling" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3ComposeVersion" }
 
@@ -96,6 +100,7 @@ junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.r
 junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "jUnitVersion" }
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "jUnitVersion" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatform" }
+konsist = { group = "com.lemonappdev", name = "konsist", version.ref = "konsist" }
 kotest = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotestVersion" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockkVersion" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
@@ -107,5 +112,6 @@ android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
+stability-analyzer = { id = "com.github.skydoves.compose.stability.analyzer", version.ref = "stabilityAnalyzer" }
 dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" }

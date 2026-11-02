@@ -1,0 +1,16 @@
+# The foundation's own detekt overrides, layered on the shared baseline bundled in :detekt-rules.
+# An `excludes` list replaces the baseline's rather than merging, so each override restates the test
+# source sets.
+
+rhaydus:
+  # The design-system modules ship the Spacing and Corners tokens and the components built on them. Their
+  # internal metrics (an icon gap, a scrollbar thumb radius, an animation offset) are neutral library
+  # defaults with no token of the same value. The rules guard an app's screens, which read the tokens.
+  RawSpacingDp:
+    excludes: ['**/*Test/**', '**/test/**', '**/designsystem-core/**', '**/designsystem-editorial/**', '**/designsystem-image/**']
+  RawCornerDp:
+    excludes: ['**/*Test/**', '**/test/**', '**/designsystem-core/**', '**/designsystem-editorial/**', '**/designsystem-image/**']
+  # The ktlint entry file is a command-line main: its stdout is the result a build reads, and it has no
+  # AppLog facade to log through.
+  NoRawLogging:
+    excludes: ['**/ktlint-rules/src/main/kotlin/nl/rhaydus/ktlint/Main.kt']

@@ -126,7 +126,9 @@ private fun Modifier.newlyInsertedAccentPulse(
             1f,
             animationSpec = fadeSpec,
         )
+
         delay(200L)
+
         alpha.animateTo(
             0f,
             animationSpec = fadeSpec,
@@ -135,6 +137,7 @@ private fun Modifier.newlyInsertedAccentPulse(
 
     return drawWithContent {
         drawContent()
+
         if (alpha.value > 0f) {
             drawAccentBar(
                 color = pulseColor,

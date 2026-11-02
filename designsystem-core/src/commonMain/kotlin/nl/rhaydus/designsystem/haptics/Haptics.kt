@@ -33,8 +33,7 @@ val LocalHaptics = staticCompositionLocalOf<Haptics> { NoOpHaptics }
 
 /**
  * The active [Haptics] for the current platform - Android maps to `View.performHapticFeedback`, iOS
- * to `UIFeedbackGenerator`, desktop to a no-op. Provided here (rather than via [LocalHaptics], which
- * defaults to a no-op) so any composable can opt into haptics directly.
+ * to `UIFeedbackGenerator`, desktop to a no-op. `RhaydusTheme` provides it as [LocalHaptics].
  */
 @Composable
 expect fun rememberHaptics(): Haptics

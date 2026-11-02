@@ -3,8 +3,8 @@ package nl.rhaydus.offlinesync
 /**
  * Tunes the drain engine's retry behaviour.
  *
- * - [maxAttempts] is the poison cap passed to [PendingWriteStore.getPending]: a write that has failed
- *   transiently this many times is no longer returned for replay.
+ * - [maxAttempts] is the engine's poison cap: a write that has failed transiently this many times is
+ *   handed to [PendingWriteStore.abandon] instead of being retried.
  * - [inDrainRetries] is how many times a single write is replayed within one drain pass before its failure
  *   is classified (1 = no in-drain retry).
  * - [initialBackoffMs] / [backoffMultiplier] / [backoffCapMs] shape the exponential delay between those

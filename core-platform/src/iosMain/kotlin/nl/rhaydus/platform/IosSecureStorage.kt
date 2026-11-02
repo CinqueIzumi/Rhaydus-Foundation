@@ -12,6 +12,8 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.value
 import kotlinx.coroutines.withContext
+import nl.rhaydus.common.AppDispatchers
+import nl.rhaydus.common.AppLog
 import platform.CoreFoundation.CFDictionaryCreate
 import platform.CoreFoundation.CFDictionaryRef
 import platform.CoreFoundation.CFRelease
@@ -41,8 +43,6 @@ import platform.Security.kSecMatchLimit
 import platform.Security.kSecMatchLimitOne
 import platform.Security.kSecReturnData
 import platform.Security.kSecValueData
-import nl.rhaydus.common.AppDispatchers
-import nl.rhaydus.common.AppLog
 
 /**
  * iOS secure storage: each secret is a generic-password Keychain item keyed by `key` (as the
@@ -72,10 +72,12 @@ class IosSecureStorage(private val dispatchers: AppDispatchers) : SecureStorage 
                 )
 
                 val result = alloc<CFTypeRefVar>()
+
                 val status = SecItemCopyMatching(
                     query,
                     result.ptr,
                 )
+
                 CFRelease(query)
 
                 if (status != errSecSuccess) return@memScoped null
@@ -114,10 +116,12 @@ class IosSecureStorage(private val dispatchers: AppDispatchers) : SecureStorage 
                         kSecAttrAccount to cfAccount,
                         kSecValueData to cfData,
                     )
+
                     val addStatus = SecItemAdd(
                         addQuery,
                         null,
                     )
+
                     CFRelease(addQuery)
 
                     when (addStatus) {
@@ -129,13 +133,16 @@ class IosSecureStorage(private val dispatchers: AppDispatchers) : SecureStorage 
                                 kSecAttrService to cfService,
                                 kSecAttrAccount to cfAccount,
                             )
+
                             val attributes = cfDictionaryOf(
                                 kSecValueData to cfData,
                             )
+
                             val updateStatus = SecItemUpdate(
                                 matchQuery,
                                 attributes,
                             )
+
                             CFRelease(matchQuery)
                             CFRelease(attributes)
 
@@ -173,6 +180,7 @@ class IosSecureStorage(private val dispatchers: AppDispatchers) : SecureStorage 
                         kSecAttrService to cfService,
                         kSecAttrAccount to cfAccount,
                     )
+
                     SecItemDelete(query)
                     CFRelease(query)
                 }

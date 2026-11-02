@@ -13,13 +13,9 @@ actual fun rememberClipboardReader(): ClipboardReader {
     return remember(context) {
         ClipboardReader {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-            val clip = clipboard?.primaryClip
+            val clip = clipboard?.primaryClip?.takeIf { it.itemCount > 0 }
 
-            if (clip == null || clip.itemCount == 0) {
-                ""
-            } else {
-                clip.getItemAt(0).coerceToText(context).toString()
-            }
+            clip?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
         }
     }
 }

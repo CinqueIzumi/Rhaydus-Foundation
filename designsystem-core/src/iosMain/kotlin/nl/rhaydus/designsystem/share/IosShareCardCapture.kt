@@ -5,14 +5,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
-import kotlin.coroutines.resume
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.usePinned
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.jetbrains.skia.EncodedImageFormat
@@ -34,11 +33,13 @@ import platform.UIKit.UIWindowScene
 import platform.UIKit.popoverPresentationController
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
+import kotlin.coroutines.resume
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 internal class IosShareCardCapture internal constructor(
     override val graphicsLayer: GraphicsLayer,
     private val config: ShareCardCaptureConfig,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : ShareCardCapture {
     // TODO(iOS): gallery save needs PHPhotoLibrary + NSPhotoLibraryAddUsageDescription; revisit with the permission requester.
     override suspend fun saveToGallery(displayName: String): SaveOutcome =
@@ -48,8 +49,9 @@ internal class IosShareCardCapture internal constructor(
         val pngBytes = capturePngBytes()
             ?: return SaveOutcome.Failure(reason = "Failed to encode share card")
 
-        return withContext(Dispatchers.IO) {
+        return withContext(ioDispatcher) {
             val directory = "${cachesDirectory()}/$SHARE_CACHE_FOLDER"
+
             NSFileManager.defaultManager.createDirectoryAtPath(
                 path = directory,
                 withIntermediateDirectories = true,
@@ -58,6 +60,7 @@ internal class IosShareCardCapture internal constructor(
             )
 
             val path = "$directory/${buildFilename(displayName = displayName)}"
+
             val written = pngBytes.toNSData().writeToFile(
                 path = path,
                 atomically = true,
@@ -138,12 +141,11 @@ internal class IosShareCardCapture internal constructor(
         return "${config.fileNamePrefix}-$sanitized.png"
     }
 
-    private fun cachesDirectory(): String =
-        NSSearchPathForDirectoriesInDomains(
-            directory = NSCachesDirectory,
-            domainMask = NSUserDomainMask,
-            expandTilde = true,
-        ).first() as String
+    private fun cachesDirectory(): String = NSSearchPathForDirectoriesInDomains(
+        directory = NSCachesDirectory,
+        domainMask = NSUserDomainMask,
+        expandTilde = true,
+    ).first() as String
 
     private fun topMostViewController(): UIViewController? {
         // `keyWindow` is deprecated and returns nil under multi-scene iPad; resolve the foreground
@@ -165,17 +167,16 @@ internal class IosShareCardCapture internal constructor(
         return controller
     }
 
-    private fun ByteArray.toNSData(): NSData =
-        if (isEmpty()) {
-            NSData()
-        } else {
-            usePinned { pinned ->
-                NSData.create(
-                    bytes = pinned.addressOf(0),
-                    length = size.convert(),
-                )
-            }
+    private fun ByteArray.toNSData(): NSData = if (isEmpty()) {
+        NSData()
+    } else {
+        usePinned { pinned ->
+            NSData.create(
+                bytes = pinned.addressOf(0),
+                length = size.convert(),
+            )
         }
+    }
 
     private companion object {
         const val SHARE_CACHE_FOLDER = "share"
@@ -183,13 +184,17 @@ internal class IosShareCardCapture internal constructor(
 }
 
 @Composable
-actual fun rememberShareCardCapture(config: ShareCardCaptureConfig): ShareCardCapture {
+actual fun rememberShareCardCapture(
+    config: ShareCardCaptureConfig,
+    ioDispatcher: CoroutineDispatcher,
+): ShareCardCapture {
     val graphicsLayer = rememberGraphicsLayer()
 
-    return remember(graphicsLayer, config) {
+    return remember(graphicsLayer, config, ioDispatcher) {
         IosShareCardCapture(
             graphicsLayer = graphicsLayer,
             config = config,
+            ioDispatcher = ioDispatcher,
         )
     }
 }

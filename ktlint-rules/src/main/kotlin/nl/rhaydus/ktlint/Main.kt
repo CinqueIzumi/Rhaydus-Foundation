@@ -1,45 +1,21 @@
-// This is the ktlint CLI entrypoint: stdout is its report channel and stderr its failure summary, so
-// the println / System.err.println calls below are the tool's output, not stray app logging.
-@file:Suppress("ktlint:rhaydus:no-raw-logging")
-
 package nl.rhaydus.ktlint
 
 import com.pinterest.ktlint.rule.engine.api.Code
-import com.pinterest.ktlint.rule.engine.api.KtLintRuleEngine
 import com.pinterest.ktlint.rule.engine.core.api.AutocorrectDecision
-import com.pinterest.ktlint.rule.engine.core.api.RuleProvider
 import java.io.File
 import kotlin.system.exitProcess
 
 /**
- * Drives the custom rhaydus ktlint ruleset directly via ktlint's rule-engine — no Spotless or
+ * Drives [rhaydusKtLintEngine] directly via ktlint's rule-engine, with no Spotless or
  * ktlint-gradle plugin, so the ktlint version is fully under our control.
  *
  * Usage: Main <format|check> <rootDir>
  */
-private val ruleProviders: Set<RuleProvider> =
-    setOf(
-        RuleProvider { MultiArgWrappingRule() },
-        RuleProvider { TrailingCommaRule() },
-        RuleProvider { BooleanNotationRule() },
-        RuleProvider { BlankLineAfterStatementRule() },
-        RuleProvider { RegionCommentFlushRule() },
-        RuleProvider { BraceBlankLineRule() },
-        RuleProvider { SiblingComposableBlankLineRule() },
-        RuleProvider { VisibilityModifierRule() },
-        RuleProvider { OneTypePerFileRule() },
-        RuleProvider { InlineFullyQualifiedReferenceRule() },
-        RuleProvider { ProjectImportOrderRule() },
-        RuleProvider { InlineMockkStubRule() },
-        RuleProvider { UseCaseRunCatchingRule() },
-        RuleProvider { NoRawLoggingRule() },
-    )
-
 fun main(args: Array<String>) {
     val mode = args.getOrNull(0) ?: "check"
     val root = File(args.getOrNull(1) ?: ".")
 
-    val engine = KtLintRuleEngine(ruleProviders = ruleProviders)
+    val engine = rhaydusKtLintEngine()
 
     val files =
         root
@@ -53,10 +29,12 @@ fun main(args: Array<String>) {
 
     files.forEach { file ->
         val code = Code.fromFile(file)
+
         when (mode) {
             "format" -> {
                 val original = file.readText()
                 val formatted = engine.format(code) { AutocorrectDecision.ALLOW_AUTOCORRECT }
+
                 if (formatted != original) {
                     file.writeText(formatted)
                     println("formatted: ${file.path}")

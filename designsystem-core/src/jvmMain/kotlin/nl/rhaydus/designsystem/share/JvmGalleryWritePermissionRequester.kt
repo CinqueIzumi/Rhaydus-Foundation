@@ -15,7 +15,6 @@ internal class JvmGalleryWritePermissionRequester internal constructor(
 @Composable
 actual fun rememberGalleryWritePermissionRequester(
     onResult: (Boolean) -> Unit,
-): GalleryWritePermissionRequester =
-    remember(onResult) {
-        JvmGalleryWritePermissionRequester(onResult = onResult)
-    }
+): GalleryWritePermissionRequester = remember(onResult) {
+    JvmGalleryWritePermissionRequester(onResult = onResult)
+}

@@ -1,0 +1,22 @@
+./gradlew :app:testDebugUnitTest	@Q@ :app:testDebugUnitTest	-
+JAVA_HOME=/opt/jdk21 ./gradlew styleCheck	JAVA_HOME=/opt/jdk21 @Q@ styleCheck	-
+./gradlew a && ./gradlew b	@Q@ a && @Q@ b	-
+./gradlew x | tail -5	@Q@ x | tail -5	-
+GRADLE_VERBOSE=1 ./gradlew x	=	-
+@Q@ x	=	-
+echo "./gradlew"	=	-
+echo './gradlew x'; ./gradlew y	echo './gradlew x'; @Q@ y	-
+(./gradlew x)	(@Q@ x)	-
+./gradlew --tests "pkg.*"	@Q@ --tests "pkg.*"	-
+ls ./gradlew.bat	=	-
+./gradlew x	@Q@ x	@ROOT@/modules/feature
+./gradlew x	=	@NG@
+./gradlew x	=	@NG@/inner
+cd @ROOT@ && ./gradlew x	cd @ROOT@ && @Q@ x	@NG@
+cd "@ROOT@" && ./gradlew x	cd "@ROOT@" && @Q@ x	@NG@
+cd '@ROOT@/modules' && ./gradlew x	cd '@ROOT@/modules' && @Q@ x	@NG@
+cd modules/feature && ./gradlew x	cd modules/feature && @Q@ x	-
+cd .. && ./gradlew x	=	@ROOT@
+cd @NG@ && ./gradlew x	=	-
+cd @NG@/inner && ./gradlew x	=	-
+cd @ROOT@ && GRADLE_VERBOSE=1 ./gradlew x	=	@NG@

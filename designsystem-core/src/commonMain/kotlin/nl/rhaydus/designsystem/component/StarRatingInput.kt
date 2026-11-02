@@ -24,7 +24,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import nl.rhaydus.designsystem.haptics.rememberHaptics
+import nl.rhaydus.designsystem.haptics.LocalHaptics
 import nl.rhaydus.designsystem.icon.RhaydusIconResource
 
 /**
@@ -43,10 +43,12 @@ internal fun ratingForOffsetX(
     starCount: Int,
 ): Double {
     val slot = starSizePx + spacingPx
+
     val index = (x / slot).toInt().coerceIn(
         0,
         starCount - 1,
     )
+
     val localX = x - index * slot
     val isHalf = localX < starSizePx / 2f
 
@@ -88,7 +90,7 @@ fun StarRatingInput(
     enabled: Boolean = true,
     contentDescription: String? = null,
 ) {
-    val haptics = rememberHaptics()
+    val haptics = LocalHaptics.current
 
     val density = LocalDensity.current
     val starSizePx = with(density) { starSize.toPx() }

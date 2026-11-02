@@ -5,11 +5,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
-import java.awt.Image as AwtImage
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
@@ -19,6 +19,7 @@ import java.io.File
 import javax.imageio.ImageIO
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
+import java.awt.Image as AwtImage
 
 /**
  * Desktop share-card capture. Compose Desktop renders through Skiko, so the capture path mirrors the iOS
@@ -29,15 +30,16 @@ import javax.swing.filechooser.FileNameExtensionFilter
 internal class JvmShareCardCapture internal constructor(
     override val graphicsLayer: GraphicsLayer,
     private val config: ShareCardCaptureConfig,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : ShareCardCapture {
     override suspend fun saveToGallery(displayName: String): SaveOutcome {
         val pngBytes = capturePngBytes()
             ?: return SaveOutcome.Failure(reason = "Failed to encode share card")
 
         val target = withContext(Dispatchers.Main) { chooseSaveFile(displayName) }
-            ?: return SaveOutcome.Failure(reason = "Save cancelled")
+            ?: return SaveOutcome.Cancelled
 
-        return withContext(Dispatchers.IO) {
+        return withContext(ioDispatcher) {
             runCatching {
                 target.writeBytes(pngBytes)
 
@@ -55,18 +57,20 @@ internal class JvmShareCardCapture internal constructor(
         val pngBytes = capturePngBytes()
             ?: return SaveOutcome.Failure(reason = "Failed to encode share card")
 
-        return withContext(Dispatchers.IO) {
+        return withContext(ioDispatcher) {
             runCatching {
                 val directory = File(
                     System.getProperty("java.io.tmpdir"),
                     "${config.fileNamePrefix}-$SHARE_CACHE_FOLDER",
                 )
+
                 directory.mkdirs()
 
                 val file = File(
                     directory,
                     buildFilename(displayName),
                 )
+
                 file.writeBytes(pngBytes)
 
                 SaveOutcome.Cached(identifier = file.absolutePath)
@@ -90,7 +94,7 @@ internal class JvmShareCardCapture internal constructor(
                     null,
                 )
 
-                ShareOutcome.Shared
+                ShareOutcome.CopiedToClipboard
             }.getOrElse {
                 ShareOutcome.Failure(reason = "Failed to share")
             }
@@ -113,6 +117,7 @@ internal class JvmShareCardCapture internal constructor(
         val chooser = JFileChooser().apply {
             dialogTitle = "Save share card"
             selectedFile = File(buildFilename(displayName))
+
             fileFilter = FileNameExtensionFilter(
                 "PNG image",
                 "png",
@@ -161,13 +166,17 @@ internal class JvmShareCardCapture internal constructor(
 }
 
 @Composable
-actual fun rememberShareCardCapture(config: ShareCardCaptureConfig): ShareCardCapture {
+actual fun rememberShareCardCapture(
+    config: ShareCardCaptureConfig,
+    ioDispatcher: CoroutineDispatcher,
+): ShareCardCapture {
     val graphicsLayer = rememberGraphicsLayer()
 
-    return remember(graphicsLayer, config) {
+    return remember(graphicsLayer, config, ioDispatcher) {
         JvmShareCardCapture(
             graphicsLayer = graphicsLayer,
             config = config,
+            ioDispatcher = ioDispatcher,
         )
     }
 }

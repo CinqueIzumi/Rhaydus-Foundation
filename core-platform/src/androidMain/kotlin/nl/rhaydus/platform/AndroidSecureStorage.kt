@@ -4,15 +4,15 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import kotlinx.coroutines.withContext
+import nl.rhaydus.common.AppDispatchers
+import nl.rhaydus.common.AppLog
+import nl.rhaydus.common.runCatchingCancellable
 import java.io.File
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
-import nl.rhaydus.common.AppDispatchers
-import nl.rhaydus.common.AppLog
-import nl.rhaydus.common.runCatchingCancellable
 
 /**
  * Android secure storage: each secret is encrypted with a single AES/GCM key held in the Android
@@ -44,6 +44,7 @@ class AndroidSecureStorage(
                 val ciphertext = input.readBytes()
 
                 val cipher = Cipher.getInstance(TRANSFORMATION)
+
                 cipher.init(
                     Cipher.DECRYPT_MODE,
                     secretKey,
@@ -76,6 +77,7 @@ class AndroidSecureStorage(
     ) {
         withContext(dispatchers.io) {
             val cipher = Cipher.getInstance(TRANSFORMATION)
+
             cipher.init(
                 Cipher.ENCRYPT_MODE,
                 secretKey,

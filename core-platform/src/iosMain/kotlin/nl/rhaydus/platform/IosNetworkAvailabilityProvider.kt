@@ -29,6 +29,7 @@ class IosNetworkAvailabilityProvider : BaseNetworkAvailabilityProvider() {
         nw_path_monitor_set_update_handler(monitor) { path ->
             _isOnline.value = nw_path_get_status(path) == nw_path_status_satisfied
         }
+
         nw_path_monitor_set_queue(
             monitor,
             dispatch_get_global_queue(
@@ -36,6 +37,7 @@ class IosNetworkAvailabilityProvider : BaseNetworkAvailabilityProvider() {
                 0u,
             ),
         )
+
         nw_path_monitor_start(monitor)
     }
 }

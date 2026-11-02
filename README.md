@@ -2,11 +2,11 @@
 
 # rhaydus-foundation
 
-**A shared backbone for Kotlin Multiplatform apps — published libraries, build tooling, conventions, and the Claude Code assets that teach an AI assistant how to use them.**
+**A shared backbone for Kotlin Multiplatform apps: KMP libraries, build tooling, conventions, and the Claude Code assets that teach an AI assistant how to use them.**
 
-![Version](https://img.shields.io/badge/version-0.3.1-1f6feb)
+![Version](https://img.shields.io/badge/version-0.4.0-1f6feb)
 ![License](https://img.shields.io/badge/license-MIT-2da44e)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?logo=kotlin&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF?logo=kotlin&logoColor=white)
 ![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Desktop-0a7ea4)
 ![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.11.0-4285F4)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757)
@@ -17,19 +17,19 @@
 
 ## Why this exists
 
-Ship more than one Kotlin Multiplatform app on the same stack and the shared parts quietly drift — the same TOAD presentation runtime, the same Compose design language, the same ktlint rules and Gradle conventions, duplicated and slowly diverging. `rhaydus-foundation` is the single, **versioned** home for everything they share, so a fix or an improvement lands once and every consuming app inherits it.
+Ship more than one Kotlin Multiplatform app on the same stack and the shared parts quietly drift: the same TOAD presentation runtime, the same Compose design language, the same ktlint rules and Gradle conventions, duplicated and slowly diverging. `rhaydus-foundation` is the single, **versioned** home for everything they share, so a fix or an improvement lands once and every consuming app inherits it.
 
 It ships three things most "shared module" repos don't bother to keep together:
 
-- 📦 **Published KMP libraries** — drop-in via Maven Central, opt-in by concern.
-- 🧰 **Build + style tooling** — Gradle convention plugins, a shared version catalog, and a custom ktlint ruleset.
-- 🤖 **Claude Code assets** — a plugin of specialist agents, a skill, and a docs index, so an AI assistant working in a consuming app *knows what's available and is steered to actually use it*.
+- 📦 **KMP libraries**: consumed as a git submodule through `includeBuild`, opt-in by concern.
+- 🧰 **Build + style tooling**: Gradle convention plugins, a shared version catalog file, and a custom ktlint ruleset.
+- 🤖 **Claude Code assets**: a plugin of specialist agents, a skill, and a docs index, so an AI assistant working in a consuming app *knows what's available and is steered to actually use it*.
 
 ---
 
 ## What's inside
 
-### Published libraries (`nl.rhaydus:*`, version `0.3.1`)
+### Libraries (`nl.rhaydus:*`, version `0.4.0`)
 
 | Module | Coordinate | What it gives you |
 |---|---|---|
@@ -37,16 +37,16 @@ It ships three things most "shared module" repos don't bother to keep together:
 | **Core common** | `nl.rhaydus:core-common` | Non-visual shared primitives: `AppDispatchers`, the `AppLog` logging facade, `runCatchingCancellable` / `runCatchingLogged`, date/time/number formatting. |
 | **Core platform** | `nl.rhaydus:core-platform` | Platform-capability seams (depends on core-common): `SecureStorage` and `NetworkAvailabilityProvider`, each with Android / iOS / desktop implementations. |
 | **Offline sync** | `nl.rhaydus:offline-sync` | Offline optimistic-write queue skeleton (depends on core-platform): `WriteQueue` / `PendingWriteStore`, `OfflineWriteDrainer`, `PendingWrite`, `ReplayOutcome`, `DrainPolicy` - the app supplies the persistence seam. |
-| **Design system — core** | `nl.rhaydus:designsystem-core` | The **design-agnostic** Compose skeleton: theme scaffold, layout primitives (window-size classes, two-pane, content-width caps), modifiers, motion + reduced-motion seam, haptics, the button family. |
-| **Design system — editorial** | `nl.rhaydus:designsystem-editorial` | **Opt-in** editorial design language: shared type-role contract + components (section header, hero stat, drop cap, search field, pull-to-refresh eyebrow). |
-| **Design system — image** | `nl.rhaydus:designsystem-image` | **Opt-in** async images on Coil: plain, placeholder, and shimmer variants. |
-| **Version catalog** | `nl.rhaydus:catalog` | The shared third-party version set, consumable as a Gradle version catalog. |
-| **ktlint rules** | `nl.rhaydus:ktlint-rules` | 14 custom rules: layout (one-per-line arg wrapping, trailing commas, blank-line rules, sibling-composable spacing, boolean `.not()`) with auto-fix, plus gating checks (one-type-per-file, no fully-qualified references, project-import order, no inline mockk stubs, no bare `runCatching` in use cases, and a raw-logging ban that routes `println` / `Log.*` through the `AppLog` facade). |
-| **detekt rules** | `nl.rhaydus:detekt-rules` | Custom detekt ruleset (a type-resolved crash-safety rule for unguarded `Flow.first()` / `single()`) plus the shared detekt baseline config every app builds on. |
+| **Design system: core** | `nl.rhaydus:designsystem-core` | The **design-agnostic** Compose skeleton: theme scaffold, layout primitives (window-size classes, two-pane, content-width caps), modifiers, motion + reduced-motion seam, haptics, the button family. |
+| **Design system: editorial** | `nl.rhaydus:designsystem-editorial` | **Opt-in** editorial design language: shared type-role contract + components (section header, hero stat, drop cap, search field, pull-to-refresh eyebrow). |
+| **Design system: image** | `nl.rhaydus:designsystem-image` | **Opt-in** async images on Coil: plain, placeholder, and shimmer variants. |
+| **ktlint rules** | `nl.rhaydus:ktlint-rules` | 11 auto-fixing layout rules: one-per-line arg wrapping, trailing-lambda braces, multi-line expressions opening on the `=` line, trailing commas, statement paragraphs, brace and sibling-composable blank lines, region flushing, boolean `.not()`, unused imports, and the import layout; plus ktlint's standard indentation rule. |
+| **detekt rules** | `nl.rhaydus:detekt-rules` | Custom detekt ruleset for call sites and function bodies (unguarded `Flow.first()` / `single()`, reflection by name, raw dp in spacing and corners, raw logging, inline mockk stubs, Arrange / Act / Assert markers, and more) plus the shared detekt baseline config every app builds on. |
+| **Konsist rules** | `nl.rhaydus:konsist-rules` | Konsist assertions for declarations and architecture: import bans with per-file allowlists, layering, one type per file, `@Nested` tests, Screen arguments that survive serialization, and UI models built in `UiState` getters. |
 
 ### Tooling
 
-- **Gradle convention plugins** (`build-logic/`): `rhaydus.android.library`, `rhaydus.kmp.library`, `rhaydus.android.compose`, `rhaydus.kmp.compose` — uniform module setup (SDK/JDK levels, the Android+iOS `mobileMain` seam, the test stack, Compose).
+- **Gradle convention plugins** (`build-logic/`): `rhaydus.android.library`, `rhaydus.kmp.library`, `rhaydus.android.compose`, `rhaydus.kmp.compose`, for uniform module setup (SDK/JDK levels, the Android+iOS `mobileMain` seam, the test stack, Compose).
 - **Canonical conventions docs** (`docs/`): see [`CAPABILITIES.md`](docs/CAPABILITIES.md) (the index of everything available), plus architecture, TOAD, code-style, and design-system foundations.
 
 ### Module graph
@@ -61,57 +61,80 @@ graph LR
   platform --> common["core-common<br/><i>non-visual primitives</i>"]
 ```
 
-An app that wants a different look depends on `designsystem-core` alone and never pulls the editorial language or Coil — the opinionated layers are opt-in by design.
+An app that wants a different look depends on `designsystem-core` alone and never pulls the editorial language or Coil; the opinionated layers are opt-in by design.
 
 ---
 
 ## Quick start
 
-### 1. Add a library
+### 1. Add the submodule and `includeBuild`
+
+```bash
+git submodule add https://github.com/CinqueIzumi/rhaydus-foundation.git foundation
+git -C foundation checkout v0.4.0
+```
+
+```kotlin
+// settings.gradle.kts
+includeBuild("foundation")
+```
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("nl.rhaydus:toad:0.3.1")
-    implementation("nl.rhaydus:designsystem-core:0.3.1")
-    implementation("nl.rhaydus:designsystem-editorial:0.3.1") // opt-in
-    implementation("nl.rhaydus:designsystem-image:0.3.1")     // opt-in (pulls Coil)
+    implementation("nl.rhaydus:toad")
+    implementation("nl.rhaydus:designsystem-core")
+    implementation("nl.rhaydus:designsystem-editorial") // opt-in
+    implementation("nl.rhaydus:designsystem-image")     // opt-in (pulls Coil)
 }
 ```
 
-Artifacts publish to **Maven Central** under the `nl.rhaydus` group (verified by DNS, no server) — consumers need **no credentials**, just `mavenCentral()`.
+Gradle substitutes the `nl.rhaydus:*` coordinates for the submodule source, so the catalog entries carry no version. The app builds on the same AGP and Kotlin versions as the pinned foundation. CI checkouts that run Gradle set `submodules: true`, and clones use `--recurse-submodules`. Nothing is published: the submodule is the only way to consume the foundation.
 
 <details>
-<summary><b>Optional: consume the shared version catalog</b></summary>
+<summary><b>Optional: shared version catalog and convention plugins</b></summary>
 
 ```kotlin
 // settings.gradle.kts
+pluginManagement {
+    includeBuild("foundation/build-logic")
+}
+
 dependencyResolutionManagement {
     versionCatalogs {
-        create("rhaydus") { from("nl.rhaydus:catalog:0.3.1") }
+        create("rhaydus") { from(files("foundation/gradle/libs.versions.toml")) }
     }
 }
 ```
 App-only libraries (Apollo, Room, etc.) stay in your app's own catalog.
 </details>
 
-### 2. Develop against the foundation source (inner loop)
+### 2. Develop against the foundation source
 
-While iterating on the foundation *and* an app together, skip the publish cycle entirely:
+Edit `foundation/` on a branch; the app builds the change directly, with no version bump. Commit in the foundation first, then record the new pointer in the app with `git add foundation`. A foundation version change moves the pointer: fetch in `foundation/`, check out the new tag, `git add foundation`, commit.
 
-```properties
-# <app>/local.properties
-foundation.local=true
+### 3. Load the Claude Code plugin
+
+Add this to the project's `.claude/settings.json`, or run `rhaydus-adopt`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "rhaydus": { "source": { "source": "directory", "path": "./foundation" } }
+  },
+  "enabledPlugins": { "rhaydus-kotlin@rhaydus": true }
+}
 ```
 
-The app's `settings.gradle.kts` reads that flag and `includeBuild("../rhaydus-foundation")`; Gradle substitutes the published coordinates for local source automatically — no version bumps, instant cross-repo edits. Flip it back to return to the pinned release.
+Each machine then registers it once, from the project root:
 
-### 3. Install the Claude Code plugin
+```bash
+claude plugin marketplace add ./foundation --scope project
+claude plugin install rhaydus-kotlin@rhaydus --scope project
+```
 
-```
-/plugin marketplace add CinqueIzumi/rhaydus-foundation
-/plugin install rhaydus-kotlin@rhaydus
-```
+The first command writes an absolute path into `.claude/settings.json`; set it back to `./foundation`
+before committing. The plugin loads in place from the pinned submodule. Claude Code caches it per version, so an edit to it applies only after reinstalling it; see the [plugin README](claude/plugins/rhaydus-kotlin/README.md).
 
 ---
 
@@ -121,32 +144,29 @@ The `rhaydus-kotlin` plugin makes a consuming app's AI assistant fluent in the f
 
 | Agent / asset | Role |
 |---|---|
-| **`rhaydus-adopt`** | Onboards a project: wires the catalog, convention plugins, and `includeBuild`; writes a managed routing block into the app's `CLAUDE.md`; flags prerequisite migrations. |
-| **`rhaydus-logic`** | Builds feature **logic** — the TOAD state/action contract, ScreenModel, use cases, data. |
-| **`rhaydus-ui`** | Builds feature **UI** — the stateless Compose render, from the foundation design system **and** the app's own brand doc. |
-| **`code-reviewer` / `unit-test-writer`** | Review and tests, tuned to the conventions. |
+| **`rhaydus-adopt`** | Onboards a project: adds the submodule and `includeBuild`, wires the catalog and convention plugins, loads the plugin from the project's settings; writes a managed routing block into the app's `CLAUDE.md`; flags prerequisite migrations. |
+| **`implementer`** | Builds one vertical slice end to end - TOAD logic, domain, data and the stateless Compose render, from the foundation design system **and** the app's own brand doc. |
+| **`reviewer` / `test-writer`** | Review and tests, tuned to the conventions; project facts come from the `## Agent parameters` table in `CLAUDE.md`. |
 | **`style-check` skill** | Auto-fix mechanizable style, then run the project's gates. |
 | **docs-first hook** | Nudges reading the docs (and [`CAPABILITIES.md`](docs/CAPABILITIES.md)) before exploring. |
 
-Every agent reads [`CAPABILITIES.md`](docs/CAPABILITIES.md) first — so it reuses what already exists and stays correct for the exact version a project is pinned to, rather than working from a memorized snapshot.
+Every agent reads [`CAPABILITIES.md`](docs/CAPABILITIES.md) first, so it reuses what already exists and stays correct for the exact version a project is pinned to, rather than working from a memorized snapshot.
 
 ---
 
 ## Versioning
 
-One version covers the whole release: `foundation.version` in `gradle.properties` drives all ten published artifacts, and a `verifyPluginVersion` build gate **locks the Claude plugin's version to it** (the build fails if they drift). Bump them together; a tagged push (`v*`) publishes to Maven Central via CI.
+One version covers the whole release: `foundation.version` in `gradle.properties` is the version of every foundation module, and a `verifyPluginVersion` build gate **locks the Claude plugin's version to it** (the build fails if they drift). Bump them together. A `v*` tag is only a git marker for the commit consumers pin their submodule to.
 
 ---
 
 ## Build & release
 
 ```bash
-./gradlew build                            # compile all targets (jvm/android/ios) + tests + gates
-./gradlew publishToMavenLocal              # local smoke test of the real artifacts
-./gradlew publishAndReleaseToMavenCentral  # release (normally done by CI on a v* tag)
+./gradlew build   # compile all targets (jvm/android/ios) + tests + gates
 ```
 
-Publishing credentials (Central Portal token + PGP key) are maintainer-only, supplied via env/Gradle properties and never committed — see `.github/workflows/publish.yml`.
+A release: bump `foundation.version` in `gradle.properties` and the version in `plugin.json` together, merge, and tag `vX.Y.Z`. Consumers then fetch in `foundation/`, check out the tag and `git add foundation`.
 
 ---
 

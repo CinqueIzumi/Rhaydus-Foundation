@@ -5,6 +5,12 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class NavPulseTest {
+    private data object Library : NavPulseKey
+
+    private data object Explore : NavPulseKey
+
+    private class PlainKey : NavPulseKey
+
     @Nested
     inner class CountFor {
         @Test
@@ -13,7 +19,7 @@ class NavPulseTest {
             val navPulse = NavPulse()
 
             // ----- Act -----
-            val result = navPulse.countFor("library")
+            val result = navPulse.countFor(Library)
 
             // ----- Assert -----
             result shouldBe 0
@@ -23,10 +29,10 @@ class NavPulseTest {
         fun `returns 0 for other keys while an unrelated key was pulsed`() {
             // ----- Arrange -----
             val navPulse = NavPulse()
-            navPulse.pulse("library")
+            navPulse.pulse(Library)
 
             // ----- Act -----
-            val result = navPulse.countFor("explore")
+            val result = navPulse.countFor(Explore)
 
             // ----- Assert -----
             result shouldBe 0
@@ -41,10 +47,10 @@ class NavPulseTest {
             val navPulse = NavPulse()
 
             // ----- Act -----
-            navPulse.pulse("library")
+            navPulse.pulse(Library)
 
             // ----- Assert -----
-            navPulse.countFor("library") shouldBe 1
+            navPulse.countFor(Library) shouldBe 1
         }
 
         @Test
@@ -53,19 +59,19 @@ class NavPulseTest {
             val navPulse = NavPulse()
 
             // ----- Act -----
-            navPulse.pulse("library")
-            navPulse.pulse("library")
-            navPulse.pulse("library")
+            navPulse.pulse(Library)
+            navPulse.pulse(Library)
+            navPulse.pulse(Library)
 
             // ----- Assert -----
-            navPulse.countFor("library") shouldBe 3
+            navPulse.countFor(Library) shouldBe 3
         }
 
         @Test
         fun `tracks arbitrary object keys by reference equality`() {
             // ----- Arrange -----
             val navPulse = NavPulse()
-            val libraryTab = Any()
+            val libraryTab = PlainKey()
 
             // ----- Act -----
             navPulse.pulse(libraryTab)
@@ -81,10 +87,10 @@ class NavPulseTest {
             val untouchedInstance = NavPulse()
 
             // ----- Act -----
-            pulsedInstance.pulse("library")
+            pulsedInstance.pulse(Library)
 
             // ----- Assert -----
-            untouchedInstance.countFor("library") shouldBe 0
+            untouchedInstance.countFor(Library) shouldBe 0
         }
     }
 }

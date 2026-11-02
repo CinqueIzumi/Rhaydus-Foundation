@@ -8,6 +8,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
@@ -47,12 +48,24 @@ fun Modifier.dismissOnEscape(
     return this
         .focusRequester(focusRequester)
         .focusTarget()
-        .onPreviewKeyEvent { event ->
-            if (event.type == KeyEventType.KeyDown && event.key == Key.Escape) {
-                onDismiss()
-                true
-            } else {
-                false
-            }
-        }
+        .onPreviewKeyEvent { event -> event.isEscapeDown().also { if (it) onDismiss() } }
 }
+
+/**
+ * Runs [onEscape] when **Esc** is pressed while focus sits anywhere inside this subtree, without
+ * taking focus itself. Use it instead of [dismissOnEscape] when [enabled] follows a condition a text
+ * field drives (e.g. "the search box has text"): that condition flips on a keystroke, and a focus grab
+ * would pull focus out of the field being typed into.
+ *
+ * When not [enabled] the modifier does not consume Esc, leaving it for whatever else wants it.
+ */
+fun Modifier.onEscape(
+    enabled: Boolean,
+    onEscape: () -> Unit,
+): Modifier = if (enabled) {
+    onPreviewKeyEvent { event -> event.isEscapeDown().also { if (it) onEscape() } }
+} else {
+    this
+}
+
+private fun KeyEvent.isEscapeDown(): Boolean = type == KeyEventType.KeyDown && key == Key.Escape

@@ -35,12 +35,11 @@ class TrailingCommaRule :
         node: ASTNode,
         emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision,
     ) {
-        val entryType =
-            when (node.elementType) {
-                VALUE_ARGUMENT_LIST -> VALUE_ARGUMENT
-                VALUE_PARAMETER_LIST -> VALUE_PARAMETER
-                else -> return
-            }
+        val entryType = when (node.elementType) {
+            VALUE_ARGUMENT_LIST -> VALUE_ARGUMENT
+            VALUE_PARAMETER_LIST -> VALUE_PARAMETER
+            else -> return
+        }
 
         // only multi-line lists are in scope (single-line ones are handled by the wrapping rule)
         if (node.textContains('\n').not()) return

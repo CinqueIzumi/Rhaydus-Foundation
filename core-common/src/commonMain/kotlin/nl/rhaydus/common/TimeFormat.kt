@@ -22,6 +22,7 @@ private fun Int.pad2(): String = toString().padStart(
 
 fun Int.toHoursMinutesSeconds(): HoursMinutesSeconds {
     val safe = coerceAtLeast(0)
+
     return HoursMinutesSeconds(
         hours = safe / 3600,
         minutes = (safe % 3600) / 60,

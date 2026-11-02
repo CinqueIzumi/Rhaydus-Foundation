@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -27,10 +28,11 @@ import nl.rhaydus.designsystem.modifier.pressScale
 
 /**
  * The text button across all Material 3 Expressive [ButtonStyle]s and [ButtonSize]s, with an optional
- * leading [icon] (suppressed for [ButtonStyle.TEXT], which leads with its label). The filled style adds
- * the design system's press-scale feedback; the other styles keep their stock ripple and shape morph.
+ * leading [icon] (suppressed for [ButtonStyle.TEXT], which leads with its label). The icon's own
+ * content description is ignored because the label already names the button. The filled style adds
+ * the design system's press-scale feedback; the other styles keep their stock ripple and shape
+ * morph.
  */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun RhaydusButton(
     label: String,
@@ -41,26 +43,51 @@ fun RhaydusButton(
     icon: RhaydusIconResource? = null,
     size: ButtonSize = ButtonSize.S,
 ) {
+    RhaydusButton(
+        style = style,
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        icon = icon,
+        size = size,
+    ) {
+        Text(text = label)
+    }
+}
+
+/**
+ * [RhaydusButton] with a [content] slot in place of the label. Text in the slot takes [size]'s text style.
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun RhaydusButton(
+    style: ButtonStyle,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    icon: RhaydusIconResource? = null,
+    size: ButtonSize = ButtonSize.S,
+    content: @Composable RowScope.() -> Unit,
+) {
     val shapes = ButtonDefaults.shapesFor(buttonHeight = size.height)
 
-    val content: @Composable RowScope.() -> Unit = {
+    val buttonContent: @Composable RowScope.() -> Unit = {
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null && style != ButtonStyle.TEXT) {
                 Icon(
                     painter = icon.getIconPainter(),
-                    contentDescription = icon.contentDescription,
+                    contentDescription = null,
                     modifier = Modifier.size(size.iconSize),
                 )
 
                 Spacer(modifier = Modifier.width(size.iconSpacing))
             }
 
-            Text(
-                text = label,
-                style = size.textStyle,
-            )
+            ProvideTextStyle(value = size.textStyle) {
+                content()
+            }
         }
     }
 
@@ -76,7 +103,7 @@ fun RhaydusButton(
                 modifier = modifier
                     .height(height = size.height)
                     .pressScale(filledInteractionSource),
-                content = content,
+                content = buttonContent,
                 interactionSource = filledInteractionSource,
             )
         }
@@ -87,7 +114,7 @@ fun RhaydusButton(
             enabled = enabled,
             contentPadding = size.contentPadding,
             modifier = modifier.height(height = size.height),
-            content = content,
+            content = buttonContent,
         )
 
         ButtonStyle.ELEVATED -> ElevatedButton(
@@ -96,7 +123,7 @@ fun RhaydusButton(
             enabled = enabled,
             contentPadding = size.contentPadding,
             modifier = modifier.height(height = size.height),
-            content = content,
+            content = buttonContent,
         )
 
         ButtonStyle.OUTLINED -> OutlinedButton(
@@ -105,7 +132,7 @@ fun RhaydusButton(
             enabled = enabled,
             contentPadding = size.contentPadding,
             modifier = modifier.height(height = size.height),
-            content = content,
+            content = buttonContent,
         )
 
         ButtonStyle.TEXT -> TextButton(
@@ -113,7 +140,7 @@ fun RhaydusButton(
             shapes = shapes,
             enabled = enabled,
             modifier = modifier.height(height = size.height),
-            content = content,
+            content = buttonContent,
         )
     }
 }
