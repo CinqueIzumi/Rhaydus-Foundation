@@ -1,7 +1,7 @@
 # Foundation capabilities
 
 The single index of **what the `nl.rhaydus` foundation makes available** to a consuming project: the
-published modules, the components/APIs each exposes, the dependency graph, the tooling, and which
+foundation modules, the components/APIs each exposes, the dependency graph, the tooling, and which
 canonical doc governs what. The `rhaydus-*` agents read this **first**, every time, so they reach for
 what already exists instead of reinventing it, and so their knowledge tracks the version a project is on
 rather than a memorized snapshot.
@@ -10,15 +10,15 @@ rather than a memorized snapshot.
 > check this index for an existing foundation equivalent. Reinventing something listed here is a defect,
 > not a style nit.
 
-> **Maintenance rule.** Adding, removing, or renaming a published module / component / public API updates
+> **Maintenance rule.** Adding, removing, or renaming a foundation module / component / public API updates
 > this file in the same change (the `reviewer` enforces it, alongside the per-doc maintenance rules).
 
 ## How a project consumes it
 
 - **Default:** a git submodule at `foundation/`, pinned on a `v*` tag, built through an unconditional
   `includeBuild("foundation")`. The `nl.rhaydus:*` catalog entries are version-less substitution
-  coordinates. The app builds on the same AGP and Kotlin versions as the pinned foundation. Artifacts are
-  also published to Maven Central.
+  coordinates. The app builds on the same AGP and Kotlin versions as the pinned foundation. Nothing is
+  published; the submodule is the only consumption path.
 - **Editing:** change `foundation/` on a branch; the app builds the edit directly, with no version bump.
 - **Catalog and convention plugins:** `from(files("foundation/gradle/libs.versions.toml"))` for the shared
   catalog, `includeBuild("foundation/build-logic")` in `pluginManagement` for the `rhaydus.*` plugins.
@@ -27,7 +27,7 @@ rather than a memorized snapshot.
   local-directory marketplace at `./foundation`; docs are read from `foundation/docs/` at the pinned commit.
   `rhaydus-adopt` wires all of it.
 
-## Published modules
+## Foundation modules
 
 | Coordinate | Purpose | Key public surface | Governing doc |
 |---|---|---|---|
@@ -38,7 +38,6 @@ rather than a memorized snapshot.
 | `nl.rhaydus:designsystem-core` | Design-agnostic Compose skeleton (no brand tokens) | see **designsystem-core surface** below | `design-system-foundations.md`, `code-style.md` |
 | `nl.rhaydus:designsystem-editorial` | Opt-in editorial design language (depends on core) | `EditorialTypography`, `buildEditorialTypography`, `EditorialTheme`, `MaterialTheme.editorialTypography`; components `EditorialSectionHeader`, `HeroStatNumberField` + `EditorialSuffix`, `PullToRefreshEyebrow`, `DropCapText`, `EditorialSearchField` | `design-system-foundations.md` §2 |
 | `nl.rhaydus:designsystem-image` | Opt-in async images on Coil (depends on core) | `RhaydusImage` (plain), `RhaydusPlaceholderImage` (placeholder slot), `RhaydusShimmerImage` (shimmer) | `design-system-foundations.md` §8 |
-| `nl.rhaydus:catalog` | Shared version catalog | `libs.*` aliases for the shared third-party stack | - |
 | `nl.rhaydus:ktlint-rules` | Custom ktlint formatter (11 auto-fixing rules plus ktlint's standard `indent`) | `ktlintCheck` / `ktlintFormat` gates | `code-style.md` |
 | `nl.rhaydus:detekt-rules` | Custom detekt 2 ruleset (`dev.detekt`, analysis-API crash-safety) + shared baseline config | `rhaydus` ruleset for call sites and bodies (see **detekt-rules** below), bundled `config/detekt.yml` | `code-style.md` |
 | `nl.rhaydus:konsist-rules` | Konsist assertions for declaration and architecture rules, parameterised with project facts | see **konsist-rules** below; called from a `rhaydus.konsist` test module | `code-style.md`, `architecture.md` |

@@ -13,8 +13,7 @@ paths:
 - Commit in the foundation first, then record the pointer in the app with `git add foundation`.
 - Push the foundation commit before any app commit that points at it (`git push --recurse-submodules=check`
   refuses otherwise).
-- The app merges to its main branch only with the pointer on a tagged foundation commit; pushing a `v*` tag
-  publishes to Maven Central.
+- The app merges to its main branch only with the pointer on a tagged foundation commit.
 - The plugin installs from `foundation/` through the project-scoped `rhaydus` marketplace in
   `.claude/settings.json`. Claude Code runs a copy cached per plugin version, so an edit to its agents, hooks
   or skills applies only after `claude plugin uninstall rhaydus-kotlin@rhaydus --scope project`, the matching

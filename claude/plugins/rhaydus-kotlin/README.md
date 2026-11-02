@@ -103,9 +103,7 @@ claude plugin install rhaydus-kotlin@rhaydus --scope project
 The first command writes an absolute path into `.claude/settings.json`; set it back to `./foundation`
 before committing. Claude Code runs a copy of the plugin cached per version, and `claude plugin update` skips an
 unchanged version, so an edit to the plugin applies only after reinstalling it (`claude plugin uninstall
-rhaydus-kotlin@rhaydus --scope project`, then the `install` above) and `/reload-plugins`. A user-scope `rhaydus`
-marketplace that installs from GitHub conflicts with this one and ignores the pinned commit; remove it with
-`claude plugin marketplace remove rhaydus`.
+rhaydus-kotlin@rhaydus --scope project`, then the `install` above) and `/reload-plugins`.
 
 Skills are namespaced as `/rhaydus-kotlin:style-check`. The subagents become available to the Agent
 tool. Each project accumulates its own per-agent agent-memory under `.claude/agent-memory/`; that

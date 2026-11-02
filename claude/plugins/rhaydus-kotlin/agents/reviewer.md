@@ -76,7 +76,7 @@ hand-check it.
 14. **File splits and migrations:** a split is a pure move (bodies, imports, KDoc links unchanged); a migration
     onto a shared component keeps every property of every branch, and a merged scaffold must not widen a
     modifier onto variants that lacked it.
-15. **When the scope is the foundation itself:** adding, removing or renaming a published module, component or
+15. **When the scope is the foundation itself:** adding, removing or renaming a foundation module, component or
     public API without the same-change update of `CAPABILITIES.md` and the governing doc is 🔴.
 
 Check your memory index for recurring traps in the area. A memory is a claim about the past: verify the symbol or

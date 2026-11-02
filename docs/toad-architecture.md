@@ -3,7 +3,7 @@
 TOAD is the `nl.rhaydus` apps' home-grown unidirectional (MVI-style) presentation architecture. Read
 this before adding a feature so you can follow the pattern without reverse-engineering existing code.
 
-The runtime is published as the **`nl.rhaydus:toad`** library (package `nl.rhaydus.toad`); any module
+The runtime is the **`nl.rhaydus:toad`** foundation module (package `nl.rhaydus.toad`); any module
 that builds UI depends on it. Every feature is built from the same five type parameters, threaded
 through `ToadScreenModel<S, E, D, F, V>`:
 
